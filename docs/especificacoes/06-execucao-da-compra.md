@@ -69,6 +69,74 @@ Persistir `checked=false`, limpar `checkedAt` e `checkedBy`, incrementar versão
 8. Grupos podem ser recolhidos sem afetar dados ou outros usuários.
 9. Totais permanecem corretos após inclusão, remoção, marcação e atualização simultâneas.
 
+## Definições de testes funcionais (Playwright)
+
+### SHOP-001 — Resumo inicial é derivado dos itens (`P0`)
+
+- **Preparação:** lista com oito linhas, três marcadas e quantidades numéricas variadas.
+- **Ação:** abrir o detalhe.
+- **Resultado:** mostrar total 8, comprados 3, pendentes 5 e percentual 38; quantidade de unidades não altera a contagem.
+
+### SHOP-002 — Marcar e desmarcar persiste (`P0`)
+
+- **Preparação:** item pendente em lista ativa.
+- **Ação:** marcar, recarregar, desmarcar e recarregar novamente.
+- **Resultado:** linha, resumo e progresso refletem cada estado confirmado; marcação registra autor/horário e desmarcação os limpa.
+
+### SHOP-003 — Comando idempotente preserva autoria (`P1`)
+
+- **Preparação:** item já marcado com autor e horário conhecidos.
+- **Ação:** repetir o comando `checked=true` pela interface/API de teste.
+- **Resultado:** operação tem sucesso sem mudar autor, horário ou contagens.
+
+### SHOP-004 — Lista vazia tem progresso válido (`P0`)
+
+- **Preparação:** lista ativa sem itens.
+- **Ação:** abrir o detalhe.
+- **Resultado:** mostrar zeros, percentual zero e ação para adicionar o primeiro item, sem `NaN`, infinito ou grupo vazio.
+
+### SHOP-005 — Agrupamento e recolhimento são locais (`P1`)
+
+- **Preparação:** itens de categorias distintas, incluindo nomes normalizados iguais vindos de catálogos diferentes.
+- **Ação:** abrir, verificar ordenação e recolher um grupo em um contexto.
+- **Resultado:** categorias equivalentes formam um grupo, contagens e ordem estão corretas e outro contexto não é afetado pelo recolhimento.
+
+### SHOP-006 — Atualização chega a outro participante (`P0`)
+
+- **Preparação:** `owner` e `editor` abrem a mesma lista em contextos independentes.
+- **Ação:** `owner` marca um item e `editor` adiciona outro.
+- **Resultado:** cada alteração confirmada aparece no outro contexto, com resumo correto, em até cinco segundos e sem recarregar.
+
+### SHOP-007 — Conflito no mesmo item converge (`P0`)
+
+- **Preparação:** dois contextos com a mesma versão de um item.
+- **Ação:** ambos enviam estados diferentes de forma controlada.
+- **Resultado:** uma alteração é confirmada, a obsoleta recebe `CONFLICT`, ambos convergem para o estado do servidor e o usuário afetado é informado.
+
+### SHOP-008 — Falha de escrita reverte estado otimista (`P0`)
+
+- **Preparação:** interceptar a mutação para falhar após o clique.
+- **Ação:** marcar item.
+- **Resultado:** interface mostra processamento, não permite clique duplicado, restaura o último estado confirmado, informa erro e oferece nova tentativa.
+
+### SHOP-009 — Reconexão ressincroniza antes de editar (`P0`)
+
+- **Preparação:** um contexto perde conexão; outro altera itens.
+- **Ação:** restaurar conexão e tentar nova marcação no primeiro.
+- **Resultado:** exibir estado sem conexão enquanto aplicável, buscar versão atual antes da escrita e terminar com resumo convergente.
+
+### SHOP-010 — Usuários não autorizados e lista concluída são somente leitura (`P0`)
+
+- **Preparação:** lista concluída acessível a `owner/editor` e lista ativa inacessível a `outsider`.
+- **Ação:** tentar marcações pela interface e por requisição direta.
+- **Resultado:** controles não editáveis/ausentes e respostas `LIST_COMPLETED` ou `NOT_FOUND`, sem alteração visual persistente.
+
+### SHOP-011 — Operações simultâneas mantêm totais consistentes (`P1`)
+
+- **Preparação:** dois contextos em lista com estado conhecido.
+- **Ação:** simultaneamente adicionar, remover e marcar itens diferentes.
+- **Resultado:** após convergência e recarga, total, comprados, pendentes e percentual correspondem exatamente às linhas persistidas.
+
 ## Fora do escopo específico
 
 Modo offline completo, localização de mercado, rota pelos corredores, histórico visual de quem marcou e notificações push.

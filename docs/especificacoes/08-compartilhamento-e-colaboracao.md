@@ -85,7 +85,7 @@ Só pode haver um convite `PENDING` por par lista/e-mail.
 
 ### 6. Sair da lista
 
-1. EDITOR pode sair após confirmação.
+1. EDITOR pode sair de lista `ACTIVE` após confirmação. Lista `COMPLETED` permanece congelada até ser reaberta pelo proprietário.
 2. O vínculo é removido e a lista desaparece de seu painel.
 3. OWNER não pode sair, pois transferência de propriedade está fora do escopo.
 4. Sair não remove itens nem autoria histórica.
@@ -116,6 +116,92 @@ Só pode haver um convite `PENDING` por par lista/e-mail.
 8. Exclusão da lista invalida todos os acessos e convites.
 9. Alterações colaborativas chegam a outros clientes conectados em até 5 segundos e convergem após reconexão.
 10. Ações de um participante removido durante uma operação são recusadas no servidor.
+
+## Definições de testes funcionais (Playwright)
+
+### SHARE-001 — Convidar conta existente (`P0`)
+
+- **Preparação:** lista ativa de `owner`; conta `editor` ainda sem vínculo.
+- **Ação:** convidar o e-mail de `editor`.
+- **Resultado:** criar um único vínculo `EDITOR`, enviar aviso capturado na caixa de teste e fazer a lista aparecer no painel de `editor` sem aceite adicional.
+
+### SHARE-002 — Convidar pessoa sem conta e aceitar (`P0`)
+
+- **Preparação:** e-mail inexistente e caixa de teste vazia.
+- **Ação:** convidar, abrir o link recebido, cadastrar conta com o e-mail bloqueado e concluir o fluxo.
+- **Resultado:** convite passa de `PENDING` para `ACCEPTED`, vínculo `EDITOR` é criado uma vez e a lista abre para o novo usuário.
+
+### SHARE-003 — Cadastro comum não aceita convite (`P0`)
+
+- **Preparação:** convite pendente para e-mail sem conta.
+- **Ação:** criar a conta pelo cadastro normal sem usar o link.
+- **Resultado:** lista não aparece; ao abrir posteriormente o link válido autenticado com o mesmo e-mail, o acesso é concedido.
+
+### SHARE-004 — Bloquear convites duplicados ou inválidos (`P0`)
+
+- **Preparação:** proprietário, participante ativo e convite pendente conhecidos.
+- **Ação:** tentar convidar e-mail inválido, o próprio proprietário, o participante e o pendente.
+- **Resultado:** cada tentativa apresenta erro específico e não cria vínculo, token ou e-mail adicional.
+
+### SHARE-005 — Falha e reenvio de e-mail (`P1`)
+
+- **Preparação:** provedor de teste configurado para falhar até esgotar tentativas.
+- **Ação:** convidar e aguardar `FAILED`; restaurar o provedor e acionar Reenviar.
+- **Resultado:** OWNER vê “Falha no envio”; reenvio gera novo token, muda entrega para `SENT` e o token anterior não funciona.
+
+### SHARE-006 — Token expirado, usado ou cancelado não concede acesso (`P0`)
+
+- **Preparação:** três convites, relógio controlado e caixa de teste.
+- **Ação:** expirar um, aceitar e reutilizar outro e cancelar o terceiro; abrir todos os links.
+- **Resultado:** nenhum link inválido concede acesso; o expirado permite solicitar reenvio e estados finais são coerentes.
+
+### SHARE-007 — E-mail autenticado deve corresponder ao convite (`P0`)
+
+- **Preparação:** convite para `convidado` e sessão autenticada como `outsider`.
+- **Ação:** `outsider` abre o link e tenta aceitar.
+- **Resultado:** acesso é recusado sem consumir o token; após autenticar como o e-mail correto, o mesmo link válido pode ser aceito.
+
+### SHARE-008 — Matriz de permissões do participante (`P0`)
+
+- **Preparação:** `editor` ativo em lista compartilhada.
+- **Ação:** adicionar, editar, remover e marcar item; tentar editar metadados, convidar, remover pessoa, concluir, reabrir e excluir.
+- **Resultado:** operações de item em lista ativa funcionam; ações administrativas não aparecem e chamadas diretas retornam `FORBIDDEN`.
+
+### SHARE-009 — Remover participante revoga sessão aberta (`P0`)
+
+- **Preparação:** `owner` e `editor` com a lista aberta em contextos separados.
+- **Ação:** `owner` confirma remoção enquanto `editor` tenta alterar um item.
+- **Resultado:** vínculo é removido uma vez, `editor` é redirecionado ao painel em até cinco segundos e qualquer escrita posterior retorna `NOT_FOUND`; autoria histórica permanece.
+
+### SHARE-010 — Participante sai da lista (`P0`)
+
+- **Preparação:** `editor` ativo.
+- **Ação:** cancelar uma saída e depois confirmá-la.
+- **Resultado:** cancelamento preserva vínculo; confirmação remove acesso e cartão do painel, sem apagar itens ou autoria. OWNER não recebe a ação Sair.
+
+### SHARE-011 — Relação de pessoas respeita ordem e privacidade (`P1`)
+
+- **Preparação:** proprietário, participantes com nomes variados e convites pendentes.
+- **Ação:** abrir Pessoas como OWNER, EDITOR e `outsider`.
+- **Resultado:** autorizados veem proprietário, participantes por nome e pendentes por e-mail; somente OWNER vê ações administrativas; `outsider` não vê nomes ou e-mails.
+
+### SHARE-012 — Colaboração propaga eventos e ressincroniza (`P0`)
+
+- **Preparação:** `owner` e `editor` em contextos independentes.
+- **Ação:** alternar criação, edição, remoção e marcação; desconectar e reconectar um contexto.
+- **Resultado:** eventos chegam em até cinco segundos, não expõem tokens, e após reconexão ambos convergem para itens, versões e resumo do servidor.
+
+### SHARE-013 — Exclusão invalida convites e participantes (`P0`)
+
+- **Preparação:** lista com participante, convite pendente e links capturados.
+- **Ação:** proprietário exclui a lista e os demais tentam acessar/aceitar.
+- **Resultado:** todos recebem `NOT_FOUND`, a lista some dos painéis e nenhum token concede acesso.
+
+### SHARE-014 — Lista concluída congela administração (`P0`)
+
+- **Preparação:** lista concluída com participante e convite pendente.
+- **Ação:** tentar convidar, reenviar, cancelar, remover, sair ou aceitar convite.
+- **Resultado:** operações de administração/aceite são bloqueadas por `LIST_COMPLETED`; relações existentes continuam visíveis em consulta conforme EF-07.
 
 ## Fora do escopo específico
 

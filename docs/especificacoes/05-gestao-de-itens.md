@@ -96,6 +96,80 @@ No detalhe, agrupar pelo `categoryName` normalizado e exibir o nome e o ícone d
 9. Conflito de versão não sobrescreve edição concorrente.
 10. Criar, editar ou remover persiste após recarregar e identifica autor e horário.
 
+## Definições de testes funcionais (Playwright)
+
+### ITEM-001 — Selecionar produto e adicionar item (`P0`)
+
+- **Preparação:** lista ativa e produto ativo com categoria/unidade padrão.
+- **Ação:** pesquisar, selecionar a sugestão, alterar quantidade, preencher observação e salvar.
+- **Resultado:** categoria e unidade são preenchidas automaticamente; detalhe abre com o item desmarcado, valores formatados e destaque temporário; recarregar preserva tudo.
+
+### ITEM-002 — Exigir produto selecionado (`P0`)
+
+- **Preparação:** formulário de novo item.
+- **Ação:** digitar nome livre que não corresponde a seleção válida e enviar.
+- **Resultado:** mostrar erro no produto, não criar item e manter os demais campos.
+
+### ITEM-003 — Validar quantidade e enumerações (`P0`)
+
+- **Preparação:** produto válido selecionado.
+- **Ação:** testar quantidade vazia, zero, negativa, não numérica, acima de 999999,99 e, por requisição manipulada, unidade/categoria inválidas.
+- **Resultado:** cada entrada é recusada, sem item parcial ou alteração nas contagens.
+
+### ITEM-004 — Sugestões respeitam busca e catálogo ativo (`P1`)
+
+- **Preparação:** produtos ativos, inativos e de outro usuário com nomes semelhantes.
+- **Ação:** digitar termos com diferença de caixa/acento.
+- **Resultado:** mostrar no máximo dez sugestões do usuário atual, ordenadas por exata/prefixo/ocorrência, sem inativos ou produtos alheios.
+
+### ITEM-005 — Resolver duplicata nas três opções (`P0`)
+
+- **Preparação:** item “Arroz” existente; formulário com produto de nome normalizado equivalente e mesma unidade.
+- **Ação:** executar em testes independentes Cancelar, Editar existente e Somar quantidade.
+- **Resultado:** Cancelar mantém formulário sem mutação; Editar abre a linha existente; Somar atualiza uma única linha, preserva metadados existentes e recalcula totais sem criar duplicata.
+
+### ITEM-006 — Não somar unidades incompatíveis (`P0`)
+
+- **Preparação:** item existente em `pacote` e tentativa duplicada em `quilograma`.
+- **Ação:** abrir resolução de duplicidade.
+- **Resultado:** “Somar quantidade” fica indisponível, a interface orienta editar o existente e nenhuma soma ocorre por requisição direta.
+
+### ITEM-007 — Editar item e preservar marcação (`P0`)
+
+- **Preparação:** item marcado com `checkedAt` e `checkedBy` conhecidos.
+- **Ação:** alterar quantidade, unidade, categoria e observação.
+- **Resultado:** novos valores persistem, snapshots são atualizados conforme a seleção e os três campos de marcação permanecem inalterados.
+
+### ITEM-008 — Troca de produto que gera duplicidade é atômica (`P0`)
+
+- **Preparação:** dois itens diferentes na mesma lista.
+- **Ação:** editar o primeiro para o produto do segundo e escolher Somar.
+- **Resultado:** sobra uma única linha com quantidade somada, item editado fica excluído logicamente e não há estado intermediário após recarregar.
+
+### ITEM-009 — Remover item atualiza resumo (`P0`)
+
+- **Preparação:** lista com itens marcados e pendentes.
+- **Ação:** cancelar uma exclusão e depois confirmar outra; repetir a chamada confirmada.
+- **Resultado:** cancelamento preserva dados; confirmação remove uma vez e atualiza total, pendentes e percentual; repetição é idempotente.
+
+### ITEM-010 — Permissões e estado bloqueiam mutações (`P0`)
+
+- **Preparação:** lista ativa com `editor`, lista concluída e sessão `outsider`.
+- **Ação:** `editor` administra item ativo; `outsider` e ambos os papéis tentam mutar lista concluída por UI e chamada direta.
+- **Resultado:** `editor` tem sucesso na ativa; demais tentativas são ocultadas/recusadas com `NOT_FOUND` ou `LIST_COMPLETED` e não alteram dados.
+
+### ITEM-011 — Catálogos pessoais ainda detectam duplicata (`P0`)
+
+- **Preparação:** `owner` e `editor` possuem produtos distintos chamados “Café”; um deles já está na lista compartilhada.
+- **Ação:** o outro participante tenta incluir o produto do próprio catálogo.
+- **Resultado:** abrir resolução de duplicidade pelo nome normalizado e nunca criar silenciosamente duas linhas.
+
+### ITEM-012 — Conflito de versão preserva edição confirmada (`P0`)
+
+- **Preparação:** mesmo item aberto em dois contextos autorizados.
+- **Ação:** salvar alterações diferentes em sequência, mantendo a versão antiga no segundo.
+- **Resultado:** segundo recebe `CONFLICT`, recarrega estado atual quando solicitado e não sobrescreve o primeiro.
+
 ## Fora do escopo específico
 
 Itens livres sem produto cadastrado, anexos, preço, marca estruturada, ordenação manual e restauração de item removido.

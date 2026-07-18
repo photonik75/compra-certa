@@ -71,6 +71,68 @@ Consultas de seleção retornam somente produtos ativos e incluem `id`, nome, ca
 8. Produto de outro usuário não pode ser lido nem alterado.
 9. Repetir desativação não gera erro nem altera histórico.
 
+## Definições de testes funcionais (Playwright)
+
+### PROD-001 — Criar produto válido (`P0`)
+
+- **Preparação:** categoria ativa “Padaria”.
+- **Ação:** criar “Pão francês” com unidade `unidade`.
+- **Resultado:** produto aparece alfabeticamente com categoria, unidade e ícone herdado corretos e permanece após recarregar.
+
+### PROD-002 — Validar nome, categoria e unidade (`P0`)
+
+- **Preparação:** produto ativo “Arroz” e categorias de dois usuários.
+- **Ação:** tentar nome vazio, acima de 60 caracteres, duplicata normalizada, categoria inexistente/excluída/de outro usuário e unidade fora da enumeração.
+- **Resultado:** cada tentativa é recusada sem persistência e informa campo ou código adequado.
+
+### PROD-003 — Pesquisa e filtro são cumulativos (`P1`)
+
+- **Preparação:** produtos com nomes acentuados distribuídos em categorias.
+- **Ação:** pesquisar sem acento e alternar o filtro de categoria.
+- **Resultado:** lista ignora caixa/acentos no nome, respeita a categoria simultaneamente e apresenta estados vazios corretos.
+
+### PROD-004 — Editar padrões só afeta inclusões futuras (`P0`)
+
+- **Preparação:** produto ativo já utilizado em item de lista.
+- **Ação:** mudar nome, categoria e unidade padrão; depois adicionar novo item com o produto.
+- **Resultado:** item antigo mantém snapshots; catálogo e novo item usam os valores atualizados.
+
+### PROD-005 — Desativar preserva histórico (`P0`)
+
+- **Preparação:** produto ativo utilizado em lista.
+- **Ação:** confirmar desativação e abrir catálogo, formulário de novo item e lista histórica.
+- **Resultado:** produto some das consultas de ativos e sugestões, mas o item histórico continua íntegro; repetir desativação é idempotente.
+
+### PROD-006 — Nome de produto inativo pode ser reutilizado (`P1`)
+
+- **Preparação:** produto “Café” desativado.
+- **Ação:** criar novo produto ativo “cafe” com outra categoria/unidade.
+- **Resultado:** novo registro é criado com ID diferente, o antigo continua inativo e listas antigas não mudam.
+
+### PROD-007 — Ícone acompanha categoria atual (`P1`)
+
+- **Preparação:** produto ativo associado a uma categoria.
+- **Ação:** alterar apenas o ícone da categoria e reabrir Produtos.
+- **Resultado:** produto mostra o novo ícone sem reescrever itens existentes.
+
+### PROD-008 — Conflito de edição não sobrescreve (`P0`)
+
+- **Preparação:** produto aberto para edição em dois contextos do mesmo usuário.
+- **Ação:** salvar mudanças no primeiro e depois no segundo.
+- **Resultado:** segundo recebe `CONFLICT`, mostra possibilidade de recarregar e preserva a primeira alteração.
+
+### PROD-009 — Catálogos permanecem privados (`P0`)
+
+- **Preparação:** produto pertencente a `owner` e sessão de `outsider`.
+- **Ação:** `outsider` tenta consultar, editar e desativar o ID do produto.
+- **Resultado:** todas as operações retornam `NOT_FOUND` e nada é alterado.
+
+### PROD-010 — Cancelar formulário não salva (`P1`)
+
+- **Preparação:** criação e edição abertas com alterações locais.
+- **Ação:** cancelar ou pressionar `Esc`.
+- **Resultado:** catálogo permanece igual e o foco volta ao botão que abriu o diálogo.
+
 ## Fora do escopo específico
 
 Reativação, marcas comerciais estruturadas, códigos de barras, fotos, preços e catálogo global compartilhado.

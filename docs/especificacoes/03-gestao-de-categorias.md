@@ -77,6 +77,62 @@ Todas as operações confirmam que a categoria pertence ao usuário atual.
 8. Contagem exibida considera somente produtos ativos.
 9. Usuário não lê nem altera categoria de outro usuário.
 
+## Definições de testes funcionais (Playwright)
+
+### CAT-001 — Conta nova recebe categorias iniciais (`P0`)
+
+- **Preparação:** conta recém-criada.
+- **Ação:** abrir Categorias.
+- **Resultado:** mostrar exatamente Hortifruti, Mercearia, Bebidas e Limpeza com os respectivos ícones e contagem zero quando não houver produtos.
+
+### CAT-002 — Criar categoria válida (`P0`)
+
+- **Preparação:** usuário autenticado.
+- **Ação:** criar “Padaria” com ícone permitido.
+- **Resultado:** diálogo fecha, confirmação aparece, categoria entra na posição alfabética e permanece após recarregar.
+
+### CAT-003 — Recusar nome ou ícone inválido (`P0`)
+
+- **Preparação:** categoria “Bebidas” existente.
+- **Ação:** tentar nome vazio, acima de 40 caracteres, duplicata normalizada e ícone não permitido por requisição manipulada.
+- **Resultado:** retornar erro correspondente, manter diálogo aberto e não criar/alterar categoria.
+
+### CAT-004 — Pesquisa ignora caixa e acentos (`P1`)
+
+- **Preparação:** categorias incluindo “Higiene” e “Grãos”.
+- **Ação:** pesquisar variações sem acento e com caixa diferente.
+- **Resultado:** mostrar somente correspondências corretas e estado de ausência quando aplicável.
+
+### CAT-005 — Editar propaga ao catálogo, não ao histórico (`P0`)
+
+- **Preparação:** categoria com produto ativo e item de lista criado anteriormente a partir dele.
+- **Ação:** alterar nome e ícone da categoria.
+- **Resultado:** categoria e produto ativo exibem novos dados; item existente mantém snapshots anteriores, inclusive após recarregar.
+
+### CAT-006 — Bloquear exclusão quando há produto ativo (`P0`)
+
+- **Preparação:** categoria com dois produtos ativos.
+- **Ação:** tentar excluí-la pela interface e por requisição direta.
+- **Resultado:** retornar `CATEGORY_IN_USE`, informar a quantidade dois e preservar categoria e produtos.
+
+### CAT-007 — Excluir categoria sem produto ativo (`P0`)
+
+- **Preparação:** categoria sem produtos ativos, podendo haver produto inativo e item histórico.
+- **Ação:** confirmar exclusão.
+- **Resultado:** categoria some do catálogo e seleções, produto/item histórico continua legível e recarregar não restaura a categoria.
+
+### CAT-008 — Cancelar diálogos preserva dados (`P1`)
+
+- **Preparação:** abrir criação e edição com valores modificados.
+- **Ação:** cancelar e também fechar com `Esc`.
+- **Resultado:** nenhuma alteração é persistida e o foco retorna ao acionador.
+
+### CAT-009 — Isolamento entre usuários (`P0`)
+
+- **Preparação:** `owner` e `outsider` possuem categorias de mesmo nome e IDs distintos.
+- **Ação:** cada um lista e edita a própria; `outsider` tenta alterar o ID do outro por requisição direta.
+- **Resultado:** cada catálogo permanece isolado e a tentativa cruzada retorna `NOT_FOUND` sem revelar o recurso.
+
 ## Fora do escopo específico
 
 Ícones personalizados, ordenação manual, categorias compartilhadas e mesclagem de categorias.

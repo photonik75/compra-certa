@@ -98,6 +98,74 @@ Invalidar a sessão atual no servidor, limpar credenciais locais e redirecionar 
 9. Dada redefinição válida, sessões antigas e o token deixam de funcionar.
 10. Senhas e tokens não aparecem em logs, URLs após consumo, telemetria ou mensagens de erro.
 
+## Definições de testes funcionais (Playwright)
+
+### AUTH-001 — Cadastro válido cria conta completa (`P0`)
+
+- **Preparação:** visitante e e-mail ainda não utilizado.
+- **Ação:** preencher todos os campos válidos, aceitar os termos e enviar.
+- **Resultado:** abrir “Minhas listas” autenticado, exibir o nome informado e disponibilizar exatamente as quatro categorias iniciais. Recarregar mantém a sessão e não duplica conta ou categorias.
+
+### AUTH-002 — Validações impedem cadastro inválido (`P0`)
+
+- **Preparação:** formulário de cadastro aberto.
+- **Ação:** exercitar, separadamente, campo obrigatório vazio, e-mail inválido, senha com 7 caracteres, senha acima de 128, confirmação divergente e termos não aceitos.
+- **Resultado:** destacar o campo correspondente, manter valores seguros preenchidos e não criar conta nem sessão.
+
+### AUTH-003 — E-mail não pode ser reutilizado (`P0`)
+
+- **Preparação:** conta existente com `Pessoa@Exemplo.com`.
+- **Ação:** cadastrar `pessoa@exemplo.com`.
+- **Resultado:** apresentar `EMAIL_ALREADY_IN_USE`, permanecer no cadastro e não criar segunda conta.
+
+### AUTH-004 — Login, rota de retorno e logout (`P0`)
+
+- **Preparação:** conta ativa; visitante abre diretamente uma rota interna.
+- **Ação:** autenticar com credenciais válidas, depois sair e tentar voltar pelo navegador.
+- **Resultado:** retornar à rota originalmente solicitada; após logout, toda rota interna volta a exigir login e o cache não revela dados protegidos.
+
+### AUTH-005 — Credencial inválida não revela o campo incorreto (`P0`)
+
+- **Preparação:** conta ativa.
+- **Ação:** tentar uma vez com e-mail existente/senha errada e outra com e-mail inexistente.
+- **Resultado:** as duas tentativas apresentam a mesma mensagem e comportamento, sem indicar se a conta existe.
+
+### AUTH-006 — Limitação de tentativas de login (`P1`)
+
+- **Preparação:** conta ativa e relógio controlado.
+- **Ação:** realizar cinco falhas em 15 minutos, tentar novamente antes e depois de avançar 15 minutos.
+- **Resultado:** a tentativa durante o bloqueio retorna `RATE_LIMITED`; após a janela, credenciais válidas funcionam.
+
+### AUTH-007 — Duração da sessão respeita “Manter-me conectado” (`P1`)
+
+- **Preparação:** conta ativa e relógio controlado.
+- **Ação:** criar sessões com e sem a opção, avançando o relógio pelos limites especificados.
+- **Resultado:** a sessão comum expira conforme inatividade/limite absoluto e a persistente continua válida somente até 30 dias.
+
+### AUTH-008 — Recuperação não permite enumerar contas (`P0`)
+
+- **Preparação:** um e-mail cadastrado e outro inexistente; caixa de correio de teste vazia.
+- **Ação:** solicitar recuperação para ambos.
+- **Resultado:** interface e resposta observável são equivalentes; somente o e-mail cadastrado recebe mensagem com link válido e sem senha exposta.
+
+### AUTH-009 — Redefinição válida revoga token e sessões (`P0`)
+
+- **Preparação:** usuário autenticado em outro contexto e token de recuperação válido.
+- **Ação:** definir nova senha e tentar reutilizar o token, usar a sessão antiga e entrar com senhas antiga e nova.
+- **Resultado:** token e sessão antiga falham, senha antiga falha e nova senha autentica.
+
+### AUTH-010 — Token inválido ou expirado não altera senha (`P0`)
+
+- **Preparação:** token expirado por relógio controlado e URL com token inventado.
+- **Ação:** tentar redefinir em ambos os casos.
+- **Resultado:** mostrar caminho para nova solicitação, não alterar senha e não criar sessão.
+
+### AUTH-011 — Controles de senha e formulários são acessíveis (`P2`)
+
+- **Preparação:** páginas de login e cadastro em projetos desktop, mobile e navegadores de compatibilidade.
+- **Ação:** percorrer por teclado, alternar visibilidade da senha e enviar formulário inválido.
+- **Resultado:** foco segue ordem lógica, rótulos e estados são anunciáveis, alternância preserva o valor e o erro recebe foco ou anúncio sem depender de cor.
+
 ## Fora do escopo específico
 
 Verificação obrigatória de e-mail, alteração de perfil, troca de e-mail e exclusão de conta.

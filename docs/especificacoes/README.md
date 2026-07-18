@@ -88,3 +88,52 @@ Uma especificação só está pronta quando:
 4. fluxos principais funcionam em desktop e celular e somente por teclado;
 5. erros não expõem senha, token, dados internos ou existência de recurso sem autorização;
 6. alterações relevantes atualizam `updatedAt` e são observáveis após recarregar a página.
+
+## Convenções para os testes funcionais em Playwright
+
+As seções “Definições de testes funcionais” de cada EF descrevem cenários a serem automatizados posteriormente. Cada cenário identificado deve gerar um teste independente e poder ser executado isoladamente ou em qualquer ordem.
+
+### Prioridades
+
+- `P0`: fluxo essencial ou regra de segurança; bloqueia entrega e deve integrar a suíte de smoke test.
+- `P1`: regra importante, validação ou estado alternativo; integra a regressão completa.
+- `P2`: compatibilidade, acessibilidade ou comportamento complementar.
+
+### Ambiente e fixtures
+
+- Cada teste recebe banco isolado ou namespace exclusivo e remove seus dados ao terminar.
+- O ambiente fornece uma API ou fixture de seed para criar usuários, sessões, catálogos, listas, itens, convites e versões concorrentes sem depender de outros testes.
+- Fixtures padrão: `owner`, `editor`, `outsider` e `visitor`, sempre com e-mails únicos por execução.
+- E-mails de recuperação e convite são capturados por uma caixa de correio de teste consultável pela suíte; nunca usar serviço ou destinatário real.
+- Tempo e fuso devem ser controláveis para testar expiração, ordenação e textos relativos sem esperas reais.
+- Cenários colaborativos usam dois `BrowserContext` independentes, um por usuário.
+- Falhas de rede e respostas concorrentes são produzidas por ambiente de teste ou interceptação explícita, sem alterar o comportamento que se deseja validar.
+
+### Seletores e asserções
+
+- Priorizar `getByRole`, `getByLabel`, `getByText` e nomes acessíveis. Adicionar `data-testid` somente quando não houver referência semântica estável.
+- Não selecionar por classes de estilo, posição no DOM ou texto temporal instável.
+- Validar resultado pela interface e, quando necessário, por API pública de consulta; não acessar diretamente tabelas do banco no corpo do teste.
+- Esperar estados e eventos observáveis, nunca usar pausas fixas.
+- Para cada operação mutável, validar persistência recarregando a página ou abrindo uma nova sessão.
+- Mensagens podem mudar editorialmente; quando a regra depender de tratamento programático, validar também o código de erro exposto pelo contrato.
+
+### Projetos mínimos
+
+- Todos os cenários `P0` e `P1`: Chromium desktop.
+- Todos os `P0`: pelo menos Chromium mobile com viewport de 390 × 844.
+- Cenários marcados como acessibilidade ou compatibilidade: Chromium, Firefox e WebKit, conforme disponibilidade do pipeline.
+
+### Inventário inicial de cenários
+
+| Especificação | Prefixo | P0 | P1 | P2 | Total |
+|---|---|---:|---:|---:|---:|
+| EF-01 | `AUTH` | 8 | 2 | 1 | 11 |
+| EF-02 | `LIST` | 6 | 5 | 0 | 11 |
+| EF-03 | `CAT` | 7 | 2 | 0 | 9 |
+| EF-04 | `PROD` | 6 | 4 | 0 | 10 |
+| EF-05 | `ITEM` | 11 | 1 | 0 | 12 |
+| EF-06 | `SHOP` | 8 | 3 | 0 | 11 |
+| EF-07 | `LIFE` | 6 | 4 | 0 | 10 |
+| EF-08 | `SHARE` | 12 | 2 | 0 | 14 |
+| **Total** | — | **64** | **23** | **1** | **88** |

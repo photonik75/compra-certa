@@ -73,6 +73,68 @@ Cada transição exige a versão atual da lista. Se o estado mudou desde a leitu
 7. Transições concorrentes não produzem estado intermediário nem sobrescrita silenciosa.
 8. Ações destrutivas exigem confirmação explícita e não são disparadas por mero fechamento de diálogo.
 
+## Definições de testes funcionais (Playwright)
+
+### LIFE-001 — Concluir lista com itens pendentes (`P0`)
+
+- **Preparação:** lista ativa própria com itens comprados e pendentes.
+- **Ação:** abrir confirmação e concluir.
+- **Resultado:** diálogo informa a quantidade pendente; lista passa a `COMPLETED`, registra data, aparece no filtro Concluídas e entra em modo somente leitura.
+
+### LIFE-002 — Concluir lista vazia ou totalmente comprada (`P1`)
+
+- **Preparação:** uma lista vazia e outra com todos os itens marcados.
+- **Ação:** concluir cada uma.
+- **Resultado:** ambas são concluídas com sucesso e mantêm resumos corretos.
+
+### LIFE-003 — Cancelar transições não muda estado (`P1`)
+
+- **Preparação:** diálogos de concluir, reabrir e excluir disponíveis.
+- **Ação:** cancelar ou pressionar `Esc` em cada diálogo.
+- **Resultado:** estado e dados permanecem intactos e o foco retorna ao acionador.
+
+### LIFE-004 — Lista concluída bloqueia todas as mutações (`P0`)
+
+- **Preparação:** lista concluída com `owner`, `editor`, itens e convite pendente.
+- **Ação:** tentar editar metadados, administrar/marcar itens, convidar, remover participante e aceitar convite, pela UI e por chamadas diretas.
+- **Resultado:** consulta continua disponível, mutações retornam `LIST_COMPLETED`, convite permanece pendente e nada muda.
+
+### LIFE-005 — Reabrir preserva conteúdo (`P0`)
+
+- **Preparação:** lista concluída com dados e marcações conhecidas.
+- **Ação:** confirmar reabertura.
+- **Resultado:** status volta a `ACTIVE`, `completedAt` é limpo, conteúdo permanece idêntico e mutações voltam a funcionar.
+
+### LIFE-006 — Participante não controla ciclo de vida (`P0`)
+
+- **Preparação:** `editor` de lista ativa e concluída.
+- **Ação:** procurar e invocar concluir, reabrir e excluir, inclusive diretamente.
+- **Resultado:** ações não aparecem e chamadas são recusadas com `FORBIDDEN`, sem revelar controles exclusivos.
+
+### LIFE-007 — Excluir revoga todos os acessos (`P0`)
+
+- **Preparação:** lista com `owner`, `editor`, convite pendente e dois contextos abertos.
+- **Ação:** `owner` confirma exclusão.
+- **Resultado:** ambos saem para o painel, lista desaparece das consultas, convite deixa de funcionar e URLs antigas retornam `NOT_FOUND`.
+
+### LIFE-008 — Exclusão é idempotente (`P1`)
+
+- **Preparação:** capturar duas requisições equivalentes do proprietário para a mesma exclusão.
+- **Ação:** enviá-las em sequência controlada.
+- **Resultado:** existe uma única exclusão lógica, sem erro interno ou restauração; outros usuários recebem `NOT_FOUND`.
+
+### LIFE-009 — Transições concorrentes não se sobrescrevem (`P0`)
+
+- **Preparação:** mesma lista e versão abertas em dois contextos do proprietário.
+- **Ação:** concluir no primeiro e tentar excluir/editar com a versão antiga no segundo.
+- **Resultado:** a segunda transição recebe `CONFLICT`, adota o estado atual e não produz estado intermediário.
+
+### LIFE-010 — Consulta histórica exibe resumo final (`P1`)
+
+- **Preparação:** lista concluída com descrição, participantes e marcações conhecidas.
+- **Ação:** abrir pelo painel e recarregar.
+- **Resultado:** mostrar data de conclusão, participantes, itens e resumo final, sem qualquer controle mutável.
+
 ## Fora do escopo específico
 
 Arquivamento separado, lixeira, restauração, conclusão automática e retenção configurável.
