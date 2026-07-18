@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Categorias — CompraCerta</title><link rel="stylesheet" href="css/styles.css"></head>
+<body>
+  <a class="skip-link" href="#main">Pular para o conteúdo</a>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Menu principal"><div class="brand-lockup"><span class="brand-mark">✓</span> CompraCerta</div><nav><ul class="nav-list"><li><a class="nav-link" href="listas.html"><span class="icon">☷</span> Minhas listas</a></li><li><a class="nav-link active" href="categorias.html"><span class="icon">◫</span> Categorias</a></li><li><a class="nav-link" href="produtos.html"><span class="icon">◇</span> Produtos</a></li></ul></nav><div class="sidebar-footer"><div class="user-mini"><span class="avatar">LB</span><span><strong>Larissa Barros</strong><small>Proprietária</small></span></div><a class="nav-link" href="index.html"><span class="icon">↪</span> Sair</a></div></aside><div class="mobile-overlay"></div>
+    <div class="main-area">
+      <header class="topbar"><div style="display:flex;align-items:center;gap:.6rem"><button class="icon-button menu-toggle" aria-label="Abrir menu">☰</button><h1>Categorias</h1></div><button class="btn btn-primary" data-new-category><span>＋</span><span class="btn-label">Nova categoria</span></button></header>
+      <main id="main" class="content">
+        <div class="page-intro"><div><p class="eyebrow">Organização</p><h2>Suas categorias</h2><p>Organize os produtos em grupos fáceis de localizar durante a compra.</p></div></div>
+        <div class="toolbar"><label class="search-box"><span class="icon">⌕</span><input type="search" data-search=".category-row" placeholder="Pesquisar categorias" aria-label="Pesquisar categorias"></label></div>
+        <section class="surface" style="max-width:800px"><ul id="category-list" class="data-list" aria-label="Categorias cadastradas"></ul></section>
+        <p class="permission-note" style="max-width:800px;margin-top:1rem"><strong>Sobre a exclusão:</strong> categorias com produtos associados precisam ter seus produtos movidos antes de serem excluídas.</p>
+      </main>
+    </div>
+  </div>
+
+  <dialog id="category-dialog"><form id="category-form" class="dialog-content"><h2>Nova categoria</h2><p>Escolha um nome e um ícone simples. Os produtos herdarão esse ícone.</p><div class="form-stack"><div class="field"><label for="category-name">Nome *</label><input id="category-name" name="name" maxlength="40" placeholder="Ex.: Padaria" required><span class="field-error"></span></div><div class="field"><label for="category-icon">Ícone</label><select id="category-icon" name="icon"><option value="🥬">🥬 Folha</option><option value="🛍️">🛍️ Sacola</option><option value="🧃">🧃 Bebida</option><option value="🧴">🧴 Frasco</option><option value="🍞">🍞 Pão</option><option value="❄️">❄️ Congelado</option><option value="🐾">🐾 Pet</option><option value="🛒">🛒 Genérico</option></select></div><div class="dialog-actions"><button class="btn btn-ghost" type="button" data-close-dialog>Cancelar</button><button class="btn btn-primary" type="submit">Salvar</button></div></div></form></dialog>
+  <script src="js/app.js"></script>
+</body>
+</html>

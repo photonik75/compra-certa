@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Nova lista — CompraCerta</title><link rel="stylesheet" href="css/styles.css"></head>
+<body>
+  <a class="skip-link" href="#main">Pular para o conteúdo</a>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Menu principal">
+      <div class="brand-lockup"><span class="brand-mark">✓</span> CompraCerta</div>
+      <nav><ul class="nav-list"><li><a class="nav-link active" href="listas.html"><span class="icon">☷</span> Minhas listas</a></li><li><a class="nav-link" href="categorias.html"><span class="icon">◫</span> Categorias</a></li><li><a class="nav-link" href="produtos.html"><span class="icon">◇</span> Produtos</a></li></ul></nav>
+      <div class="sidebar-footer"><div class="user-mini"><span class="avatar">LB</span><span><strong>Larissa Barros</strong><small>Proprietária</small></span></div><a class="nav-link" href="index.html"><span class="icon">↪</span> Sair</a></div>
+    </aside><div class="mobile-overlay"></div>
+    <div class="main-area">
+      <header class="topbar"><div style="display:flex;align-items:center;gap:.5rem"><button class="icon-button menu-toggle" aria-label="Abrir menu">☰</button><a class="icon-button" href="listas.html" aria-label="Voltar">←</a><h1>Nova lista</h1></div></header>
+      <main id="main" class="content">
+        <div class="page-intro"><div><p class="eyebrow">Planejamento</p><h2>O que vamos comprar?</h2><p>Crie uma lista vazia e adicione os itens em seguida.</p></div></div>
+        <section class="surface panel" style="max-width:720px">
+          <form id="list-form" class="form-stack" novalidate>
+            <div class="field"><label for="list-name">Nome da lista *</label><input id="list-name" name="name" autofocus maxlength="60" placeholder="Ex.: Compras do mês" required><span class="field-error" aria-live="polite"></span></div>
+            <div class="field"><label for="list-description">Descrição ou observação</label><textarea id="list-description" name="description" maxlength="240" placeholder="Ex.: Priorizar produtos em promoção"></textarea><small class="meta">Opcional · até 240 caracteres</small></div>
+            <div class="form-actions"><a class="btn btn-ghost" href="listas.html">Cancelar</a><button class="btn btn-primary" type="submit">Salvar lista</button></div>
+          </form>
+        </section>
+      </main>
+    </div>
+  </div>
+  <script src="js/app.js"></script>
+</body>
+</html>

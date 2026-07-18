@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Compras da semana — CompraCerta</title><link rel="stylesheet" href="css/styles.css"></head>
+<body>
+  <a class="skip-link" href="#main">Pular para o conteúdo</a>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Menu principal">
+      <div class="brand-lockup"><span class="brand-mark">✓</span> CompraCerta</div>
+      <nav><ul class="nav-list"><li><a class="nav-link active" href="listas.html"><span class="icon">☷</span> Minhas listas</a></li><li><a class="nav-link" href="categorias.html"><span class="icon">◫</span> Categorias</a></li><li><a class="nav-link" href="produtos.html"><span class="icon">◇</span> Produtos</a></li></ul></nav>
+      <div class="sidebar-footer"><div class="user-mini"><span class="avatar">LB</span><span><strong>Larissa Barros</strong><small>Proprietária</small></span></div><a class="nav-link" href="index.html"><span class="icon">↪</span> Sair</a></div>
+    </aside><div class="mobile-overlay"></div>
+    <div class="main-area">
+      <header class="topbar">
+        <div style="display:flex;align-items:center;gap:.5rem"><button class="icon-button menu-toggle" aria-label="Abrir menu">☰</button><a class="icon-button" href="listas.html" aria-label="Voltar">←</a><h1>Compras da semana</h1></div>
+        <div class="topbar-actions"><a class="btn btn-outline" href="compartilhamento.html"><span>↗</span><span class="btn-label">Compartilhar</span></a><div class="dropdown" data-dropdown><button class="icon-button" aria-label="Mais ações">•••</button><div class="dropdown-menu"><a href="lista-form.html">Editar lista</a><button data-open-dialog="#finish-dialog">Concluir lista</button><button class="btn-danger" data-open-dialog="#delete-list-dialog">Excluir lista</button></div></div></div>
+      </header>
+      <main id="main" class="content">
+        <div class="page-intro"><div><p class="eyebrow">Lista compartilhada</p><h2>Quase lá!</h2><p>Marque os produtos conforme eles forem para o carrinho.</p></div><span class="badge">Sincronizada agora</span></div>
+
+        <section class="surface summary-strip" aria-label="Resumo da lista">
+          <div class="summary-item"><strong data-total>8</strong><span>Total de itens</span></div>
+          <div class="summary-item"><strong data-done>3</strong><span>Comprados</span></div>
+          <div class="summary-item"><strong data-pending>5</strong><span>Pendentes</span></div>
+        </section>
+        <div class="progress" style="height:10px;margin:-.55rem .8rem 1.5rem"><div class="progress-bar" data-progress style="width:38%"></div></div>
+
+        <!-- Cada grupo pode ser recolhido e seus itens são marcáveis. -->
+        <section class="surface category-section">
+          <button class="category-header" data-collapse><span>🥬 Hortifruti <small class="meta">· 3 itens</small></span><span data-chevron>⌃</span></button>
+          <ul class="item-list">
+            <li class="shopping-item"><input type="checkbox" aria-label="Marcar banana prata"><span class="item-icon">🍌</span><span class="item-main"><strong>Banana prata</strong><small>1,5 kg</small></span><span class="badge coral">Oferta</span><span class="item-actions"><a class="icon-button" href="item-form.html" aria-label="Editar banana">✎</a><button class="icon-button btn-danger" aria-label="Excluir banana" onclick="this.closest('li').remove(); App.toast('Item excluído.');">×</button></span></li>
+            <li class="shopping-item is-done"><input type="checkbox" checked aria-label="Marcar tomate italiano"><span class="item-icon">🍅</span><span class="item-main"><strong>Tomate italiano</strong><small>1 kg</small></span><span class="item-actions"><a class="icon-button" href="item-form.html" aria-label="Editar tomate">✎</a><button class="icon-button btn-danger" aria-label="Excluir tomate" onclick="this.closest('li').remove(); App.toast('Item excluído.');">×</button></span></li>
+            <li class="shopping-item"><input type="checkbox" aria-label="Marcar alface"><span class="item-icon">🥬</span><span class="item-main"><strong>Alface crespa</strong><small>2 unidades · escolher bem fresca</small></span><span class="item-actions"><a class="icon-button" href="item-form.html" aria-label="Editar alface">✎</a><button class="icon-button btn-danger" aria-label="Excluir alface" onclick="this.closest('li').remove(); App.toast('Item excluído.');">×</button></span></li>
+          </ul>
+        </section>
+
+        <section class="surface category-section">
+          <button class="category-header" data-collapse><span>🛍️ Mercearia <small class="meta">· 3 itens</small></span><span data-chevron>⌃</span></button>
+          <ul class="item-list">
+            <li class="shopping-item is-done"><input type="checkbox" checked aria-label="Marcar arroz integral"><span class="item-icon">🍚</span><span class="item-main"><strong>Arroz integral</strong><small>2 pacotes · marca preferida</small></span><span class="item-actions"><a class="icon-button" href="item-form.html" aria-label="Editar arroz">✎</a><button class="icon-button btn-danger" aria-label="Excluir arroz" onclick="this.closest('li').remove(); App.toast('Item excluído.');">×</button></span></li>
+            <li class="shopping-item"><input type="checkbox" aria-label="Marcar feijão"><span class="item-icon">🫘</span><span class="item-main"><strong>Feijão carioca</strong><small>1 pacote</small></span><span class="item-actions"><a class="icon-button" href="item-form.html">✎</a><button class="icon-button btn-danger" onclick="this.closest('li').remove(); App.toast('Item excluído.');">×</button></span></li>
+            <li class="shopping-item"><input type="checkbox" aria-label="Marcar café"><span class="item-icon">☕</span><span class="item-main"><strong>Café</strong><small>500 g</small></span><span class="item-actions"><a class="icon-button" href="item-form.html">✎</a><button class="icon-button btn-danger" onclick="this.closest('li').remove(); App.toast('Item excluído.');">×</button></span></li>
+          </ul>
+        </section>
+
+        <section class="surface category-section">
+          <button class="category-header" data-collapse><span>🧃 Bebidas <small class="meta">· 2 itens</small></span><span data-chevron>⌃</span></button>
+          <ul class="item-list">
+            <li class="shopping-item is-done"><input type="checkbox" checked aria-label="Marcar leite"><span class="item-icon">🥛</span><span class="item-main"><strong>Leite sem lactose</strong><small>3 litros</small></span><span class="item-actions"><a class="icon-button" href="item-form.html">✎</a><button class="icon-button btn-danger" onclick="this.closest('li').remove(); App.toast('Item excluído.');">×</button></span></li>
+            <li class="shopping-item"><input type="checkbox" aria-label="Marcar água com gás"><span class="item-icon">💧</span><span class="item-main"><strong>Água com gás</strong><small>6 garrafas</small></span><span class="item-actions"><a class="icon-button" href="item-form.html">✎</a><button class="icon-button btn-danger" onclick="this.closest('li').remove(); App.toast('Item excluído.');">×</button></span></li>
+          </ul>
+        </section>
+      </main>
+      <a class="fab" href="item-form.html"><span aria-hidden="true">＋</span><span class="fab-label">Adicionar item</span></a>
+    </div>
+  </div>
+
+  <dialog id="finish-dialog"><div class="dialog-content"><h2>Concluir a lista?</h2><p>Ela ficará somente para consulta, mas poderá ser reaberta depois.</p><div class="dialog-actions"><button class="btn btn-ghost" data-close-dialog>Cancelar</button><button class="btn btn-primary" data-close-dialog onclick="App.toast('Lista concluída!')">Concluir</button></div></div></dialog>
+  <dialog id="delete-list-dialog"><div class="dialog-content"><h2>Excluir esta lista?</h2><p>Todos os participantes perderão o acesso.</p><div class="dialog-actions"><button class="btn btn-ghost" data-close-dialog>Cancelar</button><a class="btn btn-danger" href="listas.html">Excluir</a></div></div></dialog>
+  <script src="js/app.js"></script>
+</body>
+</html>

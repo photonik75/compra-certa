@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Compartilhar lista — CompraCerta</title><link rel="stylesheet" href="css/styles.css"></head>
+<body>
+  <a class="skip-link" href="#main">Pular para o conteúdo</a>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Menu principal"><div class="brand-lockup"><span class="brand-mark">✓</span> CompraCerta</div><nav><ul class="nav-list"><li><a class="nav-link active" href="listas.html"><span class="icon">☷</span> Minhas listas</a></li><li><a class="nav-link" href="categorias.html"><span class="icon">◫</span> Categorias</a></li><li><a class="nav-link" href="produtos.html"><span class="icon">◇</span> Produtos</a></li></ul></nav><div class="sidebar-footer"><div class="user-mini"><span class="avatar">LB</span><span><strong>Larissa Barros</strong><small>Proprietária</small></span></div><a class="nav-link" href="index.html"><span class="icon">↪</span> Sair</a></div></aside><div class="mobile-overlay"></div>
+    <div class="main-area">
+      <header class="topbar"><div style="display:flex;align-items:center;gap:.5rem"><button class="icon-button menu-toggle" aria-label="Abrir menu">☰</button><a class="icon-button" href="lista-detalhes.html" aria-label="Voltar">←</a><h1>Compartilhar lista</h1></div></header>
+      <main id="main" class="content">
+        <div class="page-intro"><div><p class="eyebrow">Compras da semana</p><h2>Comprem juntos</h2><p>Convide pessoas e acompanhe as mudanças na mesma lista.</p></div></div>
+        <div class="grid grid-2" style="align-items:start">
+          <section class="surface panel">
+            <h3 style="margin-top:0">Convidar participante</h3>
+            <p class="helper">A pessoa receberá acesso de edição. Se ainda não tiver conta, o convite ficará pendente.</p>
+            <form id="invite-form" class="invite-row" novalidate><label class="field"><span class="field-label">E-mail</span><input name="email" type="email" placeholder="pessoa@email.com" required></label><button class="btn btn-primary" type="submit" style="align-self:end">Convidar</button></form>
+            <div class="permission-note"><strong>Permissão desta versão:</strong> todos os participantes podem adicionar, editar e marcar itens. Somente a proprietária pode excluir a lista e remover pessoas.</div>
+          </section>
+
+          <section class="surface panel">
+            <h3 style="margin-top:0">Pessoas com acesso</h3>
+            <div class="surface owner-card"><span class="avatar">LB</span><span class="data-main"><strong>Larissa Barros</strong><small>larissa@email.com</small></span><span class="badge">Proprietária</span></div>
+            <ul id="participant-list" class="data-list" aria-label="Participantes da lista"></ul>
+          </section>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <dialog id="remove-dialog"><div class="dialog-content"><h2>Remover participante?</h2><p><strong id="remove-person-name"></strong> perderá imediatamente o acesso à lista.</p><div class="dialog-actions"><button class="btn btn-ghost" data-close-dialog>Cancelar</button><button id="confirm-remove" class="btn btn-danger">Remover</button></div></div></dialog>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Minhas listas — CompraCerta</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Pular para o conteúdo</a>
+  <div class="app-shell">
+    <!-- Navegação compartilhada entre as telas internas. -->
+    <aside class="sidebar" aria-label="Menu principal">
+      <div class="brand-lockup"><span class="brand-mark" aria-hidden="true">✓</span> CompraCerta</div>
+      <nav><ul class="nav-list">
+        <li><a class="nav-link active" href="listas.html"><span class="icon">☷</span> Minhas listas</a></li>
+        <li><a class="nav-link" href="categorias.html"><span class="icon">◫</span> Categorias</a></li>
+        <li><a class="nav-link" href="produtos.html"><span class="icon">◇</span> Produtos</a></li>
+      </ul></nav>
+      <div class="sidebar-footer"><div class="user-mini"><span class="avatar">LB</span><span><strong>Larissa Barros</strong><small>Proprietária</small></span></div><a class="nav-link" href="index.html"><span class="icon">↪</span> Sair</a></div>
+    </aside>
+    <div class="mobile-overlay" aria-hidden="true"></div>
+
+    <div class="main-area">
+      <header class="topbar">
+        <div style="display:flex;align-items:center;gap:.6rem"><button class="icon-button menu-toggle" aria-label="Abrir menu">☰</button><h1>Minhas listas</h1></div>
+        <a class="btn btn-primary" href="lista-form.html"><span aria-hidden="true">＋</span><span class="btn-label">Nova lista</span></a>
+      </header>
+
+      <main id="main" class="content">
+        <div class="page-intro"><div><p class="eyebrow">Visão geral</p><h2>Olá, Larissa! 👋</h2><p>Você tem 16 itens pendentes em duas listas ativas.</p></div></div>
+
+        <div class="toolbar">
+          <label class="search-box"><span class="icon" aria-hidden="true">⌕</span><input type="search" data-search=".list-card" placeholder="Pesquisar listas" aria-label="Pesquisar listas"></label>
+          <div class="chips" data-filter-group aria-label="Filtrar listas">
+            <button class="chip active" data-filter="active">Ativas</button>
+            <button class="chip" data-filter="completed">Concluídas</button>
+            <button class="chip" data-filter="all">Todas</button>
+          </div>
+        </div>
+
+        <section class="grid grid-3" aria-label="Listas de compras">
+          <article class="surface list-card" data-status="active">
+            <div class="list-card-head"><div><span class="badge">↗ Compartilhada</span><h3 style="margin-top:.55rem">Compras da semana</h3><span class="meta">Alterada hoje, 09:42</span></div><div class="dropdown" data-dropdown><button class="icon-button" aria-label="Ações da lista">•••</button><div class="dropdown-menu"><a href="lista-form.html">Editar nome</a><a href="compartilhamento.html">Compartilhar</a><button onclick="App.toast('Lista concluída.')">Concluir</button><button class="btn-danger" data-open-dialog="#delete-dialog">Excluir</button></div></div></div>
+            <div class="list-stats"><div class="stat"><strong>12</strong><small>itens</small></div><div class="stat"><strong>8</strong><small>pendentes</small></div></div>
+            <div class="progress" aria-label="33% concluída"><div class="progress-bar" style="width:33%"></div></div>
+            <div class="card-actions"><span class="meta">Você é proprietária</span><a class="btn btn-ghost" href="lista-detalhes.html">Abrir →</a></div>
+          </article>
+
+          <article class="surface list-card" data-status="active">
+            <div class="list-card-head"><div><span class="badge coral">↗ Participante</span><h3 style="margin-top:.55rem">Churrasco de sábado</h3><span class="meta">Alterada ontem, 18:20</span></div><div class="dropdown" data-dropdown><button class="icon-button" aria-label="Ações da lista">•••</button><div class="dropdown-menu"><a href="compartilhamento.html">Participantes</a><button onclick="App.toast('Você saiu da lista.')">Sair da lista</button></div></div></div>
+            <div class="list-stats"><div class="stat"><strong>9</strong><small>itens</small></div><div class="stat"><strong>8</strong><small>pendentes</small></div></div>
+            <div class="progress" aria-label="11% concluída"><div class="progress-bar" style="width:11%"></div></div>
+            <div class="card-actions"><span class="meta">Criada por Marcos</span><a class="btn btn-ghost" href="lista-detalhes.html">Abrir →</a></div>
+          </article>
+
+          <article class="surface list-card completed hide" data-status="completed">
+            <div class="list-card-head"><div><span class="badge muted">✓ Concluída</span><h3 style="margin-top:.55rem">Farmácia e higiene</h3><span class="meta">Concluída em 12 jul</span></div><div class="dropdown" data-dropdown><button class="icon-button" aria-label="Ações da lista">•••</button><div class="dropdown-menu"><button onclick="App.toast('Lista reaberta.')">Reabrir</button><button class="btn-danger" data-open-dialog="#delete-dialog">Excluir</button></div></div></div>
+            <div class="list-stats"><div class="stat"><strong>6</strong><small>itens</small></div><div class="stat"><strong>0</strong><small>pendentes</small></div></div>
+            <div class="progress"><div class="progress-bar" style="width:100%"></div></div>
+            <div class="card-actions"><span class="meta">Você é proprietária</span><a class="btn btn-ghost" href="lista-detalhes.html">Consultar →</a></div>
+          </article>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <dialog id="delete-dialog"><div class="dialog-content"><h2>Excluir esta lista?</h2><p>Essa ação remove a lista de todos os participantes e não pode ser desfeita.</p><div class="dialog-actions"><button class="btn btn-ghost" data-close-dialog>Cancelar</button><button class="btn btn-danger" data-close-dialog onclick="App.toast('Lista excluída.')">Excluir</button></div></div></dialog>
+  <script src="js/app.js"></script>
+</body>
+</html>

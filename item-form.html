@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Adicionar item — CompraCerta</title><link rel="stylesheet" href="css/styles.css"></head>
+<body>
+  <a class="skip-link" href="#main">Pular para o conteúdo</a>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Menu principal"><div class="brand-lockup"><span class="brand-mark">✓</span> CompraCerta</div><nav><ul class="nav-list"><li><a class="nav-link active" href="listas.html"><span class="icon">☷</span> Minhas listas</a></li><li><a class="nav-link" href="categorias.html"><span class="icon">◫</span> Categorias</a></li><li><a class="nav-link" href="produtos.html"><span class="icon">◇</span> Produtos</a></li></ul></nav><div class="sidebar-footer"><div class="user-mini"><span class="avatar">LB</span><span><strong>Larissa Barros</strong><small>Proprietária</small></span></div><a class="nav-link" href="index.html"><span class="icon">↪</span> Sair</a></div></aside><div class="mobile-overlay"></div>
+    <div class="main-area">
+      <header class="topbar"><div style="display:flex;align-items:center;gap:.5rem"><button class="icon-button menu-toggle" aria-label="Abrir menu">☰</button><a class="icon-button" href="lista-detalhes.html" aria-label="Voltar">←</a><h1>Adicionar item</h1></div></header>
+      <main id="main" class="content">
+        <div class="page-intro"><div><p class="eyebrow">Compras da semana</p><h2>Qual produto está faltando?</h2><p>Busque um produto já cadastrado ou crie um novo sem sair deste fluxo.</p></div></div>
+        <section class="surface panel" style="max-width:760px">
+          <form id="item-form" class="form-stack" novalidate>
+            <div class="field" style="position:relative"><label for="product">Produto *</label><input id="product" name="product" autocomplete="off" placeholder="Comece a digitar, ex.: banana" required><span class="field-error"></span><div id="product-suggestions" class="surface data-list hide" style="position:absolute;z-index:10;top:82px;width:100%;overflow:hidden"></div><a class="text-link" href="produtos.html" style="font-size:.84rem">＋ Cadastrar novo produto</a></div>
+            <div class="form-row"><div class="field"><label for="quantity">Quantidade *</label><input id="quantity" name="quantity" type="number" min="0.01" step="0.01" value="1" required><span class="field-error"></span></div><div class="field"><label for="unit">Unidade</label><select id="unit" name="unit"><option>unidade</option><option>pacote</option><option>caixa</option><option>garrafa</option><option>frasco</option><option>quilograma</option><option>grama</option><option>litro</option><option>mililitro</option><option>dúzia</option></select></div></div>
+            <div class="field"><label for="category">Categoria</label><select id="category" name="category"><option>Hortifruti</option><option>Mercearia</option><option>Bebidas</option><option>Limpeza</option></select><small class="meta">Preenchida automaticamente após escolher o produto.</small></div>
+            <div class="field"><label for="notes">Observação</label><textarea id="notes" name="notes" placeholder="Ex.: comprar somente se estiver em promoção"></textarea></div>
+            <div class="form-actions"><a class="btn btn-ghost" href="lista-detalhes.html">Cancelar</a><button class="btn btn-primary" type="submit">Adicionar item</button></div>
+          </form>
+        </section>
+      </main>
+    </div>
+  </div>
+  <dialog id="duplicate-dialog"><div class="dialog-content"><h2>Produto já está na lista</h2><p>Arroz integral já foi adicionado com 2 pacotes. O que deseja fazer?</p><div class="dialog-actions" style="flex-wrap:wrap"><button class="btn btn-ghost" data-close-dialog>Cancelar</button><button class="btn btn-outline" data-close-dialog onclick="App.toast('Abrindo o item existente…')">Editar existente</button><a class="btn btn-primary" href="lista-detalhes.html">Somar quantidade</a></div></div></dialog>
+  <script src="js/app.js"></script>
+</body>
+</html>

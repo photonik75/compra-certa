@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Produtos — CompraCerta</title><link rel="stylesheet" href="css/styles.css"></head>
+<body>
+  <a class="skip-link" href="#main">Pular para o conteúdo</a>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Menu principal"><div class="brand-lockup"><span class="brand-mark">✓</span> CompraCerta</div><nav><ul class="nav-list"><li><a class="nav-link" href="listas.html"><span class="icon">☷</span> Minhas listas</a></li><li><a class="nav-link" href="categorias.html"><span class="icon">◫</span> Categorias</a></li><li><a class="nav-link active" href="produtos.html"><span class="icon">◇</span> Produtos</a></li></ul></nav><div class="sidebar-footer"><div class="user-mini"><span class="avatar">LB</span><span><strong>Larissa Barros</strong><small>Proprietária</small></span></div><a class="nav-link" href="index.html"><span class="icon">↪</span> Sair</a></div></aside><div class="mobile-overlay"></div>
+    <div class="main-area">
+      <header class="topbar"><div style="display:flex;align-items:center;gap:.6rem"><button class="icon-button menu-toggle" aria-label="Abrir menu">☰</button><h1>Produtos</h1></div><button class="btn btn-primary" data-new-product><span>＋</span><span class="btn-label">Novo produto</span></button></header>
+      <main id="main" class="content">
+        <div class="page-intro"><div><p class="eyebrow">Catálogo pessoal</p><h2>Produtos e tipos de item</h2><p>Defina categoria e unidade padrão para adicionar itens mais rapidamente.</p></div></div>
+        <div class="toolbar"><label class="search-box"><span class="icon">⌕</span><input type="search" data-search=".product-row" placeholder="Pesquisar produtos" aria-label="Pesquisar produtos"></label><div class="field" style="min-width:190px"><select id="category-filter" aria-label="Filtrar por categoria"><option value="all">Todas as categorias</option><option>Hortifruti</option><option>Mercearia</option><option>Bebidas</option><option>Limpeza</option></select></div></div>
+        <section class="surface" style="max-width:880px"><ul id="product-list" class="data-list" aria-label="Produtos cadastrados"></ul></section>
+        <p class="permission-note" style="max-width:880px;margin-top:1rem"><strong>Histórico preservado:</strong> produtos usados anteriormente são apenas desativados para novos usos; listas antigas não mudam.</p>
+      </main>
+    </div>
+  </div>
+
+  <dialog id="product-dialog"><form id="product-form" class="dialog-content"><h2>Novo produto</h2><p>O ícone será herdado automaticamente da categoria escolhida.</p><div class="form-stack"><div class="field"><label for="product-name">Nome *</label><input id="product-name" name="name" maxlength="60" placeholder="Ex.: Pão francês" required></div><div class="field"><label for="product-category">Categoria padrão</label><select id="product-category" name="category"><option>Hortifruti</option><option>Mercearia</option><option>Bebidas</option><option>Limpeza</option></select></div><div class="field"><label for="product-unit">Unidade padrão</label><select id="product-unit" name="unit"><option>unidade</option><option>pacote</option><option>caixa</option><option>garrafa</option><option>frasco</option><option>lata</option><option>saco</option><option>bandeja</option><option>dúzia</option><option>quilograma</option><option>grama</option><option>litro</option><option>mililitro</option></select></div><div class="dialog-actions"><button class="btn btn-ghost" type="button" data-close-dialog>Cancelar</button><button class="btn btn-primary" type="submit">Salvar</button></div></div></form></dialog>
+  <script src="js/app.js"></script>
+</body>
+</html>
