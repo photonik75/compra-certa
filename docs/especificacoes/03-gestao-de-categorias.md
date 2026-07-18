@@ -14,6 +14,7 @@ Permitir que cada usuário organize seu catálogo pessoal em categorias reutiliz
 | `userId` | Proprietário do catálogo |
 | `name` | Obrigatório, 1–40 caracteres normalizados |
 | `icon` | Obrigatório; um dos valores permitidos |
+| `version` | Incrementada a cada alteração |
 | `createdAt`, `updatedAt`, `deletedAt` | Conforme convenções globais |
 
 Ícones permitidos na versão 1: `🥬`, `🛍️`, `🧃`, `🧴`, `🍞`, `❄️`, `🐾` e `🛒`. O conjunto pode ser configurado no código, mas a API rejeita valores fora dele.
@@ -76,6 +77,55 @@ Todas as operações confirmam que a categoria pertence ao usuário atual.
 7. Categoria sem produtos ativos pode ser excluída após confirmação e deixa de aparecer nas seleções.
 8. Contagem exibida considera somente produtos ativos.
 9. Usuário não lê nem altera categoria de outro usuário.
+
+## Contrato de API (futura OpenAPI)
+
+### Endpoints
+
+| Método e rota | Request | Sucesso |
+|---|---|---|
+| `GET /api/v1/categories` | Query `search`, `cursor`, `limit` | `200 CategoryCollection` |
+| `POST /api/v1/categories` | `CategoryInput` + `Idempotency-Key` | `201 Category` + `Location` + `ETag` |
+| `GET /api/v1/categories/{categoryId}` | Path UUID | `200 Category` + `ETag` |
+| `PATCH /api/v1/categories/{categoryId}` | `CategoryPatch` + `If-Match` | `200 Category` + novo `ETag` |
+| `DELETE /api/v1/categories/{categoryId}` | `If-Match` | `204` |
+
+Todos exigem sessão; mutações exigem CSRF. Categorias são sempre inferidas do usuário autenticado; `userId` não é aceito em request.
+
+### Schemas
+
+#### `CategoryInput`
+
+```json
+{ "name": "Padaria", "icon": "🍞" }
+```
+
+Os dois campos são obrigatórios. `CategoryPatch` aceita `name` e/ou `icon`, exige ao menos um campo e não aceita `null`.
+
+#### `Category`
+
+```json
+{
+  "id": "226506e1-871c-428f-a8fb-6fae32a7dd42",
+  "name": "Padaria",
+  "icon": "🍞",
+  "activeProductCount": 3,
+  "createdAt": "2026-07-18T14:30:00Z",
+  "updatedAt": "2026-07-18T14:30:00Z",
+  "version": 1
+}
+```
+
+`CategoryCollection` usa o envelope comum, ordenado por `name` no locale `pt-BR` e `id` como desempate. `search` tem máximo 40 caracteres e ignora caixa/acentos.
+
+### Regras e erros contratuais
+
+- `icon` aceita exatamente `🥬`, `🛍️`, `🧃`, `🧴`, `🍞`, `❄️`, `🐾` ou `🛒`.
+- Nome duplicado retorna `409 CATEGORY_NAME_ALREADY_IN_USE`.
+- Exclusão com produtos ativos retorna `409 CATEGORY_IN_USE` e `meta.activeProductCount`.
+- Categoria alheia, excluída ou inexistente retorna `404 NOT_FOUND`.
+- `PATCH` de nome/ícone incrementa também `version`/`updatedAt` de cada produto ativo associado, para que o `ETag` do produto sempre represente seu JSON completo. Itens históricos não mudam.
+- `DELETE` participa da transação de preservação histórica descrita nesta EF; produtos inativos retêm a última referência categorial conforme EF-04.
 
 ## Definições de testes funcionais (Playwright)
 

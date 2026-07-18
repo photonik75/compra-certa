@@ -16,6 +16,7 @@ Permitir que cada usuário mantenha um catálogo pessoal de produtos, com catego
 | `categoryId` | Obrigatório; categoria ativa do mesmo usuário |
 | `defaultUnit` | Obrigatória; valor permitido |
 | `active` | `true` ao criar; `false` ao desativar |
+| `version` | Incrementada a cada alteração |
 | `createdAt`, `updatedAt` | Conforme convenções globais |
 
 Unidades permitidas: `unidade`, `pacote`, `caixa`, `garrafa`, `frasco`, `lata`, `saco`, `bandeja`, `dúzia`, `quilograma`, `grama`, `litro` e `mililitro`.
@@ -70,6 +71,72 @@ Consultas de seleção retornam somente produtos ativos e incluem `id`, nome, ca
 7. Categoria excluída, inexistente ou de outro usuário é recusada.
 8. Produto de outro usuário não pode ser lido nem alterado.
 9. Repetir desativação não gera erro nem altera histórico.
+
+## Contrato de API (futura OpenAPI)
+
+### Endpoints
+
+| Método e rota | Request | Sucesso |
+|---|---|---|
+| `GET /api/v1/products` | Query `search`, `categoryId`, `status`, `cursor`, `limit` | `200 ProductCollection` |
+| `POST /api/v1/products` | `ProductInput` + `Idempotency-Key` | `201 Product` + `Location` + `ETag` |
+| `GET /api/v1/products/{productId}` | Path UUID | `200 Product` + `ETag` |
+| `PATCH /api/v1/products/{productId}` | `ProductPatch` + `If-Match` | `200 Product` + novo `ETag` |
+| `DELETE /api/v1/products/{productId}` | `If-Match` | `204`, produto desativado |
+
+Todos exigem sessão; mutações exigem CSRF. `userId`, `icon` e `active` não são aceitos em criação/edição; o ícone é derivado da categoria e desativação ocorre somente por `DELETE`.
+
+### Consulta da coleção
+
+- `search`: máximo 60 caracteres, normalizado como na regra funcional.
+- `categoryId`: UUID de categoria pertencente ao usuário.
+- `status`: `ACTIVE` (padrão), `INACTIVE` ou `ALL`.
+- Ordenação: nome em `pt-BR`, depois `id`.
+- Para sugestões da EF-05, usar `GET /products?status=ACTIVE&search=<termo>&limit=10`; o backend aplica ordenação exata, prefixo e ocorrência quando `search` estiver presente.
+
+### Schemas
+
+#### `ProductInput`
+
+```json
+{
+  "name": "Pão francês",
+  "categoryId": "226506e1-871c-428f-a8fb-6fae32a7dd42",
+  "defaultUnit": "UNIT"
+}
+```
+
+Todos os campos são obrigatórios. `ProductPatch` aceita qualquer subconjunto não vazio desses campos e não aceita `null`.
+
+#### `Product`
+
+```json
+{
+  "id": "67ec605f-711d-420a-8f75-73999b4e609f",
+  "name": "Pão francês",
+  "category": {
+    "id": "226506e1-871c-428f-a8fb-6fae32a7dd42",
+    "name": "Padaria",
+    "icon": "🍞",
+    "available": true
+  },
+  "defaultUnit": "UNIT",
+  "active": true,
+  "createdAt": "2026-07-18T14:30:00Z",
+  "updatedAt": "2026-07-18T14:30:00Z",
+  "version": 1
+}
+```
+
+`ProductCollection` usa o envelope comum. Para produto ativo, a categoria reflete o estado atual e `available=true`. Quando uma categoria é excluída após todos os produtos serem desativados, produtos inativos preservam a última referência conhecida com `available=false`.
+
+### Regras e erros contratuais
+
+- Nome ativo duplicado retorna `409 PRODUCT_NAME_ALREADY_IN_USE`.
+- Categoria inválida ou alheia retorna `404 NOT_FOUND`; categoria excluída retorna `409 CATEGORY_UNAVAILABLE` quando sua existência já era conhecida pelo cliente.
+- Unidade fora do enum comum retorna `400 VALIDATION_ERROR`.
+- `DELETE` define `active=false` e incrementa versão. Se o produto já estiver inativo, retorna `204` sem nova alteração; enquanto estiver ativo, `If-Match` obsoleto ainda retorna `409 CONFLICT`. Itens históricos não são alterados.
+- Produto alheio ou inexistente retorna `404 NOT_FOUND`.
 
 ## Definições de testes funcionais (Playwright)
 

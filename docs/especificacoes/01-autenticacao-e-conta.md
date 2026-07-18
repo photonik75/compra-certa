@@ -98,6 +98,88 @@ Invalidar a sessão atual no servidor, limpar credenciais locais e redirecionar 
 9. Dada redefinição válida, sessões antigas e o token deixam de funcionar.
 10. Senhas e tokens não aparecem em logs, URLs após consumo, telemetria ou mensagens de erro.
 
+## Contrato de API (futura OpenAPI)
+
+### Endpoints
+
+| Método e rota | Autenticação | Request | Sucesso |
+|---|---|---|---|
+| `GET /api/v1/terms/current` | Pública | — | `200 TermsSummary` |
+| `POST /api/v1/auth/registrations` | Pública | `RegistrationRequest` + `Idempotency-Key` | `201 SessionResponse` + cookie |
+| `POST /api/v1/auth/sessions` | Pública | `LoginRequest` | `200 SessionResponse` + cookie |
+| `GET /api/v1/auth/session` | Sessão | — | `200 SessionResponse` |
+| `DELETE /api/v1/auth/sessions/current` | Sessão + CSRF | — | `204` e cookie expirado |
+| `POST /api/v1/auth/password-reset-requests` | Pública | `PasswordResetRequest` + `Idempotency-Key` | `202` |
+| `POST /api/v1/auth/password-resets` | Pública | `PasswordResetConfirmation` + `Idempotency-Key` | `204` e sessões revogadas |
+
+### Schemas
+
+#### `TermsSummary`
+
+| Campo | Tipo | Obrigatório | Regra |
+|---|---|---:|---|
+| `version` | string | Sim | Versão imutável aceita no cadastro |
+| `url` | string/uri | Sim | Documento legível pelo usuário |
+| `effectiveAt` | string/date-time | Sim | Início de vigência |
+
+#### `RegistrationRequest`
+
+```json
+{
+  "name": "Larissa Barros",
+  "email": "larissa@example.com",
+  "password": "senha-segura",
+  "passwordConfirmation": "senha-segura",
+  "termsVersion": "2026-07-01",
+  "invitationToken": null
+}
+```
+
+Nome, e-mail, senha, confirmação e versão dos termos são obrigatórios. `invitationToken` é opcional e usado apenas quando o cadastro veio da EF-08. Nesse caso, token, e-mail e lista são validados antes da transação; conta, categorias, sessão, vínculo e aceite são criados atomicamente. Falha do convite não cria a conta. Erros por campo usam `VALIDATION_ERROR`; e-mail existente retorna `409 EMAIL_ALREADY_IN_USE`; versão de termos inválida retorna `409 TERMS_VERSION_OUTDATED` com `meta.currentVersion`.
+
+Para `invitationToken`, token inválido retorna `400 INVALID_TOKEN`, expirado retorna `410 INVITATION_EXPIRED`, e lista concluída retorna `409 LIST_COMPLETED`. Nenhum desses erros consome o token.
+
+#### `LoginRequest`
+
+```json
+{ "email": "larissa@example.com", "password": "senha-segura", "rememberMe": false }
+```
+
+Credenciais incorretas retornam `401 INVALID_CREDENTIALS`; bloqueio temporário retorna `429 RATE_LIMITED` e header `Retry-After` em segundos.
+
+#### `SessionResponse`
+
+```json
+{
+  "user": {
+    "id": "0b5a3425-38f8-4f8e-9600-df2a661f7fea",
+    "name": "Larissa Barros",
+    "email": "larissa@example.com",
+    "status": "ACTIVE",
+    "createdAt": "2026-07-18T14:30:00Z"
+  },
+  "csrfToken": "opaque-token",
+  "expiresAt": "2026-07-19T14:30:00Z",
+  "acceptedInvitation": null
+}
+```
+
+`acceptedInvitation` é `null` fora do cadastro por convite ou `{ "listId": "..." }` quando o aceite ocorreu atomicamente. `GET /auth/session` sempre retorna esse campo como `null` e pode renovar `csrfToken`. Nunca retorna hash, senha, token de recuperação, token de convite ou identificador interno da sessão.
+
+#### Recuperação de senha
+
+- `PasswordResetRequest`: `{ "email": string/email }`.
+- `PasswordResetConfirmation`: `{ "token": string, "newPassword": string, "passwordConfirmation": string }`.
+- `POST /password-reset-requests` retorna sempre `202` com corpo vazio para e-mail sintaticamente válido, exista ou não conta.
+- O e-mail coloca o token no fragmento da URL da aplicação; o frontend o envia somente no corpo HTTPS de `/password-resets`.
+- Token inválido, usado ou expirado retorna `400 INVALID_TOKEN`; confirmação divergente ou senha fora da política retorna `400 VALIDATION_ERROR`.
+
+### Cookies e cache
+
+- Responses de sessão enviam `Set-Cookie: cc_session=...; HttpOnly; Secure; SameSite=Lax; Path=/api/v1`.
+- Logout expira o cookie com o mesmo path e atributos.
+- Endpoints de autenticação e qualquer response com `csrfToken` usam `Cache-Control: no-store`.
+
 ## Definições de testes funcionais (Playwright)
 
 ### AUTH-001 — Cadastro válido cria conta completa (`P0`)

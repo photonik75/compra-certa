@@ -82,6 +82,81 @@ Lista ativa abre em modo de uso; lista concluída abre em modo de consulta confo
 8. Duplo clique em salvar não cria duas listas.
 9. Alteração concorrente retorna conflito e não perde a versão mais recente.
 
+## Contrato de API (futura OpenAPI)
+
+### Endpoints
+
+| Método e rota | Request | Sucesso |
+|---|---|---|
+| `GET /api/v1/lists` | Query `status`, `search`, `cursor`, `limit` | `200 ListCollection` |
+| `POST /api/v1/lists` | `CreateListRequest` + `Idempotency-Key` | `201 ListDetail` + `Location` + `ETag` |
+| `GET /api/v1/lists/{listId}` | Path UUID | `200 ListDetail` + `ETag` |
+| `PATCH /api/v1/lists/{listId}` | `UpdateListRequest` + `If-Match` | `200 ListDetail` + novo `ETag` |
+
+Todos exigem sessão; mutações exigem CSRF. `PATCH` aceita somente `name` e `description`; enviar `status`, `ownerId` ou contadores retorna `400 VALIDATION_ERROR`.
+
+### Consulta da coleção
+
+- `status`: `ACTIVE` (padrão), `COMPLETED` ou `ALL`.
+- `search`: opcional, após normalização, máximo 60 caracteres.
+- Ordenação: `updatedAt desc`, depois `id asc`.
+- O cursor incorpora filtros e ordenação e não pode ser reutilizado com parâmetros diferentes.
+
+#### `ListCollection`
+
+```json
+{
+  "items": [
+    {
+      "id": "814466fa-1331-448c-a8dd-40a87771d330",
+      "name": "Compras da semana",
+      "status": "ACTIVE",
+      "role": "OWNER",
+      "owner": { "id": "...", "name": "Larissa Barros" },
+      "shared": true,
+      "summary": { "total": 12, "checked": 4, "pending": 8, "percentage": 33 },
+      "updatedAt": "2026-07-18T12:42:00Z",
+      "completedAt": null,
+      "version": 3
+    }
+  ],
+  "page": { "nextCursor": null, "hasMore": false },
+  "summary": { "activeLists": 2, "pendingItems": 16 }
+}
+```
+
+`summary` no nível da coleção considera todas as listas acessíveis, sem ser limitado por `search`, `status` ou paginação. `ListCard.summary` usa somente itens não excluídos da lista.
+
+No OpenAPI, cada elemento de `items` é o schema `ListCard`; `owner` usa `UserReference { id, name }` e ambos `ListCard.summary` e `ListDetail.summary` usam `ListSummary { total, checked, pending, percentage }`. Os quatro inteiros de `ListSummary` são obrigatórios, não negativos, e `percentage` fica entre 0 e 100.
+
+### Criação e edição
+
+#### `CreateListRequest`
+
+```json
+{ "name": "Compras do mês", "description": "Priorizar promoções" }
+```
+
+`name` é obrigatório; `description` pode ser omitido ou `null`. `UpdateListRequest` possui os mesmos campos, ambos opcionais, mas deve conter ao menos uma mudança. `description: null` remove a descrição.
+
+#### `ListDetail`
+
+| Campo | Tipo | Regra |
+|---|---|---|
+| `id` | UUID | Imutável |
+| `name` | string | 1–60 |
+| `description` | string ou null | Até 240 |
+| `status` | `ListStatus` | Estado atual |
+| `owner` | `UserReference` | `{ id, name }` |
+| `role` | `ListRole` | Papel do usuário solicitante |
+| `shared` | boolean | Verdadeiro quando há outro membro ativo |
+| `summary` | `ListSummary` | `{ total, checked, pending, percentage }` |
+| `createdAt`, `updatedAt` | date-time | UTC |
+| `completedAt` | date-time ou null | Conforme estado |
+| `version` | integer | Usado no `ETag` |
+
+Nome duplicado retorna `409 LIST_NAME_ALREADY_IN_USE`. Lista inexistente, excluída ou inacessível retorna `404 NOT_FOUND`. Edição por `EDITOR` retorna `403 FORBIDDEN`; edição de concluída retorna `409 LIST_COMPLETED`.
+
 ## Definições de testes funcionais (Playwright)
 
 ### LIST-001 — Criar lista vazia (`P0`)

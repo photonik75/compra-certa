@@ -96,6 +96,100 @@ No detalhe, agrupar pelo `categoryName` normalizado e exibir o nome e o ícone d
 9. Conflito de versão não sobrescreve edição concorrente.
 10. Criar, editar ou remover persiste após recarregar e identifica autor e horário.
 
+## Contrato de API (futura OpenAPI)
+
+### Endpoints
+
+| Método e rota | Request | Sucesso |
+|---|---|---|
+| `GET /api/v1/lists/{listId}/items` | Query `cursor`, `limit` | `200 ListItemCollection` |
+| `POST /api/v1/lists/{listId}/items` | `CreateItemRequest` + `Idempotency-Key` | `201` criado ou `200` mesclado, ambos `ItemMutationResult` |
+| `GET /api/v1/lists/{listId}/items/{itemId}` | Path UUIDs | `200 ListItem` + `ETag` |
+| `PATCH /api/v1/lists/{listId}/items/{itemId}` | `UpdateItemRequest` + `If-Match` + `Idempotency-Key` | `200 ItemMutationResult` + `ETag` |
+| `DELETE /api/v1/lists/{listId}/items/{itemId}` | `If-Match` + `Idempotency-Key` | `200 ItemDeletionResult` |
+
+Todos exigem sessão e acesso `OWNER` ou `EDITOR`; mutações exigem CSRF e lista `ACTIVE`.
+
+### Escrita de item
+
+#### `CreateItemRequest`
+
+```json
+{
+  "productId": "67ec605f-711d-420a-8f75-73999b4e609f",
+  "quantity": "1.50",
+  "unit": "KILOGRAM",
+  "categoryId": "226506e1-871c-428f-a8fb-6fae32a7dd42",
+  "notes": "Escolher bem fresca",
+  "duplicateResolution": null,
+  "duplicateItemVersion": null
+}
+```
+
+`productId`, `quantity`, `unit` e `categoryId` são obrigatórios. `notes` pode ser omitido/null. `duplicateResolution` é omitido na primeira tentativa ou vale `MERGE`. Para `MERGE`, `duplicateItemVersion` é obrigatório.
+
+`UpdateItemRequest` aceita os mesmos campos funcionais, todos opcionais, exige ao menos uma mudança e pode incluir `duplicateResolution`/`duplicateItemVersion`. O `If-Match` refere-se ao item editado; `duplicateItemVersion` refere-se ao item de destino da mesclagem.
+
+O backend obtém nome/ícone/categoria pelos IDs e cria os snapshots. O frontend nunca envia `productName`, `categoryName`, `categoryIcon`, `checked`, autoria ou datas por esses endpoints.
+
+### Leitura de item
+
+#### `ListItem`
+
+```json
+{
+  "id": "49935830-0dc6-4925-a399-661b14476187",
+  "listId": "814466fa-1331-448c-a8dd-40a87771d330",
+  "product": { "id": "67ec605f-711d-420a-8f75-73999b4e609f", "name": "Banana prata" },
+  "category": { "id": "226506e1-871c-428f-a8fb-6fae32a7dd42", "name": "Hortifruti", "icon": "🥬" },
+  "quantity": "1.50",
+  "unit": "KILOGRAM",
+  "notes": "Escolher bem fresca",
+  "checked": false,
+  "checkedAt": null,
+  "checkedBy": null,
+  "createdBy": { "id": "...", "name": "Larissa Barros" },
+  "updatedBy": { "id": "...", "name": "Larissa Barros" },
+  "createdAt": "2026-07-18T14:30:00Z",
+  "updatedAt": "2026-07-18T14:30:00Z",
+  "version": 1
+}
+```
+
+`product.name` e todos os campos de `category` são snapshots do item. `product.id` pode referenciar produto depois desativado. `ListItemCollection` usa envelope comum, ordenado por categoria e produto conforme esta EF, e acrescenta `listSummary` e `listVersion` ao nível raiz.
+
+### Resultados de mutação e duplicidade
+
+`ItemMutationResult`:
+
+```json
+{
+  "outcome": "CREATED",
+  "item": { "id": "...", "version": 1 },
+  "removedItemId": null,
+  "listSummary": { "total": 8, "checked": 3, "pending": 5, "percentage": 38 },
+  "listVersion": 11
+}
+```
+
+`outcome` vale `CREATED`, `UPDATED` ou `MERGED`. Em mesclagem durante edição, `removedItemId` contém o item logicamente removido; em outros casos é `null`. O schema real de `item` é `ListItem` completo.
+
+Sem resolução, duplicidade retorna `409 DUPLICATE_ITEM`:
+
+```json
+{
+  "code": "DUPLICATE_ITEM",
+  "meta": {
+    "existingItem": { "id": "...", "productName": "Arroz", "quantity": "2", "unit": "PACKAGE", "version": 3 },
+    "canMerge": true
+  }
+}
+```
+
+Unidades diferentes produzem `canMerge=false`; tentar `MERGE` retorna `409 INCOMPATIBLE_UNITS`. Soma acima do limite retorna `400 QUANTITY_LIMIT_EXCEEDED`.
+
+`ItemDeletionResult` contém `{ deletedItemId, listSummary, listVersion }`. Toda mutação de item incrementa a versão da lista uma vez; mesclagem atômica também incrementa somente uma vez. Repetição com a mesma `Idempotency-Key` devolve o resultado original. Recurso inacessível retorna `404 NOT_FOUND`; lista concluída retorna `409 LIST_COMPLETED`.
+
 ## Definições de testes funcionais (Playwright)
 
 ### ITEM-001 — Selecionar produto e adicionar item (`P0`)

@@ -73,6 +73,48 @@ Cada transição exige a versão atual da lista. Se o estado mudou desde a leitu
 7. Transições concorrentes não produzem estado intermediário nem sobrescrita silenciosa.
 8. Ações destrutivas exigem confirmação explícita e não são disparadas por mero fechamento de diálogo.
 
+## Contrato de API (futura OpenAPI)
+
+### Endpoints
+
+| Método e rota | Request | Sucesso |
+|---|---|---|
+| `PUT /api/v1/lists/{listId}/status` | `ChangeListStatusRequest` + `If-Match` + `Idempotency-Key` | `200 ListDetail` + novo `ETag` |
+| `DELETE /api/v1/lists/{listId}` | `If-Match` + `Idempotency-Key` | `204` |
+
+Ambos exigem sessão, CSRF e papel `OWNER`. O backend deriva datas e não aceita `completedAt`, `deletedAt` ou versão no corpo.
+
+### Alterar estado
+
+#### `ChangeListStatusRequest`
+
+```json
+{ "status": "COMPLETED" }
+```
+
+`status` aceita `COMPLETED` para concluir lista `ACTIVE` e `ACTIVE` para reabrir lista `COMPLETED`. Não há `PATCH` genérico de status. O response referencia `ListDetail` da EF-02 e contém resumo inalterado dos itens.
+
+Regras contratuais:
+
+- concluir não recebe nem valida contagem informada pelo cliente; o servidor calcula pendentes;
+- `completedAt` é definido pelo servidor ao concluir e volta a `null` ao reabrir;
+- mesma `Idempotency-Key` repete o resultado original sem nova versão/evento;
+- nova solicitação cujo estado desejado já é o atual retorna `409 INVALID_LIST_TRANSITION`;
+- versão antiga retorna `409 CONFLICT`; `EDITOR` retorna `403 FORBIDDEN`;
+- sucesso publica `list.status.changed` no stream da EF-06.
+
+### Excluir
+
+- A operação marca a lista excluída e revoga membros/convites na mesma transação.
+- Sucesso retorna `204` sem corpo e publica `list.deleted`/`list.access.changed` quando houver streams conectados.
+- Repetição com a mesma `Idempotency-Key` retorna `204`; outra solicitação após a exclusão retorna `404 NOT_FOUND`.
+- Lista inexistente, excluída ou inacessível retorna `404 NOT_FOUND`.
+- O frontend remove a lista localmente após `204`; não existe endpoint de restauração.
+
+### Headers de resposta
+
+`PUT /status` retorna `ETag` da nova versão e `Cache-Control: no-store`. `DELETE` não retorna `ETag`. Operações não concluídas por conflito não publicam evento.
+
 ## Definições de testes funcionais (Playwright)
 
 ### LIFE-001 — Concluir lista com itens pendentes (`P0`)

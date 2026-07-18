@@ -67,6 +67,101 @@ Códigos comuns: `VALIDATION_ERROR`, `UNAUTHENTICATED`, `FORBIDDEN`, `NOT_FOUND`
 - Repetir acidentalmente a mesma requisição não pode criar duplicatas. Comandos de criação aceitam chave de idempotência ou proteção equivalente.
 - Recursos mutáveis expõem uma versão. Uma edição baseada em versão antiga retorna `CONFLICT`, solicita atualização dos dados e não sobrescreve silenciosamente a alteração mais recente.
 
+## Convenções da API para futura OpenAPI
+
+Estas convenções são normativas para todas as seções “Contrato de API” e deverão ser consolidadas posteriormente em um documento OpenAPI 3.1.x.
+
+### Protocolo e representação
+
+- Base path: `/api/v1`.
+- HTTPS obrigatório fora do desenvolvimento local.
+- Requests e responses JSON usam `application/json; charset=utf-8`; `PATCH` usa `application/merge-patch+json`.
+- Campos seguem `camelCase`; enums usam os valores maiúsculos documentados e não são traduzidos no protocolo.
+- Objetos de request usam `additionalProperties: false`. Campos mostrados nos schemas de response são obrigatórios, salvo quando explicitamente opcionais; “ou null” significa união com `null`, não ausência do campo.
+- Identificadores são strings opacas com `format: uuid`; clientes não interpretam seu conteúdo.
+- Datas usam string RFC 3339 UTC com `format: date-time`, por exemplo `2026-07-18T14:30:00Z`.
+- Campos não reconhecidos em requests são rejeitados com `VALIDATION_ERROR`; campos novos em responses devem ser ignorados por clientes antigos.
+- Valores monetários não existem na versão 1. Quantidades decimais trafegam como strings, por exemplo `"1.50"`, para não perder precisão.
+
+### Autenticação e proteção de escrita
+
+- O security scheme será `sessionCookie`, cookie `cc_session`, `HttpOnly`, `Secure` e `SameSite=Lax`.
+- O frontend envia `credentials: include`; sessão nunca é armazenada em `localStorage`.
+- Responses de criação/consulta de sessão fornecem `csrfToken`. Toda operação mutável autenticada exige `X-CSRF-Token`.
+- Ambientes com frontend e API em origens distintas permitem apenas origens explicitamente configuradas, com credenciais; curingas são proibidos.
+
+### Versionamento, ETag e idempotência
+
+- Recursos mutáveis retornam `version: integer >= 1` e header `ETag: "<version>"`.
+- `PATCH`, `PUT`, `DELETE` e transições de estado exigem `If-Match: "<version>"`. Ausência retorna `428 PRECONDITION_REQUIRED`; versão antiga retorna `409 CONFLICT` com `meta.currentVersion`.
+- `POST` que cria recurso ou dispara e-mail exige `Idempotency-Key`, UUID único por intenção do usuário. Repetição com mesmo corpo retorna o resultado original; mesma chave com corpo diferente retorna `409 IDEMPOTENCY_KEY_REUSED`.
+- Sucesso de criação retorna `201`, corpo do recurso e header `Location`. Exclusão sem corpo retorna `204`. Comandos aceitos para processamento assíncrono retornam `202`.
+
+### Paginação e filtros
+
+- Coleções potencialmente grandes usam `cursor` opaco e `limit`, padrão 30, mínimo 1 e máximo 100.
+- Envelope comum: `{ "items": [...], "page": { "nextCursor": "..." | null, "hasMore": boolean } }`.
+- Parâmetros inválidos retornam `400 VALIDATION_ERROR`; cursor expirado ou incompatível com os filtros retorna `400 INVALID_CURSOR`.
+- Ordenação é definida por endpoint e estável, usando `id` como último desempate.
+
+### Erros
+
+Erros usam `application/problem+json` com o schema comum:
+
+```json
+{
+  "type": "/problems/conflict",
+  "title": "Conflito de versão",
+  "status": 409,
+  "code": "CONFLICT",
+  "detail": "O recurso foi alterado por outra pessoa.",
+  "fieldErrors": [
+    { "field": "name", "code": "DUPLICATE", "message": "Esse nome já está em uso." }
+  ],
+  "meta": { "currentVersion": 4 },
+  "traceId": "01J..."
+}
+```
+
+`fieldErrors` e `meta` são opcionais. `traceId` serve apenas para suporte. Mapeamento mínimo:
+
+| HTTP | Códigos principais |
+|---:|---|
+| 400 | `VALIDATION_ERROR`, `INVALID_CURSOR`, `INVALID_TOKEN` |
+| 401 | `UNAUTHENTICATED`, `INVALID_CREDENTIALS` |
+| 403 | `FORBIDDEN`, `CSRF_INVALID` |
+| 404 | `NOT_FOUND` |
+| 409 | `CONFLICT`, `LIST_COMPLETED`, `DUPLICATE_ITEM`, `EMAIL_ALREADY_IN_USE`, `IDEMPOTENCY_KEY_REUSED` |
+| 410 | `INVITATION_EXPIRED` |
+| 428 | `PRECONDITION_REQUIRED` |
+| 429 | `RATE_LIMITED` |
+
+### Enums compartilhados
+
+- `ListStatus`: `ACTIVE`, `COMPLETED`.
+- `ListRole`: `OWNER`, `EDITOR`.
+- `Unit`: `UNIT`, `PACKAGE`, `BOX`, `BOTTLE`, `FLASK`, `CAN`, `BAG`, `TRAY`, `DOZEN`, `KILOGRAM`, `GRAM`, `LITER`, `MILLILITER`.
+- `InvitationStatus`: `PENDING`, `ACCEPTED`, `CANCELLED`, `EXPIRED`.
+- `DeliveryStatus`: `QUEUED`, `SENT`, `FAILED`.
+
+### Compatibilidade
+
+- Mudanças aditivas opcionais podem ocorrer dentro de `/v1`; remoção, renomeação, mudança de tipo ou de semântica exige nova versão principal.
+- O OpenAPI será a fonte dos tipos gerados para frontend e backend. Exemplos deste diretório devem passar na validação do schema quando o arquivo OpenAPI for criado.
+- Nomes de schemas registrados nestas EFs (`ListDetail`, `ListItem`, `Membership` etc.) tornam-se nomes de `components/schemas`; renomeá-los será mudança contratual.
+- Cada operação receberá `operationId` único e estável ao materializar o OpenAPI. Alterar somente `operationId` também exige coordenação, pois afeta clientes gerados.
+- Nenhum endpoint depende de HTML, rota de tela ou framework específico.
+
+### Fluxo contract-first entre frontend e backend
+
+1. Antes de implementar os endpoints, materializar estas seções em `openapi/compra-certa-v1.yaml`, com 38 operações, `operationId`, exemplos válidos e todos os schemas referenciados.
+2. Frontend gera tipos/cliente e trabalha contra um mock server derivado desse arquivo; não cria DTOs paralelos manualmente.
+3. Backend gera stubs ou valida handlers/responses contra o mesmo arquivo e mantém testes de contrato para status, headers e schemas.
+4. A integração contínua valida sintaxe, referências, exemplos, unicidade de `operationId` e mudanças incompatíveis antes do merge.
+5. Qualquer alteração contratual começa pelo OpenAPI e pela EF correspondente; frontend e backend adotam a mesma revisão do arquivo.
+
+Snippets com `"..."` neste diretório são abreviações de leitura. Ao migrá-los para `examples` do OpenAPI, devem ser expandidos com valores válidos para o schema.
+
 ## Fora do escopo da versão 1
 
 - Login social, autenticação multifator e exclusão da conta;

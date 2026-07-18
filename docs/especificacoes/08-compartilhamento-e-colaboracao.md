@@ -13,6 +13,7 @@ Permitir que o proprietário compartilhe uma lista ativa por e-mail e que partic
 | `listId`, `userId` | Par único |
 | `role` | `OWNER` ou `EDITOR` |
 | `joinedAt` | Data de ativação |
+| `version` | Incrementada a cada alteração do vínculo |
 | `createdAt`, `updatedAt` | Auditoria |
 
 ### Convite
@@ -28,6 +29,7 @@ Permitir que o proprietário compartilhe uma lista ativa por e-mail e que partic
 | `tokenHash` | Token de uso único armazenado de modo não reversível |
 | `expiresAt` | 7 dias após envio ou reenvio |
 | `acceptedBy`, `acceptedAt` | Preenchidos no aceite |
+| `version` | Incrementada a cada transição ou reenvio |
 
 Só pode haver um convite `PENDING` por par lista/e-mail.
 
@@ -116,6 +118,125 @@ Só pode haver um convite `PENDING` por par lista/e-mail.
 8. Exclusão da lista invalida todos os acessos e convites.
 9. Alterações colaborativas chegam a outros clientes conectados em até 5 segundos e convergem após reconexão.
 10. Ações de um participante removido durante uma operação são recusadas no servidor.
+
+## Contrato de API (futura OpenAPI)
+
+### Endpoints
+
+| Método e rota | Autenticação | Request | Sucesso |
+|---|---|---|---|
+| `GET /api/v1/lists/{listId}/access` | OWNER/EDITOR | — | `200 ListAccess` |
+| `POST /api/v1/lists/{listId}/invitations` | OWNER | `CreateInvitationRequest` + `Idempotency-Key` | `201 ShareResult` |
+| `POST /api/v1/lists/{listId}/invitations/{invitationId}/resend` | OWNER | `If-Match` + `Idempotency-Key` | `202 Invitation` + novo `ETag` |
+| `DELETE /api/v1/lists/{listId}/invitations/{invitationId}` | OWNER | `If-Match` + `Idempotency-Key` | `204` |
+| `POST /api/v1/invitations/preview` | Pública | `InvitationTokenRequest` | `200 InvitationPreview` |
+| `POST /api/v1/invitations/accept` | Sessão | `InvitationTokenRequest` + `Idempotency-Key` | `201 AcceptInvitationResult` |
+| `DELETE /api/v1/lists/{listId}/members/{userId}` | OWNER | `If-Match` + `Idempotency-Key` | `204` |
+| `DELETE /api/v1/lists/{listId}/members/me` | EDITOR | `If-Match` + `Idempotency-Key` | `204` |
+
+Todas as mutações autenticadas exigem CSRF e lista `ACTIVE`. Endpoints administrativos revalidam `OWNER`; ocultar botões não substitui autorização.
+
+### Consultar acesso
+
+#### `ListAccess`
+
+```json
+{
+  "listId": "814466fa-1331-448c-a8dd-40a87771d330",
+  "owner": {
+    "user": { "id": "...", "name": "Larissa Barros", "email": "larissa@example.com" },
+    "role": "OWNER",
+    "joinedAt": "2026-07-18T14:30:00Z",
+    "version": 1
+  },
+  "members": [
+    {
+      "user": { "id": "...", "name": "Marcos Silva", "email": "marcos@example.com" },
+      "role": "EDITOR",
+      "joinedAt": "2026-07-18T15:00:00Z",
+      "version": 1
+    }
+  ],
+  "invitations": [
+    {
+      "id": "...",
+      "email": "paula@example.com",
+      "status": "PENDING",
+      "deliveryStatus": "SENT",
+      "expiresAt": "2026-07-25T15:00:00Z",
+      "createdAt": "2026-07-18T15:00:00Z",
+      "updatedAt": "2026-07-18T15:00:02Z",
+      "version": 2
+    }
+  ]
+}
+```
+
+A coleção retorna somente convites `PENDING`/`EXPIRED` administráveis na tela. OWNER e EDITOR recebem os mesmos dados pessoais necessários à relação; ações são determinadas pelo papel. Ordenação segue a regra funcional.
+
+### Criar convite ou vínculo
+
+`CreateInvitationRequest`:
+
+```json
+{ "email": "pessoa@example.com" }
+```
+
+`ShareResult` é discriminado por `outcome`:
+
+- `MEMBER_ADDED`: conta já existente; inclui `membership` completo e `notificationDeliveryStatus` (`QUEUED`, `SENT` ou `FAILED`). O acesso existe mesmo se o aviso por e-mail falhar.
+- `INVITATION_CREATED`: conta inexistente; inclui `invitation`, inicialmente `PENDING` e `QUEUED`. Nunca inclui token.
+
+O header `Location` aponta para o membro ou convite criado. E-mail inválido retorna `400 VALIDATION_ERROR`; proprietário, membro ativo ou convite pendente retorna respectivamente `409 CANNOT_INVITE_OWNER`, `ALREADY_MEMBER` ou `INVITATION_ALREADY_PENDING`.
+
+### Pré-visualizar e aceitar convite
+
+`InvitationTokenRequest`:
+
+```json
+{ "token": "opaque-single-use-token" }
+```
+
+O link de e-mail coloca o token no fragmento da URL da aplicação, não na query enviada ao servidor. O frontend extrai o fragmento e envia o token somente no corpo HTTPS de `/preview` ou `/accept`.
+
+`InvitationPreview`:
+
+```json
+{
+  "listName": "Compras da semana",
+  "ownerName": "Larissa Barros",
+  "invitedEmail": "paula@example.com",
+  "status": "PENDING",
+  "expiresAt": "2026-07-25T15:00:00Z",
+  "requiresAuthentication": true
+}
+```
+
+Um token válido funciona como credencial temporária para essa pré-visualização; por isso o response pode retornar `invitedEmail` completo para preencher e bloquear o cadastro. A resposta não informa se já existe conta. Preview inválido, usado ou cancelado retorna `404 NOT_FOUND`; expirado retorna `410 INVITATION_EXPIRED` sem dados da lista.
+
+Para visitante sem conta, o frontend envia o mesmo token em `RegistrationRequest.invitationToken` da EF-01; cadastro e aceite são atômicos. Para conta já autenticada, usa `/invitations/accept`.
+
+`AcceptInvitationResult` contém `{ list: ListCard, membership: Membership }`. Aceite exige que o e-mail da sessão corresponda ao convite; divergência retorna `403 INVITATION_EMAIL_MISMATCH` sem consumir token. Token válido para lista concluída retorna `409 LIST_COMPLETED`; token inválido retorna `400 INVALID_TOKEN`.
+
+### Reenviar, cancelar, remover e sair
+
+- Reenvio retorna convite com `status=PENDING`, `deliveryStatus=QUEUED`, novo `expiresAt` e versão; token anterior é invalidado na mesma transação.
+- Cancelamento retorna `204`; repetição com mesma chave retorna `204`; token passa a ser inválido.
+- Remover membro exige `If-Match` da versão do vínculo. Tentar remover OWNER retorna `409 CANNOT_REMOVE_OWNER`.
+- `DELETE /members/me` só funciona para vínculo `EDITOR` em lista ativa. OWNER recebe `409 OWNER_CANNOT_LEAVE`.
+- Revogações retornam `204`, publicam `list.access.changed` e encerram o stream do usuário afetado.
+- Convite/membro inexistente ou pertencente a outra lista retorna `404 NOT_FOUND`.
+
+### Schema `Membership`
+
+| Campo | Tipo | Regra |
+|---|---|---|
+| `user` | `UserContact` | `{ id, name, email }` |
+| `role` | `ListRole` | `OWNER` ou `EDITOR` |
+| `joinedAt` | date-time | UTC |
+| `version` | integer | Usado em `If-Match` |
+
+Tokens nunca aparecem em `ListAccess`, logs, eventos SSE ou respostas após envio. `Cache-Control: no-store` é obrigatório em preview, aceite e consulta de acesso.
 
 ## Definições de testes funcionais (Playwright)
 
