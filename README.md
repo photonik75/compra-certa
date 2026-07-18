@@ -18,3 +18,7 @@ Protótipo navegável em HTML, CSS e JavaScript puros. Abra `index.html` em um n
 - `images/`: recursos visuais referenciados pelas páginas
 
 O protótipo não usa backend. Alterações em categorias, produtos e participantes ficam salvas somente no navegador.
+
+## Especificações funcionais
+
+As regras normativas da versão 1, organizadas para implementação incremental, estão em [`docs/especificacoes/`](docs/especificacoes/README.md).
