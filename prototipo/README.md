@@ -21,4 +21,4 @@ O protótipo não usa backend. Alterações em categorias, produtos e participan
 
 ## Especificações funcionais
 
-As regras normativas da versão 1, organizadas para implementação incremental, estão em [`docs/especificacoes/`](docs/especificacoes/README.md).
+As regras normativas da versão 1, organizadas para implementação incremental, estão em [`docs/especificacoes/`](../docs/especificacoes/README.md).
