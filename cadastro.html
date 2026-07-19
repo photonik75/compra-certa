@@ -28,8 +28,22 @@
           <div class="field"><label for="name">Nome</label><input id="name" name="name" autocomplete="name" placeholder="Como devemos chamar você?" required><span class="field-error"></span></div>
           <div class="field"><label for="email">E-mail</label><input id="email" name="email" type="email" autocomplete="email" placeholder="voce@email.com" required><span class="field-error"></span></div>
           <div class="form-row">
-            <div class="field"><label for="password">Senha</label><div class="field-control"><input id="password" name="password" type="password" autocomplete="new-password" placeholder="Mínimo de 6 caracteres" required><button class="password-toggle" type="button" data-password-toggle="password">Mostrar</button></div><span class="field-error"></span></div>
-            <div class="field"><label for="confirm">Confirmar senha</label><input id="confirm" name="confirm" type="password" autocomplete="new-password" placeholder="Repita a senha" required><span class="field-error"></span></div>
+            <div class="field">
+                <label for="password">Senha</label>
+                <div class="field-control">
+                    <input id="password" name="password" type="password" autocomplete="new-password" placeholder="Mínimo de 6 caracteres" required>
+                    <button class="password-toggle" type="button" data-password-toggle="password">Mostrar</button>
+                </div>
+                <span class="field-error"></span>
+            </div>
+            <div class="field">
+                <label for="confirm">Confirmar senha</label>
+                <div class="field-control">
+                    <input id="confirm" name="confirm" type="password" autocomplete="new-password" placeholder="Repita a senha" required>
+                    <button class="password-toggle" type="button" data-password-toggle="confirm">Mostrar</button>
+                </div>
+                <span class="field-error"></span>
+            </div>
           </div>
           <button class="btn btn-primary btn-block" type="submit">Criar conta</button>
           <p style="text-align:center; margin:.25rem 0 0">Já tem uma conta? <a class="text-link" href="index.html">Entrar</a></p>

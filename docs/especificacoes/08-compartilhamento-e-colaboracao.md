@@ -214,7 +214,7 @@ O link de e-mail coloca o token no fragmento da URL da aplicação, não na quer
 
 Um token válido funciona como credencial temporária para essa pré-visualização; por isso o response pode retornar `invitedEmail` completo para preencher e bloquear o cadastro. A resposta não informa se já existe conta. Preview inválido, usado ou cancelado retorna `404 NOT_FOUND`; expirado retorna `410 INVITATION_EXPIRED` sem dados da lista.
 
-Para visitante sem conta, o frontend envia o mesmo token em `RegistrationRequest.invitationToken` da EF-01; cadastro e aceite são atômicos. Para conta já autenticada, usa `/invitations/accept`.
+Para visitante sem conta, o frontend preserva o token durante o cadastro comum. Após a criação da sessão, envia o token para `/invitations/accept`. Para conta já autenticada, usa diretamente o mesmo endpoint. O cadastro da conta e o aceite do convite são operações independentes.
 
 `AcceptInvitationResult` contém `{ list: ListCard, membership: Membership }`. Aceite exige que o e-mail da sessão corresponda ao convite; divergência retorna `403 INVITATION_EMAIL_MISMATCH` sem consumir token. Token válido para lista concluída retorna `409 LIST_COMPLETED`; token inválido retorna `400 INVALID_TOKEN`.
 

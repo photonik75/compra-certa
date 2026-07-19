@@ -1,253 +1,174 @@
 # EF-01 — Autenticação e conta
 
-## Resultado esperado
+## Visão geral
 
-Permitir que uma pessoa crie sua conta, entre e saia com segurança e recupere o acesso por e-mail. Após autenticar-se, ela deve chegar à área de listas.
+Permitir que visitantes criem uma conta, autentiquem-se, encerrem a sessão e recuperem a senha com segurança. Após login, o usuário acessa a rota originalmente solicitada ou, na ausência dela, “Minhas Listas”. Após cadastro, acessa uma página vazia com o título “Minhas Listas”.
 
-## Atores
+**Atores:** visitante que ainda não entrou e usuário autenticado com conta habilitada.
 
-- Visitante: pessoa sem sessão válida.
-- Usuário autenticado: pessoa com conta ativa e sessão válida.
+## Imagens
 
-## Dados funcionais
+### Login
 
-### Usuário
+![Tela de login do CompraCerta](images/ef-01-login.png)
 
-| Campo | Regra |
-|---|---|
-| `id` | Identificador imutável |
-| `name` | Obrigatório, 2–100 caracteres |
-| `email` | Obrigatório, formato válido, máximo 254 caracteres e único globalmente |
-| `passwordHash` | Nunca armazenar ou registrar senha em texto puro |
-| `status` | `ACTIVE` na versão 1 |
-| `termsAcceptedAt` | Obrigatório no cadastro |
-| `createdAt`, `updatedAt` | Conforme convenções globais |
+### Cadastro
 
-O e-mail é convertido para minúsculas para autenticação e unicidade. O nome mantém a capitalização informada.
+![Tela de cadastro do CompraCerta](images/ef-01-cadastro.png)
 
-## Fluxos
+## Requisitos
 
-### 1. Criar conta
+- **Tela “Crie sua conta” (imagem Cadastro)**
+  - **Campo “Nome”**
+    - Obrigatório.
+    - Aceita de 2 a 100 caracteres.
+    - Preserva a capitalização informada.
+  - **Campo “E-mail”**
+    - Obrigatório.
+    - Aceita um endereço válido com até 254 caracteres.
+    - Não diferencia letras maiúsculas e minúsculas ao verificar duplicidade.
+  - **Campo “Senha”**
+    - Obrigatório.
+    - Aceita de 8 a 128 caracteres, inclusive espaços, sem removê-los.
+  - **Campo “Confirmar senha”**
+    - Obrigatório.
+    - Deve ser idêntico ao campo “Senha”.
+  - **Controles “Mostrar/Ocultar”**
+    - Alternam somente a visualização dos campos “Senha” e “Confirmar senha”.
+    - Preservam o conteúdo digitado.
+  - **Botão “Criar conta”**
+    - Valida todos os campos antes de concluir o cadastro.
+    - Se o e-mail já estiver cadastrado, não cria outra conta, não autentica o visitante e exibe o pop-up “E-mail já foi cadastrado”.
+    - Em caso de falha, não cria conta parcialmente.
+    - Em caso de sucesso, cria somente a conta, autentica o novo usuário e abre a tela “Minhas Listas”.
+    - Enquanto processa o cadastro, não permite novo envio.
+  - **Link “Entrar”**
+    - Abre a tela “Entre na sua conta”.
 
-Campos: nome, e-mail, senha, confirmação da senha e aceite dos termos.
+- **Tela “Entre na sua conta” (imagem Login)**
+  - **Campo “E-mail”**
+    - Obrigatório.
+    - Aceita um endereço válido com até 254 caracteres.
+    - Não diferencia letras maiúsculas e minúsculas ao localizar a conta.
+  - **Campo “Senha”**
+    - Obrigatório.
+    - Exibe o placeholder “Mínimo de 8 caracteres”.
+  - **Controle “Mostrar/Ocultar”**
+    - Alterna somente a visualização da senha e preserva o conteúdo digitado.
+  - **Checkbox “Manter-me conectado”**
+    - Inicia desmarcado.
+    - Desmarcado: o acesso expira após 12 horas sem atividade e, no máximo, após 24 horas.
+    - Marcado: mantém o usuário conectado no mesmo navegador por até 30 dias, salvo se ele sair manualmente.
+  - **Botão “Entrar”**
+    - Dados incorretos exibem “E-mail ou senha inválidos”, sem indicar qual campo está incorreto.
+    - Após 5 tentativas malsucedidas em 15 minutos, impede novas tentativas por 15 minutos e exibe “Muitas tentativas de acesso. Tente novamente em 15 minutos”.
+    - Em caso de sucesso, abre a página solicitada anteriormente ou “Minhas Listas”.
+    - Enquanto processa o login, não permite novo envio.
+  - **Link “Criar uma conta”**
+    - Abre a tela “Crie sua conta”.
+  - **Link “Esqueci minha senha”**
+    - Abre a tela de recuperação de senha.
 
-Regras:
+- **Tela de recuperação de senha**
+  - **Campo “E-mail”**
+    - Obrigatório e deve conter um endereço válido.
+  - **Botão de envio**
+    - Sempre exibe “Se houver uma conta para este e-mail, enviaremos as instruções”, exista ou não uma conta cadastrada.
+    - Para uma conta existente, envia um link de uso único, válido por 30 minutos.
+    - Um novo pedido torna inválidos os links enviados anteriormente.
+    - Enquanto processa a solicitação, não permite novo envio.
 
-1. Todos os campos são obrigatórios.
-2. A senha deve ter entre 8 e 128 caracteres. Espaços são permitidos e não são removidos.
-3. Senha e confirmação devem ser idênticas.
-4. O aceite dos termos deve estar marcado; salvar data/hora e versão vigente dos termos.
-5. E-mail já cadastrado retorna `EMAIL_ALREADY_IN_USE`, sem criar outra conta.
-6. O cadastro cria, na mesma transação lógica, as categorias iniciais da EF-03.
-7. Quando o cadastro for iniciado por um convite válido, esse convite é associado conforme EF-08. Cadastro iniciado fora do link não concede acesso automaticamente.
-8. Em sucesso, criar sessão, mostrar confirmação e redirecionar para “Minhas listas”.
+- **Tela de redefinição de senha**
+  - **Campo “Nova senha”**
+    - Obrigatório e aceita de 8 a 128 caracteres.
+  - **Campo “Confirmar nova senha”**
+    - Obrigatório e deve ser idêntico ao campo “Nova senha”.
+  - **Controles “Mostrar/Ocultar”**
+    - Alternam somente a visualização e preservam o conteúdo digitado.
+  - **Botão de confirmação**
+    - Link inválido, usado ou expirado não altera a senha e oferece nova solicitação.
+    - Em caso de sucesso, altera a senha, encerra os acessos abertos em outros dispositivos e abre a tela de login.
+    - Enquanto processa a alteração, não permite novo envio.
 
-### 2. Entrar
+- **Tela “Minhas Listas” após o cadastro**
+  - Exibe somente o título “Minhas Listas”.
+  - Não exibe listas ou outros conteúdos neste incremento.
 
-Campos: e-mail, senha e opção “Manter-me conectado”.
+- **Navegação e encerramento do acesso**
+  - Pessoa não autenticada que abre uma página interna é direcionada ao login e, após entrar, retorna à página solicitada.
+  - Pessoa já autenticada que abre login ou cadastro é direcionada para “Minhas Listas”.
+  - Ao sair, abrir a tela de login e exigir nova autenticação para acessar páginas internas.
+  - Voltar no navegador após sair não pode revelar dados protegidos.
 
-Regras:
-
-1. Credenciais inválidas retornam a mensagem única “E-mail ou senha inválidos”.
-2. Sem “Manter-me conectado”, a sessão expira após 12 horas de inatividade e no máximo em 24 horas.
-3. Com a opção marcada, a sessão pode ser renovada por até 30 dias.
-4. Uma autenticação bem-sucedida deve renovar o identificador de sessão.
-5. Após sucesso, redirecionar para a rota originalmente solicitada; na ausência dela, para “Minhas listas”.
-6. Aplicar limitação de tentativas por conta e origem. Após 5 falhas em 15 minutos, bloquear novas tentativas por 15 minutos e retornar `RATE_LIMITED`.
-
-### 3. Mostrar ou ocultar senha
-
-O controle altera apenas a apresentação local, preserva o valor e informa seu estado acessível (“Mostrar senha”/“Ocultar senha”).
-
-### 4. Solicitar recuperação
-
-1. Receber um e-mail válido.
-2. Sempre mostrar a mesma confirmação, exista ou não uma conta: “Se houver uma conta para este e-mail, enviaremos as instruções”.
-3. Para conta existente, criar token aleatório de uso único, armazenado de forma não reversível, com validade de 30 minutos.
-4. Invalidar tokens anteriores ainda válidos para o usuário e enviar link de redefinição.
-5. Limitar solicitações repetidas sem revelar o motivo ao visitante.
-
-### 5. Redefinir senha
-
-1. Exigir token válido, nova senha e confirmação.
-2. Aplicar as mesmas regras de senha do cadastro.
-3. Em sucesso, invalidar o token e todas as sessões existentes do usuário.
-4. Redirecionar ao login com confirmação de senha alterada.
-5. Token inválido, expirado ou usado apresenta link para nova solicitação e não altera a senha.
-
-### 6. Sair
-
-Invalidar a sessão atual no servidor, limpar credenciais locais e redirecionar ao login. Usar o botão voltar do navegador não pode reabrir dados protegidos sem nova validação.
-
-## Estados de interface
-
-- Formulário inicial, campos inválidos, envio em andamento, sucesso e erro geral.
-- Rotas internas acessadas sem sessão redirecionam ao login guardando a rota de retorno.
-- Usuário autenticado que acessa login ou cadastro é redirecionado para “Minhas listas”.
+- **Comportamentos comuns dos formulários**
+  - Possuem estados inicial, erro por campo, processamento, sucesso e erro geral.
+  - Erros preservam nome e e-mail preenchidos, mas não precisam preservar senhas.
+  - Campos, mensagens e controles devem ser perceptíveis e operáveis por teclado e tecnologias assistivas.
 
 ## Critérios de aceite
 
-1. Dado um cadastro válido e e-mail novo, quando o usuário confirmar, então conta, categorias iniciais e sessão são criadas uma única vez.
-2. Dado e-mail já usado com diferença apenas de caixa ou acento equivalente, o cadastro é recusado.
-3. Dada confirmação de senha diferente, nenhum dado é persistido e o erro aparece no campo correspondente.
-4. Dadas credenciais válidas, o login abre a área autenticada e a sessão sobrevive a uma atualização da página.
-5. Dadas credenciais inválidas, a resposta não informa qual campo está incorreto.
-6. Dado logout, a sessão deixa de acessar imediatamente qualquer rota protegida.
-7. Dado pedido de recuperação para e-mail inexistente, a resposta visual é indistinguível daquela de e-mail existente.
-8. Dado token de recuperação usado ou expirado, a senha permanece inalterada.
-9. Dada redefinição válida, sessões antigas e o token deixam de funcionar.
-10. Senhas e tokens não aparecem em logs, URLs após consumo, telemetria ou mensagens de erro.
+1. Cadastro válido cria uma única conta, autentica o usuário e abre uma página vazia com o título “Minhas Listas”.
+2. E-mail já usado, inclusive com caixa diferente, e confirmação divergente não persistem dados.
+3. Login válido mantém o usuário conectado após recarregar a página; dados inválidos não revelam se o e-mail possui conta.
+4. O checkbox “Manter-me conectado” e o bloqueio temporário respeitam os prazos definidos.
+5. Após sair, qualquer página interna volta a exigir login.
+6. Recuperação para e-mail existente e inexistente produz resposta visual indistinguível.
+7. Link inválido, usado ou expirado não altera a senha; redefinição válida encerra acessos anteriores.
+8. Senhas e links de recuperação não são exibidos em mensagens ou na URL após o uso.
+9. Controles são operáveis por teclado, possuem nomes acessíveis e não dependem somente de cor.
 
 ## Contrato de API (futura OpenAPI)
 
 ### Endpoints
 
-| Método e rota | Autenticação | Request | Sucesso |
-|---|---|---|---|
-| `GET /api/v1/terms/current` | Pública | — | `200 TermsSummary` |
-| `POST /api/v1/auth/registrations` | Pública | `RegistrationRequest` + `Idempotency-Key` | `201 SessionResponse` + cookie |
-| `POST /api/v1/auth/sessions` | Pública | `LoginRequest` | `200 SessionResponse` + cookie |
-| `GET /api/v1/auth/session` | Sessão | — | `200 SessionResponse` |
-| `DELETE /api/v1/auth/sessions/current` | Sessão + CSRF | — | `204` e cookie expirado |
-| `POST /api/v1/auth/password-reset-requests` | Pública | `PasswordResetRequest` + `Idempotency-Key` | `202` |
-| `POST /api/v1/auth/password-resets` | Pública | `PasswordResetConfirmation` + `Idempotency-Key` | `204` e sessões revogadas |
+| Método e rota | Propósito | Autenticação | Entrada | Sucesso |
+|---|---|---|---|---|
+| `POST /api/v1/auth/registrations` | Criar conta e autenticar o novo usuário | Pública | `RegistrationRequest` + `Idempotency-Key` | `201 SessionResponse` + cookie |
+| `POST /api/v1/auth/sessions` | Autenticar uma conta existente | Pública | `LoginRequest` | `200 SessionResponse` + cookie |
+| `GET /api/v1/auth/session` | Recuperar o usuário autenticado e a validade do acesso | Sessão | — | `200 SessionResponse` |
+| `DELETE /api/v1/auth/sessions/current` | Encerrar o acesso atual | Sessão + CSRF | — | `204` + cookie expirado |
+| `POST /api/v1/auth/password-reset-requests` | Solicitar o link de recuperação | Pública | `PasswordResetRequest` + `Idempotency-Key` | `202` |
+| `POST /api/v1/auth/password-resets` | Definir uma nova senha pelo link recebido | Pública | `PasswordResetConfirmation` + `Idempotency-Key` | `204` |
 
 ### Schemas
 
-#### `TermsSummary`
+| Schema | Campos e regras |
+|---|---|
+| `UserSummary` | Resumo do usuário autenticado, usado em `SessionResponse.user`: `id: uuid`, `name`, `email`, `status: ACTIVE`, `createdAt: date-time`; nunca inclui segredo |
+| `RegistrationRequest` | `name`, `email`, `password`, `passwordConfirmation`; todos obrigatórios |
+| `LoginRequest` | `email`, `password`, `manterConectado: boolean`; `manterConectado` recebe o estado do checkbox “Manter-me conectado” |
+| `SessionResponse` | `user: UserSummary`, `csrfToken`, `expiresAt`; todos obrigatórios |
+| `PasswordResetRequest` | `email` obrigatório |
+| `PasswordResetConfirmation` | `token`, `newPassword`, `passwordConfirmation`; todos obrigatórios |
 
-| Campo | Tipo | Obrigatório | Regra |
-|---|---|---:|---|
-| `version` | string | Sim | Versão imutável aceita no cadastro |
-| `url` | string/uri | Sim | Documento legível pelo usuário |
-| `effectiveAt` | string/date-time | Sim | Início de vigência |
+`SessionResponse` é retornado pelo cadastro, login e consulta do acesso atual. Seu campo `user`, no formato `UserSummary`, permite ao frontend identificar o usuário autenticado e apresentar nome e e-mail sem consultar outro endpoint.
 
-#### `RegistrationRequest`
+Regras contratuais:
 
-```json
-{
-  "name": "Larissa Barros",
-  "email": "larissa@example.com",
-  "password": "senha-segura",
-  "passwordConfirmation": "senha-segura",
-  "termsVersion": "2026-07-01",
-  "invitationToken": null
-}
-```
-
-Nome, e-mail, senha, confirmação e versão dos termos são obrigatórios. `invitationToken` é opcional e usado apenas quando o cadastro veio da EF-08. Nesse caso, token, e-mail e lista são validados antes da transação; conta, categorias, sessão, vínculo e aceite são criados atomicamente. Falha do convite não cria a conta. Erros por campo usam `VALIDATION_ERROR`; e-mail existente retorna `409 EMAIL_ALREADY_IN_USE`; versão de termos inválida retorna `409 TERMS_VERSION_OUTDATED` com `meta.currentVersion`.
-
-Para `invitationToken`, token inválido retorna `400 INVALID_TOKEN`, expirado retorna `410 INVITATION_EXPIRED`, e lista concluída retorna `409 LIST_COMPLETED`. Nenhum desses erros consome o token.
-
-#### `LoginRequest`
-
-```json
-{ "email": "larissa@example.com", "password": "senha-segura", "rememberMe": false }
-```
-
-Credenciais incorretas retornam `401 INVALID_CREDENTIALS`; bloqueio temporário retorna `429 RATE_LIMITED` e header `Retry-After` em segundos.
-
-#### `SessionResponse`
-
-```json
-{
-  "user": {
-    "id": "0b5a3425-38f8-4f8e-9600-df2a661f7fea",
-    "name": "Larissa Barros",
-    "email": "larissa@example.com",
-    "status": "ACTIVE",
-    "createdAt": "2026-07-18T14:30:00Z"
-  },
-  "csrfToken": "opaque-token",
-  "expiresAt": "2026-07-19T14:30:00Z",
-  "acceptedInvitation": null
-}
-```
-
-`acceptedInvitation` é `null` fora do cadastro por convite ou `{ "listId": "..." }` quando o aceite ocorreu atomicamente. `GET /auth/session` sempre retorna esse campo como `null` e pode renovar `csrfToken`. Nunca retorna hash, senha, token de recuperação, token de convite ou identificador interno da sessão.
-
-#### Recuperação de senha
-
-- `PasswordResetRequest`: `{ "email": string/email }`.
-- `PasswordResetConfirmation`: `{ "token": string, "newPassword": string, "passwordConfirmation": string }`.
-- `POST /password-reset-requests` retorna sempre `202` com corpo vazio para e-mail sintaticamente válido, exista ou não conta.
-- O e-mail coloca o token no fragmento da URL da aplicação; o frontend o envia somente no corpo HTTPS de `/password-resets`.
-- Token inválido, usado ou expirado retorna `400 INVALID_TOKEN`; confirmação divergente ou senha fora da política retorna `400 VALIDATION_ERROR`.
-
-### Cookies e cache
-
-- Responses de sessão enviam `Set-Cookie: cc_session=...; HttpOnly; Secure; SameSite=Lax; Path=/api/v1`.
-- Logout expira o cookie com o mesmo path e atributos.
-- Endpoints de autenticação e qualquer response com `csrfToken` usam `Cache-Control: no-store`.
+- E-mail duplicado retorna `409 CONFLICT`, com `fieldErrors: [{ "field": "email", "message": "E-mail já foi cadastrado" }]`. O frontend apresenta essa mensagem em um pop-up e mantém o usuário no cadastro.
+- Login inválido retorna `401`, com `detail: "E-mail ou senha inválidos"`. Durante o bloqueio temporário, retorna `429`, `Retry-After` em segundos e a mensagem definida nas regras funcionais.
+- Pedido de recuperação com e-mail sintaticamente válido retorna sempre `202`, exista ou não conta. Link inválido, usado ou expirado retorna `400`, sem alterar a senha.
+- O link de recuperação coloca o token no fragmento da URL; o frontend o envia somente no corpo HTTPS.
+- Responses de sessão usam `Cache-Control: no-store` e `Set-Cookie: cc_session=...; HttpOnly; Secure; SameSite=Lax; Path=/api/v1`. Logout expira o mesmo cookie.
+- `GET /auth/session` pode renovar `csrfToken`.
+- Senhas não são retornadas pela API, registradas em logs nem armazenadas de forma reversível.
 
 ## Definições de testes funcionais (Playwright)
 
-### AUTH-001 — Cadastro válido cria conta completa (`P0`)
-
-- **Preparação:** visitante e e-mail ainda não utilizado.
-- **Ação:** preencher todos os campos válidos, aceitar os termos e enviar.
-- **Resultado:** abrir “Minhas listas” autenticado, exibir o nome informado e disponibilizar exatamente as quatro categorias iniciais. Recarregar mantém a sessão e não duplica conta ou categorias.
-
-### AUTH-002 — Validações impedem cadastro inválido (`P0`)
-
-- **Preparação:** formulário de cadastro aberto.
-- **Ação:** exercitar, separadamente, campo obrigatório vazio, e-mail inválido, senha com 7 caracteres, senha acima de 128, confirmação divergente e termos não aceitos.
-- **Resultado:** destacar o campo correspondente, manter valores seguros preenchidos e não criar conta nem sessão.
-
-### AUTH-003 — E-mail não pode ser reutilizado (`P0`)
-
-- **Preparação:** conta existente com `Pessoa@Exemplo.com`.
-- **Ação:** cadastrar `pessoa@exemplo.com`.
-- **Resultado:** apresentar `EMAIL_ALREADY_IN_USE`, permanecer no cadastro e não criar segunda conta.
-
-### AUTH-004 — Login, rota de retorno e logout (`P0`)
-
-- **Preparação:** conta ativa; visitante abre diretamente uma rota interna.
-- **Ação:** autenticar com credenciais válidas, depois sair e tentar voltar pelo navegador.
-- **Resultado:** retornar à rota originalmente solicitada; após logout, toda rota interna volta a exigir login e o cache não revela dados protegidos.
-
-### AUTH-005 — Credencial inválida não revela o campo incorreto (`P0`)
-
-- **Preparação:** conta ativa.
-- **Ação:** tentar uma vez com e-mail existente/senha errada e outra com e-mail inexistente.
-- **Resultado:** as duas tentativas apresentam a mesma mensagem e comportamento, sem indicar se a conta existe.
-
-### AUTH-006 — Limitação de tentativas de login (`P1`)
-
-- **Preparação:** conta ativa e relógio controlado.
-- **Ação:** realizar cinco falhas em 15 minutos, tentar novamente antes e depois de avançar 15 minutos.
-- **Resultado:** a tentativa durante o bloqueio retorna `RATE_LIMITED`; após a janela, credenciais válidas funcionam.
-
-### AUTH-007 — Duração da sessão respeita “Manter-me conectado” (`P1`)
-
-- **Preparação:** conta ativa e relógio controlado.
-- **Ação:** criar sessões com e sem a opção, avançando o relógio pelos limites especificados.
-- **Resultado:** a sessão comum expira conforme inatividade/limite absoluto e a persistente continua válida somente até 30 dias.
-
-### AUTH-008 — Recuperação não permite enumerar contas (`P0`)
-
-- **Preparação:** um e-mail cadastrado e outro inexistente; caixa de correio de teste vazia.
-- **Ação:** solicitar recuperação para ambos.
-- **Resultado:** interface e resposta observável são equivalentes; somente o e-mail cadastrado recebe mensagem com link válido e sem senha exposta.
-
-### AUTH-009 — Redefinição válida revoga token e sessões (`P0`)
-
-- **Preparação:** usuário autenticado em outro contexto e token de recuperação válido.
-- **Ação:** definir nova senha e tentar reutilizar o token, usar a sessão antiga e entrar com senhas antiga e nova.
-- **Resultado:** token e sessão antiga falham, senha antiga falha e nova senha autentica.
-
-### AUTH-010 — Token inválido ou expirado não altera senha (`P0`)
-
-- **Preparação:** token expirado por relógio controlado e URL com token inventado.
-- **Ação:** tentar redefinir em ambos os casos.
-- **Resultado:** mostrar caminho para nova solicitação, não alterar senha e não criar sessão.
-
-### AUTH-011 — Controles de senha e formulários são acessíveis (`P2`)
-
-- **Preparação:** páginas de login e cadastro em projetos desktop, mobile e navegadores de compatibilidade.
-- **Ação:** percorrer por teclado, alternar visibilidade da senha e enviar formulário inválido.
-- **Resultado:** foco segue ordem lógica, rótulos e estados são anunciáveis, alternância preserva o valor e o erro recebe foco ou anúncio sem depender de cor.
+| ID | Pri. | Preparação | Ação | Resultado |
+|---|---:|---|---|---|
+| `AUTH-001` | P0 | Visitante e e-mail novo | Cadastrar dados válidos | Uma conta, usuário autenticado, página vazia com o título “Minhas Listas” e acesso mantido após recarga |
+| `AUTH-002` | P0 | Cadastro aberto | Testar obrigatório vazio, e-mail inválido, senhas com 7 e 129 caracteres e confirmação divergente | Erro no campo; nenhuma conta criada e visitante não autenticado |
+| `AUTH-003` | P0 | Conta `Pessoa@Exemplo.com` | Cadastrar `pessoa@exemplo.com` | Pop-up “E-mail já foi cadastrado”; nenhuma conta adicional e visitante não autenticado |
+| `AUTH-004` | P0 | Conta ativa e rota interna solicitada | Entrar, sair e usar Voltar | Retorna à rota guardada; após logout, rotas e cache não revelam dados |
+| `AUTH-005` | P0 | Conta ativa | Tentar senha errada e e-mail inexistente | “E-mail ou senha inválidos” nos dois casos, sem revelar se a conta existe |
+| `AUTH-008` | P0 | E-mails existente e inexistente; caixa de teste vazia | Solicitar recuperação para ambos | Respostas indistinguíveis; somente o existente recebe link válido |
+| `AUTH-009` | P0 | Acesso aberto em outro dispositivo e link válido | Redefinir; reutilizar o link e testar acessos e senhas antiga/nova | Link e acesso anterior deixam de funcionar; somente a nova senha permite entrar |
+| `AUTH-010` | P0 | Link expirado e link inválido | Tentar redefinir | Senha intacta, nenhum novo acesso e caminho para nova solicitação |
+| `AUTH-006` | P1 | Conta e relógio controlado | Fazer 5 tentativas malsucedidas em 15 minutos; tentar antes e depois do bloqueio | Mensagem de excesso de tentativas durante 15 minutos; login permitido depois |
+| `AUTH-007` | P1 | Relógio controlado | Entrar com o checkbox “Manter-me conectado” marcado e desmarcado e avançar o tempo | Acesso expira em 12 h sem atividade/24 h no máximo ou permanece por até 30 dias |
+| `AUTH-011` | P2 | Desktop, mobile e navegadores suportados | Navegar por teclado, alternar senhas e enviar inválido | Ordem de foco, rótulos, estados e anúncios acessíveis |
 
 ## Fora do escopo específico
 
-Verificação obrigatória de e-mail, alteração de perfil, troca de e-mail e exclusão de conta.
+Termos de uso e consentimento associado, verificação obrigatória de e-mail, alteração de perfil/e-mail, autenticação social ou multifator e exclusão de conta.

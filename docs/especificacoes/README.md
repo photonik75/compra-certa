@@ -43,7 +43,7 @@ Cada comando deve resultar em sucesso ou em um erro estável com, no mínimo:
 - `message`: mensagem segura para apresentação;
 - `field`, quando o erro estiver associado a um campo.
 
-Códigos comuns: `VALIDATION_ERROR`, `UNAUTHENTICATED`, `FORBIDDEN`, `NOT_FOUND`, `CONFLICT` e `RATE_LIMITED`. A interface preserva os valores preenchidos quando ocorre erro recuperável e impede envio duplicado enquanto uma operação está em andamento.
+Códigos comuns: `VALIDATION_ERROR`, `UNAUTHENTICATED`, `FORBIDDEN`, `NOT_FOUND` e `CONFLICT`. A interface preserva os valores preenchidos quando ocorre erro recuperável e impede envio duplicado enquanto uma operação está em andamento.
 
 ### Autorização
 
@@ -131,10 +131,9 @@ Erros usam `application/problem+json` com o schema comum:
 | 401 | `UNAUTHENTICATED`, `INVALID_CREDENTIALS` |
 | 403 | `FORBIDDEN`, `CSRF_INVALID` |
 | 404 | `NOT_FOUND` |
-| 409 | `CONFLICT`, `LIST_COMPLETED`, `DUPLICATE_ITEM`, `EMAIL_ALREADY_IN_USE`, `IDEMPOTENCY_KEY_REUSED` |
+| 409 | `CONFLICT`, `LIST_COMPLETED`, `DUPLICATE_ITEM`, `IDEMPOTENCY_KEY_REUSED` |
 | 410 | `INVITATION_EXPIRED` |
 | 428 | `PRECONDITION_REQUIRED` |
-| 429 | `RATE_LIMITED` |
 
 ### Enums compartilhados
 
@@ -154,7 +153,7 @@ Erros usam `application/problem+json` com o schema comum:
 
 ### Fluxo contract-first entre frontend e backend
 
-1. Antes de implementar os endpoints, materializar estas seções em `openapi/compra-certa-v1.yaml`, com 38 operações, `operationId`, exemplos válidos e todos os schemas referenciados.
+1. Antes de implementar os endpoints, materializar estas seções em `openapi/compra-certa-v1.yaml`, com 37 operações, `operationId`, exemplos válidos e todos os schemas referenciados.
 2. Frontend gera tipos/cliente e trabalha contra um mock server derivado desse arquivo; não cria DTOs paralelos manualmente.
 3. Backend gera stubs ou valida handlers/responses contra o mesmo arquivo e mantém testes de contrato para status, headers e schemas.
 4. A integração contínua valida sintaxe, referências, exemplos, unicidade de `operationId` e mudanças incompatíveis antes do merge.
