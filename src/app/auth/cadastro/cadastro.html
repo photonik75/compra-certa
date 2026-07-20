@@ -24,12 +24,14 @@
             autocomplete="name"
             placeholder="Como devemos chamar você?"
             required
+            minlength="2"
+            maxlength="100"
             (input)="validarNome($event)"
-            [attr.aria-invalid]="erroNome()"
+            [attr.aria-invalid]="erroNome() !== null"
             [attr.aria-describedby]="erroNome() ? 'erro-nome' : null"
           />
           @if (erroNome()) {
-            <p id="erro-nome" class="erro-campo" role="alert">Por favor, informe seu nome</p>
+            <p id="erro-nome" class="erro-campo" role="alert">{{ erroNome() }}</p>
           }
         </div>
 
