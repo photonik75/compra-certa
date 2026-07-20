@@ -6,6 +6,8 @@ const EMAIL = 'E-mail';
 const SENHA = 'Senha';
 const CONFIRMAR_SENHA = 'Confirmar senha';
 const CRIAR_CONTA = 'Criar conta';
+const MOSTRAR = 'Mostrar';
+const OCULTAR = 'Ocultar';
 const ERRO_NOME = 'Por favor, informe seu nome';
 const ERRO_EMAIL = 'Por favor, informe um e-mail válido';
 const ARIA_INVALIDO = 'true';
@@ -163,5 +165,38 @@ describe('Testes unitários do componente Cadastro', () => {
     }
     fireEvent.input(confirmacao, { target: { value: SENHA_SEGURA } });
     expect(confirmacao.checkValidity()).toBe(true);
+  });
+
+  it('CAD-12 - alterna cada senha independentemente e preserva o conteúdo', async () => {
+    await render(Cadastro);
+    const senha = screen.getByLabelText(SENHA) as HTMLInputElement;
+    const confirmacao = screen.getByLabelText(CONFIRMAR_SENHA) as HTMLInputElement;
+    fireEvent.input(senha, { target: { value: SENHA_VALIDA } });
+    fireEvent.input(confirmacao, { target: { value: SENHA_VALIDA } });
+    const botoesMostrar = screen.getAllByRole('button', { name: MOSTRAR });
+    fireEvent.click(botoesMostrar[0]);
+    expect(senha.type).toBe('text');
+    expect(confirmacao.type).toBe('password');
+    fireEvent.click(botoesMostrar[1]);
+    expect(senha.type).toBe('text');
+    expect(confirmacao.type).toBe('text');
+    fireEvent.click(screen.getAllByRole('button', { name: OCULTAR })[0]);
+    expect(senha.type).toBe('password');
+    expect(confirmacao.type).toBe('text');
+    expect(senha.value).toBe(SENHA_VALIDA);
+    expect(confirmacao.value).toBe(SENHA_VALIDA);
+  });
+
+  it('CAD-13 - envio inválido mostra erros em todos os campos', async () => {
+    await render(Cadastro);
+    const campos = [
+      screen.getByRole('textbox', { name: NOME }),
+      screen.getByRole('textbox', { name: EMAIL }),
+      screen.getByLabelText(SENHA),
+      screen.getByLabelText(CONFIRMAR_SENHA),
+    ];
+    fireEvent.click(screen.getByRole('button', { name: CRIAR_CONTA }));
+    for (const campo of campos) expect(campo.getAttribute(ATRIBUTO_ARIA_INVALIDO)).toBe(ARIA_INVALIDO);
+    expect(screen.getAllByRole('alert')).toHaveLength(4);
   });
 });
