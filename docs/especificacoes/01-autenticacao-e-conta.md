@@ -27,6 +27,7 @@ Permitir que visitantes criem uma conta, autentiquem-se, encerrem a sessão e re
   - **Campo “E-mail”**
     - Obrigatório.
     - Aceita um endereço válido com até 254 caracteres.
+    - Quando não informado corretamente, exibe “Por favor, informe um e-mail válido”.
     - Não diferencia letras maiúsculas e minúsculas ao verificar duplicidade.
   - **Campo “Senha”**
     - Obrigatório.

@@ -46,7 +46,11 @@
             required
             (input)="validarEmail($event)"
             [attr.aria-invalid]="erroEmail()"
+            [attr.aria-describedby]="erroEmail() ? 'erro-email' : null"
           />
+          @if (erroEmail()) {
+            <p id="erro-email" class="erro-campo" role="alert">Por favor, informe um e-mail válido</p>
+          }
         </div>
 
         <div class="linha-senhas">

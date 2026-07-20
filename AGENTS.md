@@ -3,6 +3,7 @@ Forneça respostas sucintas e objetivas. Somente quando solicitado, dê maiores 
 
 # Codificação
 Evite pular linhas em métodos. Dê preferência a métodos compactos.
+Se a mesma string for necessária em mais de um lugar, use constantes para promover reuso. Isso também vale para testes.
 
 # Testes automatizados
 Implemente somente o teste pedido e garanta que falhe (vermelho). Só implemente o necessário para ficar verde quando solicitado.

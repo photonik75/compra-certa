@@ -4,7 +4,7 @@
 | Tela Crie sua conta > Campo Nome > Obrigatório | `CAD-2` | Rejeita nome vazio ou composto somente por espaços. | Vitest |
 | Tela Crie sua conta > Campo Nome > Aceita de 2 a 100 caracteres | `CAD-3` | Rejeita 1 caractere.<br>Aceita 2 caracteres.<br>Aceita 100 caracteres.<br>Rejeita 101 caracteres. | Vitest |
 | Tela Crie sua conta > Campo Nome > Preserva a capitalização informada | `CAD-4` | Normaliza espaços sem modificar letras maiúsculas e minúsculas. | Vitest |
-| Tela Crie sua conta > Campo E-mail > Obrigatório | `CAD-5` | Rejeita e-mail vazio ou composto somente por espaços. | Vitest |
+| Tela Crie sua conta > Campo E-mail > Obrigatório | `CAD-5` | Rejeita e-mail vazio, composto somente por espaços ou inválido e exibe “Por favor, informe um e-mail válido”. | Vitest |
 | Tela Crie sua conta > Campo E-mail > Aceita endereço válido com até 254 caracteres | `CAD-6` | Rejeita formatos inválidos.<br>Aceita 254 e rejeita 255 caracteres. | Vitest |
 | Tela Crie sua conta > Campo E-mail > Não diferencia caixa ao verificar duplicidade | `CAD-7` | Trata `409` para e-mail com caixa diferente como duplicidade.<br>Não autentica nem navega após o conflito. | HttpTestingController<br>Vitest |
 | Tela Crie sua conta > Campo Senha > Obrigatório | `CAD-8` | Rejeita senha vazia. | Vitest |
