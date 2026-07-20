@@ -96,6 +96,8 @@ input {
 
 .controle-senha input { padding-right: 5rem; }
 input:focus { border-color: var(--verde); box-shadow: 0 0 0 4px rgba(40, 122, 85, .12); }
+input[aria-invalid="true"] { border-color: var(--coral); }
+.erro-campo { margin: 0; color: #b33a25; font-size: .82rem; }
 .controle-senha button { position: absolute; top: 50%; right: .55rem; padding: .35rem; border: 0; background: transparent; color: var(--verde); font: inherit; font-weight: 700; transform: translateY(-50%); cursor: pointer; }
 .acao-principal { min-height: 48px; border: 0; border-radius: 12px; background: var(--verde); color: white; font: inherit; font-weight: 750; cursor: pointer; box-shadow: 0 5px 14px rgba(40, 122, 85, .24); }
 .entrar { margin: .25rem 0 0; color: var(--suave); text-align: center; }

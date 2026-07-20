@@ -21,6 +21,7 @@ Permitir que visitantes criem uma conta, autentiquem-se, encerrem a sessão e re
 - **Tela “Crie sua conta” (imagem Cadastro)**
   - **Campo “Nome”**
     - Obrigatório.
+    - Quando não informado ou composto somente por espaços, exibe “Por favor, informe seu nome”.
     - Aceita de 2 a 100 caracteres.
     - Preserva a capitalização informada.
   - **Campo “E-mail”**

@@ -28,8 +28,13 @@ describe('Testes unitários do componente Cadastro', () => {
   it('REG-VAL-001 - rejeita nome vazio ou composto somente por espaços', async () => {
     await render(Cadastro);
     const nome = screen.getByRole('textbox', { name: 'Nome'}) as HTMLInputElement;
-    expect(nome.checkValidity()).toBe(false);
+    const criarConta = screen.getByRole('button', { name: 'Criar conta' });
+    fireEvent.click(criarConta);
+    expect(screen.getByRole('alert').textContent).toBe('Por favor, informe seu nome');
+    fireEvent.input(nome, { target: { value: 'Maria' } });
+    expect(screen.queryByRole('alert')).toBeNull();
     fireEvent.input(nome, { target: { value: '   ' } });
-    expect(nome.checkValidity()).toBe(false);
+    fireEvent.click(criarConta);
+    expect(screen.getByRole('alert').textContent).toBe('Por favor, informe seu nome');
   });
 });

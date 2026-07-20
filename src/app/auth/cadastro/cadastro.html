@@ -14,7 +14,7 @@
       <h1>Crie sua conta</h1>
       <p class="ajuda">Suas categorias iniciais serão criadas automaticamente.</p>
 
-      <form novalidate>
+      <form novalidate (submit)="validarCadastro($event)">
         <div class="campo">
           <label for="nome">Nome</label>
           <input
@@ -25,7 +25,12 @@
             placeholder="Como devemos chamar você?"
             required
             (input)="validarNome($event)"
+            [attr.aria-invalid]="erroNome()"
+            [attr.aria-describedby]="erroNome() ? 'erro-nome' : null"
           />
+          @if (erroNome()) {
+            <p id="erro-nome" class="erro-campo" role="alert">Por favor, informe seu nome</p>
+          }
         </div>
 
         <div class="campo">
