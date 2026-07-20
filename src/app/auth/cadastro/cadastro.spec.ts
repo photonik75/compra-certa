@@ -37,4 +37,17 @@ describe('Testes unitários do componente Cadastro', () => {
     fireEvent.click(criarConta);
     expect(screen.getByRole('alert').textContent).toBe('Por favor, informe seu nome');
   });
+
+  it('CAD-3 - aceita nome de 2 a 100 caracteres', async () => {
+    await render(Cadastro);
+    const nome = screen.getByRole('textbox', { name: 'Nome' }) as HTMLInputElement;
+    fireEvent.input(nome, { target: { value: 'A' } });
+    expect(nome.checkValidity()).toBe(false);
+    fireEvent.input(nome, { target: { value: 'Al' } });
+    expect(nome.checkValidity()).toBe(true);
+    fireEvent.input(nome, { target: { value: 'A'.repeat(100) } });
+    expect(nome.checkValidity()).toBe(true);
+    fireEvent.input(nome, { target: { value: 'A'.repeat(101) } });
+    expect(nome.checkValidity()).toBe(false);
+  });
 });
