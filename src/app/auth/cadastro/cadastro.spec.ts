@@ -13,6 +13,9 @@ const ARIA_VALIDO = 'false';
 const ATRIBUTO_ARIA_INVALIDO = 'aria-invalid';
 const EMAIL_254 = `${'a'.repeat(64)}@${'b'.repeat(63)}.${'c'.repeat(63)}.${'d'.repeat(61)}`;
 const EMAIL_255 = `${EMAIL_254}d`;
+const SENHA_VALIDA = 'senha123';
+const SENHA_SEGURA = 'Senha segura';
+const CARACTERE_SENHA = 'a';
 
 describe('Testes unitários do componente Cadastro', () => {
   it('CAD-1 - renderiza todos os campos e controles do cadastro', async () => {
@@ -111,20 +114,20 @@ describe('Testes unitários do componente Cadastro', () => {
     const criarConta = screen.getByRole('button', { name: CRIAR_CONTA });
     fireEvent.click(criarConta);
     expect(senha.getAttribute(ATRIBUTO_ARIA_INVALIDO)).toBe(ARIA_INVALIDO);
-    fireEvent.input(senha, { target: { value: 'senha123' } });
+    fireEvent.input(senha, { target: { value: SENHA_VALIDA } });
     expect(senha.getAttribute(ATRIBUTO_ARIA_INVALIDO)).toBe(ARIA_VALIDO);
   });
 
   it('CAD-8 - aceita senha de 8 a 128 caracteres', async () => {
     await render(Cadastro);
     const senha = screen.getByLabelText(SENHA) as HTMLInputElement;
-    fireEvent.input(senha, { target: { value: 'a'.repeat(7) } });
+    fireEvent.input(senha, { target: { value: CARACTERE_SENHA.repeat(7) } });
     expect(senha.checkValidity()).toBe(false);
-    fireEvent.input(senha, { target: { value: 'a'.repeat(8) } });
+    fireEvent.input(senha, { target: { value: CARACTERE_SENHA.repeat(8) } });
     expect(senha.checkValidity()).toBe(true);
-    fireEvent.input(senha, { target: { value: 'a'.repeat(128) } });
+    fireEvent.input(senha, { target: { value: CARACTERE_SENHA.repeat(128) } });
     expect(senha.checkValidity()).toBe(true);
-    fireEvent.input(senha, { target: { value: 'a'.repeat(129) } });
+    fireEvent.input(senha, { target: { value: CARACTERE_SENHA.repeat(129) } });
     expect(senha.checkValidity()).toBe(false);
   });
 
@@ -139,11 +142,13 @@ describe('Testes unitários do componente Cadastro', () => {
 
   it('CAD-10 - rejeita confirmação de senha vazia', async () => {
     await render(Cadastro);
+    const senha = screen.getByLabelText(SENHA) as HTMLInputElement;
     const confirmacao = screen.getByLabelText(CONFIRMAR_SENHA) as HTMLInputElement;
     const criarConta = screen.getByRole('button', { name: CRIAR_CONTA });
     fireEvent.click(criarConta);
     expect(confirmacao.getAttribute(ATRIBUTO_ARIA_INVALIDO)).toBe(ARIA_INVALIDO);
-    fireEvent.input(confirmacao, { target: { value: 'senha123' } });
+    fireEvent.input(senha, { target: { value: SENHA_VALIDA } });
+    fireEvent.input(confirmacao, { target: { value: SENHA_VALIDA } });
     expect(confirmacao.getAttribute(ATRIBUTO_ARIA_INVALIDO)).toBe(ARIA_VALIDO);
   });
 
@@ -151,12 +156,12 @@ describe('Testes unitários do componente Cadastro', () => {
     await render(Cadastro);
     const senha = screen.getByLabelText(SENHA) as HTMLInputElement;
     const confirmacao = screen.getByLabelText(CONFIRMAR_SENHA) as HTMLInputElement;
-    fireEvent.input(senha, { target: { value: 'Senha segura' } });
+    fireEvent.input(senha, { target: { value: SENHA_SEGURA } });
     for (const valor of ['Senha segurA', 'Senha segura!', 'Senha  segura']) {
       fireEvent.input(confirmacao, { target: { value: valor } });
       expect(confirmacao.checkValidity()).toBe(false);
     }
-    fireEvent.input(confirmacao, { target: { value: 'Senha segura' } });
+    fireEvent.input(confirmacao, { target: { value: SENHA_SEGURA } });
     expect(confirmacao.checkValidity()).toBe(true);
   });
 });

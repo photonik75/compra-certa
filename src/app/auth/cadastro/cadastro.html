@@ -65,6 +65,10 @@
                 autocomplete="new-password"
                 placeholder="Mínimo de 8 caracteres"
                 required
+                minlength="8"
+                maxlength="128"
+                (input)="validarSenha($event)"
+                [attr.aria-invalid]="erroSenha()"
               />
               <button type="button" (click)="alternarSenha()">
                 {{ senhaVisivel() ? 'Ocultar' : 'Mostrar' }}
@@ -82,6 +86,8 @@
                 autocomplete="new-password"
                 placeholder="Repita a senha"
                 required
+                (input)="validarConfirmacao($event)"
+                [attr.aria-invalid]="erroConfirmacao()"
               />
               <button type="button" (click)="alternarConfirmacao()">
                 {{ confirmacaoVisivel() ? 'Ocultar' : 'Mostrar' }}

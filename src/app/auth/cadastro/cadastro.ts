@@ -1,5 +1,7 @@
 import { Component, signal } from '@angular/core';
 
+const CAMPO_SENHA = 'senha';
+
 @Component({
   selector: 'app-cadastro',
   imports: [],
@@ -11,6 +13,8 @@ export class Cadastro {
   protected readonly confirmacaoVisivel = signal(false);
   protected readonly erroNome = signal<string | null>(null);
   protected readonly erroEmail = signal(false);
+  protected readonly erroSenha = signal(false);
+  protected readonly erroConfirmacao = signal(false);
 
   protected alternarSenha(): void {
     this.senhaVisivel.update((visivel) => !visivel);
@@ -29,6 +33,14 @@ export class Cadastro {
     this.atualizarValidadeEmail(evento.target as HTMLInputElement);
   }
 
+  protected validarSenha(evento: Event): void {
+    this.atualizarValidadeSenha(evento.target as HTMLInputElement);
+  }
+
+  protected validarConfirmacao(evento: Event): void {
+    this.atualizarValidadeConfirmacao(evento.target as HTMLInputElement);
+  }
+
   protected validarCadastro(evento: SubmitEvent): void {
     evento.preventDefault();
     const formulario = evento.currentTarget as HTMLFormElement;
@@ -36,6 +48,8 @@ export class Cadastro {
     nome.value = nome.value.trim().replace(/\s+/g, ' ');
     this.atualizarValidadeNome(nome);
     this.atualizarValidadeEmail(formulario.elements.namedItem('email') as HTMLInputElement);
+    this.atualizarValidadeSenha(formulario.elements.namedItem(CAMPO_SENHA) as HTMLInputElement);
+    this.atualizarValidadeConfirmacao(formulario.elements.namedItem('confirmarSenha') as HTMLInputElement);
   }
 
   private atualizarValidadeNome(campo: HTMLInputElement): void {
@@ -49,5 +63,18 @@ export class Cadastro {
     const invalido = campo.value.trim().length === 0 || campo.value.length > 254 || campo.validity.typeMismatch;
     campo.setCustomValidity(invalido ? 'Por favor, informe um e-mail válido' : '');
     this.erroEmail.set(invalido);
+  }
+
+  private atualizarValidadeSenha(campo: HTMLInputElement): void {
+    const invalido = campo.value.length < 8 || campo.value.length > 128;
+    campo.setCustomValidity(invalido ? 'A senha deve ter entre 8 e 128 caracteres' : '');
+    this.erroSenha.set(invalido);
+  }
+
+  private atualizarValidadeConfirmacao(campo: HTMLInputElement): void {
+    const senha = (campo.form?.elements.namedItem(CAMPO_SENHA) as HTMLInputElement).value;
+    const invalido = campo.value.length === 0 || campo.value !== senha;
+    campo.setCustomValidity(invalido ? 'As senhas devem ser idênticas' : '');
+    this.erroConfirmacao.set(invalido);
   }
 }
