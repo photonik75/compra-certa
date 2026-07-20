@@ -24,4 +24,12 @@ describe('Testes unitários do componente Cadastro', () => {
     ).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Entrar' })).toBeTruthy();
   });
+
+  it('REG-VAL-001 - rejeita nome vazio ou composto somente por espaços', async () => {
+    await render(Cadastro);
+    const nome = screen.getByRole('textbox', { name: 'Nome'}) as HTMLInputElement;
+    expect(nome.checkValidity()).toBe(false);
+    nome.value = '   ';
+    expect(nome.checkValidity()).toBe(false);
+  });
 });
