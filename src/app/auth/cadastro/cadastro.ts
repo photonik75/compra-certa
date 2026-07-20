@@ -46,6 +46,8 @@ export class Cadastro {
   }
 
   private atualizarValidadeEmail(campo: HTMLInputElement): void {
-    this.erroEmail.set(campo.value.trim().length === 0 || !campo.validity.valid);
+    const invalido = campo.value.trim().length === 0 || campo.value.length > 254 || campo.validity.typeMismatch;
+    campo.setCustomValidity(invalido ? 'Por favor, informe um e-mail válido' : '');
+    this.erroEmail.set(invalido);
   }
 }

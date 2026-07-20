@@ -44,6 +44,7 @@
             autocomplete="email"
             placeholder="voce@email.com"
             required
+            maxlength="254"
             (input)="validarEmail($event)"
             [attr.aria-invalid]="erroEmail()"
             [attr.aria-describedby]="erroEmail() ? 'erro-email' : null"

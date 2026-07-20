@@ -7,6 +7,8 @@ const CRIAR_CONTA = 'Criar conta';
 const ERRO_NOME = 'Por favor, informe seu nome';
 const ERRO_EMAIL = 'Por favor, informe um e-mail válido';
 const ARIA_INVALIDO = 'true';
+const EMAIL_254 = `${'a'.repeat(64)}@${'b'.repeat(63)}.${'c'.repeat(63)}.${'d'.repeat(61)}`;
+const EMAIL_255 = `${EMAIL_254}d`;
 
 describe('Testes unitários do componente Cadastro', () => {
   it('CAD-1 - renderiza todos os campos e controles do cadastro', async () => {
@@ -84,5 +86,18 @@ describe('Testes unitários do componente Cadastro', () => {
     fireEvent.click(criarConta);
     expect(email.getAttribute('aria-invalid')).toBe(ARIA_INVALIDO);
     expect(screen.getByText(ERRO_EMAIL)).toBeTruthy();
+  });
+
+  it('CAD-6 - aceita e-mail válido com até 254 caracteres', async () => {
+    await render(Cadastro);
+    const email = screen.getByRole('textbox', { name: EMAIL }) as HTMLInputElement;
+    for (const valor of ['email-invalido', 'maria@', '@example.com']) {
+      fireEvent.input(email, { target: { value: valor } });
+      expect(email.checkValidity()).toBe(false);
+    }
+    fireEvent.input(email, { target: { value: EMAIL_254 } });
+    expect(email.checkValidity()).toBe(true);
+    fireEvent.input(email, { target: { value: EMAIL_255 } });
+    expect(email.checkValidity()).toBe(false);
   });
 });
