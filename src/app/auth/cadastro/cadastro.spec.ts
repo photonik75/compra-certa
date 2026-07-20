@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/angular';
 import { Cadastro } from './cadastro';
 
 describe('Testes unitários do componente Cadastro', () => {
-  it('REG-UI-001 - renderiza todos os campos e controles do cadastro', async () => {
+  it('CAD-1 - renderiza todos os campos e controles do cadastro', async () => {
     await render(Cadastro);
 
     expect(
@@ -25,7 +25,7 @@ describe('Testes unitários do componente Cadastro', () => {
     expect(screen.getByRole('link', { name: 'Entrar' })).toBeTruthy();
   });
 
-  it('REG-VAL-001 - rejeita nome vazio ou composto somente por espaços', async () => {
+  it('CAD-2 - rejeita nome vazio ou composto somente por espaços', async () => {
     await render(Cadastro);
     const nome = screen.getByRole('textbox', { name: 'Nome'}) as HTMLInputElement;
     const criarConta = screen.getByRole('button', { name: 'Criar conta' });
