@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/angular';
 import { Cadastro } from './cadastro';
 
 describe('Testes unitários do componente Cadastro', () => {
-  it('renderiza todos os campos e controles do cadastro', async () => {
+  it('REG-UI-001 - renderiza todos os campos e controles do cadastro', async () => {
     await render(Cadastro);
 
     expect(
