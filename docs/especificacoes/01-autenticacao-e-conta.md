@@ -28,7 +28,7 @@ Permitir que visitantes criem uma conta, autentiquem-se, encerrem a sessão e re
     - Obrigatório.
     - Aceita um endereço válido com até 254 caracteres.
     - Quando não informado corretamente, exibe “Por favor, informe um e-mail válido”.
-    - Não diferencia letras maiúsculas e minúsculas ao verificar duplicidade.
+    - O sistema normaliza o endereço para minúsculas antes de verificar duplicidade; essa regra deve ser garantida pelo backend.
   - **Campo “Senha”**
     - Obrigatório.
     - Aceita de 8 a 128 caracteres, inclusive espaços, sem removê-los.
