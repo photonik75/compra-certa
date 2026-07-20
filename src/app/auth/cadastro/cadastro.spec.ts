@@ -50,4 +50,25 @@ describe('Testes unitários do componente Cadastro', () => {
     fireEvent.input(nome, { target: { value: 'A'.repeat(101) } });
     expect(nome.checkValidity()).toBe(false);
   });
+
+  it('CAD-4 - normaliza espaços sem modificar a capitalização do nome', async () => {
+    await render(Cadastro);
+    const nome = screen.getByRole('textbox', { name: 'Nome' }) as HTMLInputElement;
+    fireEvent.input(nome, { target: { value: '  mARIA   sILVA  ' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Criar conta' }));
+    expect(nome.value).toBe('mARIA sILVA');
+  });
+
+  it('CAD-5 - rejeita e-mail vazio ou composto somente por espaços', async () => {
+    await render(Cadastro);
+    const email = screen.getByRole('textbox', { name: 'E-mail' }) as HTMLInputElement;
+    const criarConta = screen.getByRole('button', { name: 'Criar conta' });
+    fireEvent.click(criarConta);
+    expect(email.getAttribute('aria-invalid')).toBe('true');
+    fireEvent.input(email, { target: { value: 'maria@example.com' } });
+    expect(email.getAttribute('aria-invalid')).toBe('false');
+    fireEvent.input(email, { target: { value: '   ' } });
+    fireEvent.click(criarConta);
+    expect(email.getAttribute('aria-invalid')).toBe('true');
+  });
 });
