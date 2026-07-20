@@ -1,7 +1,11 @@
 import { AbstractControl, ValidationErrors } from '@angular/forms';
 
 export function nomeCadastroValidator(
-  _controle: AbstractControl,
+  controle: AbstractControl,
 ): ValidationErrors | null {
-  return null;
+  const nome = controle.value;
+
+  return typeof nome !== 'string' || nome.trim().length === 0
+    ? { required: true }
+    : null;
 }
