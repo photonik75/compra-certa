@@ -6,6 +6,7 @@
     "moduleResolution": "Bundler",
     "strict": true,
     "skipLibCheck": true,
+    "types": ["vitest/globals", "@testing-library/jest-dom"],
     "noEmit": true
   },
   "include": ["src/**/*.ts", "test/src/**/*.ts", "vitest.config.ts"]
