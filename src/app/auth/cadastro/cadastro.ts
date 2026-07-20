@@ -17,4 +17,10 @@ export class Cadastro {
   protected alternarConfirmacao(): void {
     this.confirmacaoVisivel.update((visivel) => !visivel);
   }
+
+  protected validarNome(evento: Event): void {
+    const campo = evento.target as HTMLInputElement;
+    const nomeInvalido = campo.value.trim().length === 0;
+    campo.setCustomValidity(nomeInvalido ? 'Informe seu nome.' : '');
+  }
 }

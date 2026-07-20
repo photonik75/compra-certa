@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/angular';
+import { fireEvent, render, screen } from '@testing-library/angular';
 import { Cadastro } from './cadastro';
 
 describe('Testes unitários do componente Cadastro', () => {
@@ -29,7 +29,7 @@ describe('Testes unitários do componente Cadastro', () => {
     await render(Cadastro);
     const nome = screen.getByRole('textbox', { name: 'Nome'}) as HTMLInputElement;
     expect(nome.checkValidity()).toBe(false);
-    nome.value = '   ';
+    fireEvent.input(nome, { target: { value: '   ' } });
     expect(nome.checkValidity()).toBe(false);
   });
 });
