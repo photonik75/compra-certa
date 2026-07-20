@@ -1,1 +1,83 @@
-<p>cadastro works!</p>
+<main class="pagina-cadastro">
+  <section class="apresentacao" aria-label="Benefícios do CompraCerta">
+    <div class="marca"><span aria-hidden="true">✓</span> CompraCerta</div>
+    <h2>Menos esquecimentos. Mais tempo para você.</h2>
+    <p>
+      Crie listas, organize produtos por categoria e convide quem divide as
+      compras com você.
+    </p>
+  </section>
+
+  <section class="painel">
+    <div class="cartao">
+      <p class="destaque">Comece agora</p>
+      <h1>Crie sua conta</h1>
+      <p class="ajuda">Suas categorias iniciais serão criadas automaticamente.</p>
+
+      <form novalidate>
+        <div class="campo">
+          <label for="nome">Nome</label>
+          <input
+            id="nome"
+            name="nome"
+            type="text"
+            autocomplete="name"
+            placeholder="Como devemos chamar você?"
+            required
+          />
+        </div>
+
+        <div class="campo">
+          <label for="email">E-mail</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            autocomplete="email"
+            placeholder="voce@email.com"
+            required
+          />
+        </div>
+
+        <div class="linha-senhas">
+          <div class="campo">
+            <label for="senha">Senha</label>
+            <div class="controle-senha">
+              <input
+                id="senha"
+                name="senha"
+                [type]="senhaVisivel() ? 'text' : 'password'"
+                autocomplete="new-password"
+                placeholder="Mínimo de 8 caracteres"
+                required
+              />
+              <button type="button" (click)="alternarSenha()">
+                {{ senhaVisivel() ? 'Ocultar' : 'Mostrar' }}
+              </button>
+            </div>
+          </div>
+
+          <div class="campo">
+            <label for="confirmar-senha">Confirmar senha</label>
+            <div class="controle-senha">
+              <input
+                id="confirmar-senha"
+                name="confirmarSenha"
+                [type]="confirmacaoVisivel() ? 'text' : 'password'"
+                autocomplete="new-password"
+                placeholder="Repita a senha"
+                required
+              />
+              <button type="button" (click)="alternarConfirmacao()">
+                {{ confirmacaoVisivel() ? 'Ocultar' : 'Mostrar' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <button class="acao-principal" type="submit">Criar conta</button>
+        <p class="entrar">Já tem uma conta? <a href="/entrar">Entrar</a></p>
+      </form>
+    </div>
+  </section>
+</main>
