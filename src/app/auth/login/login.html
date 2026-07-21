@@ -3,26 +3,43 @@
     <p class="destaque">Bem-vinda(o)</p>
     <h1>Entre na sua conta</h1>
     <p class="ajuda">Por favor, informe seus dados para entrar no sistema.</p>
-    <form>
+    @if (erro()) {
+      <p class="erro" role="alert">{{ erro() }}</p>
+    }
+    <form novalidate (submit)="entrar($event)">
       <div class="campo">
         <label for="email">E-mail</label>
-        <input id="email" name="email" type="email" placeholder="voce@email.com" />
+        <input
+          id="email"
+          name="email"
+          type="email"
+          placeholder="voce@email.com"
+          required
+          maxlength="254"
+          (input)="validarEmail($event)"
+        />
       </div>
       <div class="campo">
         <label for="senha">Senha</label>
         <div class="controle-senha">
-          <input id="senha" name="senha" type="password" placeholder="Mínimo de 8 caracteres" />
-          <button type="button">Mostrar</button>
+          <input
+            id="senha"
+            name="senha"
+            [type]="senhaVisivel() ? 'text' : 'password'"
+            placeholder="Mínimo de 8 caracteres"
+            required
+          />
+          <button type="button" (click)="alternarSenha()">{{ senhaVisivel() ? 'Ocultar' : 'Mostrar' }}</button>
         </div>
       </div>
       <label class="manter-conectado">
         <input name="manterConectado" type="checkbox" />
         Manter-me conectado
       </label>
-      <button class="entrar" type="submit">Entrar</button>
+      <button class="entrar" type="submit" [disabled]="processando()">Entrar</button>
       <nav class="links" aria-label="Opções de acesso">
-        <a href="/cadastro">Criar uma conta</a>
-        <a href="/recuperar-senha">Esqueci minha senha</a>
+        <a href="/cadastro" (click)="criarConta($event)">Criar uma conta</a>
+        <a href="/recuperar-senha" (click)="recuperarSenha($event)">Esqueci minha senha</a>
       </nav>
     </form>
   </section>
