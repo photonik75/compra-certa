@@ -1,10 +1,9 @@
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { CadastroService, EmailJaCadastradoError } from './cadastro.service';
 
 const CAMPO_SENHA = 'senha';
 const CAMPO_EMAIL = 'email';
-const ENDPOINT_CADASTRO = '/api/v1/auth/registrations';
 const EMAIL_JA_CADASTRADO = 'E-mail já foi cadastrado';
 const ERRO_GERAL_CADASTRO = 'Ocorreu um erro ao tentar criar sua conta. Aguarde e tente novamente em alguns instantes.';
 const ROTA_LISTAS = '/listas';
@@ -16,7 +15,7 @@ const ROTA_LISTAS = '/listas';
   styleUrl: './cadastro.css',
 })
 export class Cadastro {
-  private readonly http = inject(HttpClient);
+  private readonly cadastroService = inject(CadastroService);
   private readonly router = inject(Router);
   protected readonly senhaVisivel = signal(false);
   protected readonly confirmacaoVisivel = signal(false);
@@ -67,7 +66,7 @@ export class Cadastro {
     if ([nome, email, senha, confirmacao].some((campo) => !campo.checkValidity())) return;
     this.emailDuplicado.set(null);
     this.erroGeral.set(null);
-    this.http.post(ENDPOINT_CADASTRO, { name: nome.value, email: email.value, password: senha.value }).subscribe({ next: () => this.router.navigateByUrl(ROTA_LISTAS), error: (erro: HttpErrorResponse) => this.tratarErroCadastro(erro) });
+    this.cadastroService.cadastrar({ name: nome.value, email: email.value, password: senha.value, passwordConfirmation: confirmacao.value }).subscribe({ next: () => this.router.navigateByUrl(ROTA_LISTAS), error: (erro: unknown) => this.tratarErroCadastro(erro) });
   }
 
   private atualizarValidadeNome(campo: HTMLInputElement): void {
@@ -96,10 +95,9 @@ export class Cadastro {
     this.erroConfirmacao.set(invalido);
   }
 
-  private tratarErroCadastro(erro: HttpErrorResponse): void {
-    if (erro.status === 409) {
-      const mensagem = erro.error?.fieldErrors?.find((item: { field: string; message: string }) => item.field === CAMPO_EMAIL)?.message;
-      this.emailDuplicado.set(mensagem ?? EMAIL_JA_CADASTRADO);
+  private tratarErroCadastro(erro: unknown): void {
+    if (erro instanceof EmailJaCadastradoError) {
+      this.emailDuplicado.set(EMAIL_JA_CADASTRADO);
       return;
     }
     this.erroGeral.set(ERRO_GERAL_CADASTRO);
