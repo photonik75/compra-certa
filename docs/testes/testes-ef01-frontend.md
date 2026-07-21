@@ -14,7 +14,7 @@
 | Tela Crie sua conta > Mostrar/Ocultar > Alternam somente os respectivos campos e preservam conteúdo | `CAD-12` | Cada controle altera apenas o campo associado.<br>Alternar visibilidade preserva o conteúdo digitado. | Angular Testing Library |
 | Tela Crie sua conta > Criar conta > Valida todos os campos | `CAD-13` | Envio inválido mostra todos os erros e não realiza requisição. | Angular Testing Library |
 | Tela Crie sua conta > Criar conta > E-mail já cadastrado | `CAD-14` | Abre o pop-up “E-mail já foi cadastrado”.<br>Permanece não autenticado e na tela de cadastro. | Angular Testing Library + HttpTestingController<br>Vitest |
-| Tela Crie sua conta > Criar conta > Em caso de falha, não cria conta parcialmente | `CAD-15` | Falha mockada não produz estado visual de sucesso ou autenticação. A atomicidade real será testada no backend. | Angular Testing Library |
+| Tela Crie sua conta > Criar conta > Em caso de falha, não cria conta parcialmente | `CAD-15` | Falha mockada exibe “Ocorreu um erro ao tentar criar sua conta. Aguarde e tente novamente em alguns instantes.” e não produz estado visual de sucesso ou autenticação. A atomicidade real será testada no backend. | Angular Testing Library + HttpTestingController |
 | Tela Crie sua conta > Criar conta > Sucesso autentica e abre Minhas Listas | `CAD-16` | `201 SessionResponse` define o usuário autenticado.<br>Navega para “Minhas Listas”. | Vitest + HttpTestingController<br>RouterTestingHarness |
 | Tela Crie sua conta > Criar conta > Enquanto processa, não permite novo envio | `CAD-17` | Desabilita o envio e múltiplos cliques produzem uma requisição. | Angular Testing Library |
 | Tela Crie sua conta > Link Entrar | `CAD-18` | Navega para “Entre na sua conta”. | RouterTestingHarness |

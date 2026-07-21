@@ -1,6 +1,11 @@
-import { Component, signal } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Component, inject, signal } from '@angular/core';
 
 const CAMPO_SENHA = 'senha';
+const CAMPO_EMAIL = 'email';
+const ENDPOINT_CADASTRO = '/api/v1/auth/registrations';
+const EMAIL_JA_CADASTRADO = 'E-mail já foi cadastrado';
+const ERRO_GERAL_CADASTRO = 'Ocorreu um erro ao tentar criar sua conta. Aguarde e tente novamente em alguns instantes.';
 
 @Component({
   selector: 'app-cadastro',
@@ -9,12 +14,15 @@ const CAMPO_SENHA = 'senha';
   styleUrl: './cadastro.css',
 })
 export class Cadastro {
+  private readonly http = inject(HttpClient);
   protected readonly senhaVisivel = signal(false);
   protected readonly confirmacaoVisivel = signal(false);
   protected readonly erroNome = signal<string | null>(null);
   protected readonly erroEmail = signal(false);
   protected readonly erroSenha = signal(false);
   protected readonly erroConfirmacao = signal(false);
+  protected readonly emailDuplicado = signal<string | null>(null);
+  protected readonly erroGeral = signal<string | null>(null);
 
   protected alternarSenha(): void {
     this.senhaVisivel.update((visivel) => !visivel);
@@ -46,10 +54,17 @@ export class Cadastro {
     const formulario = evento.currentTarget as HTMLFormElement;
     const nome = formulario.elements.namedItem('nome') as HTMLInputElement;
     nome.value = nome.value.trim().replace(/\s+/g, ' ');
+    const email = formulario.elements.namedItem(CAMPO_EMAIL) as HTMLInputElement;
+    const senha = formulario.elements.namedItem(CAMPO_SENHA) as HTMLInputElement;
+    const confirmacao = formulario.elements.namedItem('confirmarSenha') as HTMLInputElement;
     this.atualizarValidadeNome(nome);
-    this.atualizarValidadeEmail(formulario.elements.namedItem('email') as HTMLInputElement);
-    this.atualizarValidadeSenha(formulario.elements.namedItem(CAMPO_SENHA) as HTMLInputElement);
-    this.atualizarValidadeConfirmacao(formulario.elements.namedItem('confirmarSenha') as HTMLInputElement);
+    this.atualizarValidadeEmail(email);
+    this.atualizarValidadeSenha(senha);
+    this.atualizarValidadeConfirmacao(confirmacao);
+    if ([nome, email, senha, confirmacao].some((campo) => !campo.checkValidity())) return;
+    this.emailDuplicado.set(null);
+    this.erroGeral.set(null);
+    this.http.post(ENDPOINT_CADASTRO, { name: nome.value, email: email.value, password: senha.value }).subscribe({ error: (erro: HttpErrorResponse) => this.tratarErroCadastro(erro) });
   }
 
   private atualizarValidadeNome(campo: HTMLInputElement): void {
@@ -76,5 +91,14 @@ export class Cadastro {
     const invalido = campo.value.length === 0 || campo.value !== senha;
     campo.setCustomValidity(invalido ? 'As senhas devem ser idênticas' : '');
     this.erroConfirmacao.set(invalido);
+  }
+
+  private tratarErroCadastro(erro: HttpErrorResponse): void {
+    if (erro.status === 409) {
+      const mensagem = erro.error?.fieldErrors?.find((item: { field: string; message: string }) => item.field === CAMPO_EMAIL)?.message;
+      this.emailDuplicado.set(mensagem ?? EMAIL_JA_CADASTRADO);
+      return;
+    }
+    this.erroGeral.set(ERRO_GERAL_CADASTRO);
   }
 }

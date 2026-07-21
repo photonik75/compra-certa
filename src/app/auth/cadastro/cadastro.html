@@ -14,6 +14,15 @@
       <h1>Crie sua conta</h1>
       <p class="ajuda">Suas categorias iniciais serão criadas automaticamente.</p>
 
+      @if (emailDuplicado()) {
+        <div role="dialog" aria-modal="true" aria-label="E-mail já foi cadastrado">
+          <p>{{ emailDuplicado() }}</p>
+        </div>
+      }
+      @if (erroGeral()) {
+        <p class="erro-campo" role="alert">{{ erroGeral() }}</p>
+      }
+
       <form novalidate (submit)="validarCadastro($event)">
         <div class="campo">
           <label for="nome">Nome</label>

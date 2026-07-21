@@ -1,3 +1,6 @@
+import { provideHttpClient } from '@angular/common/http';
+import { TestBed } from '@angular/core/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { fireEvent, render, screen } from '@testing-library/angular';
 import { Cadastro } from './cadastro';
 
@@ -6,6 +9,7 @@ const EMAIL = 'E-mail';
 const SENHA = 'Senha';
 const CONFIRMAR_SENHA = 'Confirmar senha';
 const CRIAR_CONTA = 'Criar conta';
+const TITULO_CADASTRO = 'Crie sua conta';
 const MOSTRAR = 'Mostrar';
 const OCULTAR = 'Ocultar';
 const ERRO_NOME = 'Por favor, informe seu nome';
@@ -18,13 +22,31 @@ const EMAIL_255 = `${EMAIL_254}d`;
 const SENHA_VALIDA = 'senha123';
 const SENHA_SEGURA = 'Senha segura';
 const CARACTERE_SENHA = 'a';
+const EMAIL_VALIDO = 'maria@example.com';
+const NOME_VALIDO = 'Maria';
+const ENDPOINT_CADASTRO = '/api/v1/auth/registrations';
+const EMAIL_JA_CADASTRADO = 'E-mail já foi cadastrado';
+const ERRO_GERAL_CADASTRO = 'Ocorreu um erro ao tentar criar sua conta. Aguarde e tente novamente em alguns instantes.';
+
+async function renderizarCadastroComHttp(): Promise<HttpTestingController> {
+  await render(Cadastro, { providers: [provideHttpClient(), provideHttpClientTesting()] });
+  return TestBed.inject(HttpTestingController);
+}
+
+function preencherCadastroValido(): void {
+  fireEvent.input(screen.getByRole('textbox', { name: NOME }), { target: { value: NOME_VALIDO } });
+  fireEvent.input(screen.getByRole('textbox', { name: EMAIL }), { target: { value: EMAIL_VALIDO } });
+  fireEvent.input(screen.getByLabelText(SENHA), { target: { value: SENHA_VALIDA } });
+  fireEvent.input(screen.getByLabelText(CONFIRMAR_SENHA), { target: { value: SENHA_VALIDA } });
+  fireEvent.click(screen.getByRole('button', { name: CRIAR_CONTA }));
+}
 
 describe('Testes unitários do componente Cadastro', () => {
   it('CAD-1 - renderiza todos os campos e controles do cadastro', async () => {
     await render(Cadastro);
 
     expect(
-      screen.getByRole('heading', { name: 'Crie sua conta' }),
+      screen.getByRole('heading', { name: TITULO_CADASTRO }),
     ).toBeTruthy();
     expect(screen.getByRole('textbox', { name: NOME })).toBeTruthy();
     expect(screen.getByRole('textbox', { name: EMAIL })).toBeTruthy();
@@ -49,7 +71,7 @@ describe('Testes unitários do componente Cadastro', () => {
     const criarConta = screen.getByRole('button', { name: CRIAR_CONTA });
     fireEvent.click(criarConta);
     expect(screen.getByText(ERRO_NOME)).toBeTruthy();
-    fireEvent.input(nome, { target: { value: 'Maria' } });
+    fireEvent.input(nome, { target: { value: NOME_VALIDO } });
     expect(screen.queryByText(ERRO_NOME)).toBeNull();
     fireEvent.input(nome, { target: { value: '   ' } });
     fireEvent.click(criarConta);
@@ -198,5 +220,27 @@ describe('Testes unitários do componente Cadastro', () => {
     fireEvent.click(screen.getByRole('button', { name: CRIAR_CONTA }));
     for (const campo of campos) expect(campo.getAttribute(ATRIBUTO_ARIA_INVALIDO)).toBe(ARIA_INVALIDO);
     expect(screen.getAllByRole('alert')).toHaveLength(4);
+  });
+
+  it('CAD-14 - exibe pop-up quando o e-mail já está cadastrado', async () => {
+    const http = await renderizarCadastroComHttp();
+    preencherCadastroValido();
+    const requisicao = http.expectOne(ENDPOINT_CADASTRO);
+    expect(requisicao.request.method).toBe('POST');
+    requisicao.flush({ status: 409, code: 'CONFLICT', fieldErrors: [{ field: 'email', message: EMAIL_JA_CADASTRADO }] }, { status: 409, statusText: 'Conflict' });
+    expect((await screen.findByRole('dialog')).textContent).toContain(EMAIL_JA_CADASTRADO);
+    expect(screen.getByRole('heading', { name: TITULO_CADASTRO })).toBeTruthy();
+    http.verify();
+  });
+
+  it('CAD-15 - falha não cria conta parcialmente', async () => {
+    const http = await renderizarCadastroComHttp();
+    preencherCadastroValido();
+    const requisicao = http.expectOne(ENDPOINT_CADASTRO);
+    requisicao.flush({ status: 500, code: 'INTERNAL_ERROR' }, { status: 500, statusText: 'Internal Server Error' });
+    expect(await screen.findByText(ERRO_GERAL_CADASTRO)).toBeTruthy();
+    expect(screen.getByRole('heading', { name: TITULO_CADASTRO })).toBeTruthy();
+    expect(screen.queryByRole('heading', { name: 'Minhas Listas' })).toBeNull();
+    http.verify();
   });
 });

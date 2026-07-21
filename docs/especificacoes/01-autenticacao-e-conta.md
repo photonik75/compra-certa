@@ -41,7 +41,7 @@ Permitir que visitantes criem uma conta, autentiquem-se, encerrem a sessão e re
   - **Botão “Criar conta”**
     - Valida todos os campos antes de concluir o cadastro.
     - Se o e-mail já estiver cadastrado, não cria outra conta, não autentica o visitante e exibe o pop-up “E-mail já foi cadastrado”.
-    - Em caso de falha, não cria conta parcialmente.
+    - Em caso de falha, não cria conta parcialmente e exibe “Ocorreu um erro ao tentar criar sua conta. Aguarde e tente novamente em alguns instantes.”.
     - Em caso de sucesso, cria somente a conta, autentica o novo usuário e abre a tela “Minhas Listas”.
     - Enquanto processa o cadastro, não permite novo envio.
   - **Link “Entrar”**
