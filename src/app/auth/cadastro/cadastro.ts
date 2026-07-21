@@ -1,11 +1,13 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 
 const CAMPO_SENHA = 'senha';
 const CAMPO_EMAIL = 'email';
 const ENDPOINT_CADASTRO = '/api/v1/auth/registrations';
 const EMAIL_JA_CADASTRADO = 'E-mail já foi cadastrado';
 const ERRO_GERAL_CADASTRO = 'Ocorreu um erro ao tentar criar sua conta. Aguarde e tente novamente em alguns instantes.';
+const ROTA_LISTAS = '/listas';
 
 @Component({
   selector: 'app-cadastro',
@@ -15,6 +17,7 @@ const ERRO_GERAL_CADASTRO = 'Ocorreu um erro ao tentar criar sua conta. Aguarde 
 })
 export class Cadastro {
   private readonly http = inject(HttpClient);
+  private readonly router = inject(Router);
   protected readonly senhaVisivel = signal(false);
   protected readonly confirmacaoVisivel = signal(false);
   protected readonly erroNome = signal<string | null>(null);
@@ -64,7 +67,7 @@ export class Cadastro {
     if ([nome, email, senha, confirmacao].some((campo) => !campo.checkValidity())) return;
     this.emailDuplicado.set(null);
     this.erroGeral.set(null);
-    this.http.post(ENDPOINT_CADASTRO, { name: nome.value, email: email.value, password: senha.value }).subscribe({ error: (erro: HttpErrorResponse) => this.tratarErroCadastro(erro) });
+    this.http.post(ENDPOINT_CADASTRO, { name: nome.value, email: email.value, password: senha.value }).subscribe({ next: () => this.router.navigateByUrl(ROTA_LISTAS), error: (erro: HttpErrorResponse) => this.tratarErroCadastro(erro) });
   }
 
   private atualizarValidadeNome(campo: HTMLInputElement): void {
