@@ -113,7 +113,7 @@
           </div>
         </div>
 
-        <button class="acao-principal" type="submit">Criar conta</button>
+        <button class="acao-principal" type="submit" [disabled]="processando()">Criar conta</button>
         <p class="entrar">Já tem uma conta? <a href="/entrar">Entrar</a></p>
       </form>
     </div>

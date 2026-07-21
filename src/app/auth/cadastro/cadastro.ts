@@ -1,5 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { finalize } from 'rxjs';
 import { CadastroService, EmailJaCadastradoError } from './cadastro.service';
 
 const CAMPO_SENHA = 'senha';
@@ -25,6 +26,7 @@ export class Cadastro {
   protected readonly erroConfirmacao = signal(false);
   protected readonly emailDuplicado = signal<string | null>(null);
   protected readonly erroGeral = signal<string | null>(null);
+  protected readonly processando = signal(false);
 
   protected alternarSenha(): void {
     this.senhaVisivel.update((visivel) => !visivel);
@@ -53,6 +55,7 @@ export class Cadastro {
 
   protected validarCadastro(evento: SubmitEvent): void {
     evento.preventDefault();
+    if (this.processando()) return;
     const formulario = evento.currentTarget as HTMLFormElement;
     const nome = formulario.elements.namedItem('nome') as HTMLInputElement;
     nome.value = nome.value.trim().replace(/\s+/g, ' ');
@@ -66,10 +69,19 @@ export class Cadastro {
     if ([nome, email, senha, confirmacao].some((campo) => !campo.checkValidity())) return;
     this.emailDuplicado.set(null);
     this.erroGeral.set(null);
-    this.cadastroService.cadastrar({ 
-        name: nome.value, email: email.value, password: senha.value, passwordConfirmation: confirmacao.value }).subscribe({ 
-            next: () => this.router.navigateByUrl(ROTA_LISTAS), error: (erro: unknown) => this.tratarErroCadastro(erro) 
-        });
+    this.processando.set(true);
+    this.cadastroService
+      .cadastrar({
+        name: nome.value,
+        email: email.value,
+        password: senha.value,
+        passwordConfirmation: confirmacao.value,
+      })
+      .pipe(finalize(() => this.processando.set(false)))
+      .subscribe({
+        next: () => this.router.navigateByUrl(ROTA_LISTAS),
+        error: (erro: unknown) => this.tratarErroCadastro(erro),
+      });
   }
 
   private atualizarValidadeNome(campo: HTMLInputElement): void {

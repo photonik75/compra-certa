@@ -1,7 +1,7 @@
 import { Provider } from '@angular/core';
 import { Router } from '@angular/router';
 import { fireEvent, render as renderComponent, screen } from '@testing-library/angular';
-import { NEVER, of, throwError } from 'rxjs';
+import { NEVER, of, Subject, throwError } from 'rxjs';
 import { vi } from 'vitest';
 import { Cadastro } from './cadastro';
 import { CadastroService, EmailJaCadastradoError } from './cadastro.service';
@@ -306,4 +306,22 @@ describe('Testes unitários do componente Cadastro', () => {
     expect(cadastroService.cadastrar).toHaveBeenCalledOnce();
     expect(router.navigateByUrl).toHaveBeenCalledWith(ROTA_LISTAS);
   });
+
+  it(
+    'CAD-17 - Verifica se, durante o cadastro, o envio permanece desabilitado e cliques adicionais não criam ' +
+      'novas solicitações.',
+    async () => {
+      const resposta = new Subject<typeof SESSION_RESPONSE>();
+      const cadastroService = { cadastrar: vi.fn().mockReturnValue(resposta) };
+      await render(Cadastro, {
+        providers: [{ provide: CadastroService, useValue: cadastroService }],
+      });
+      preencherCadastroValido();
+      const criarConta = screen.getByRole('button', { name: CRIAR_CONTA }) as HTMLButtonElement;
+      fireEvent.click(criarConta);
+      fireEvent.click(criarConta);
+      expect.soft(criarConta.disabled).toBe(true);
+      expect(cadastroService.cadastrar).toHaveBeenCalledOnce();
+    },
+  );
 });
