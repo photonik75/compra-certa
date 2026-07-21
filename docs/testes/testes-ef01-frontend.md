@@ -25,40 +25,40 @@
 | Tela Crie sua conta > Criar conta > Sucesso autentica e abre Minhas Listas | `CAD-16` | Confirma que uma criação bem-sucedida autentica o usuário e abre “Minhas Listas”. |
 | Tela Crie sua conta > Criar conta > Enquanto processa, não permite novo envio | `CAD-17` | Verifica se, durante o cadastro, o envio permanece desabilitado e cliques adicionais não criam novas solicitações. |
 | Tela Crie sua conta > Link Entrar | `CAD-18` | Confirma que o link “Entrar” abre a tela “Entre na sua conta”. |
-| **Tela “Entre na sua conta” (imagem Login)** | `CAD-19` | Verifica se título, E-mail, Senha, Mostrar/Ocultar, “Manter-me conectado”, “Entrar”, “Criar uma conta” e “Esqueci minha senha” estão presentes na tela de login. |
-| Tela Entre na sua conta > Campo E-mail > Obrigatório e válido, com até 254 caracteres | `CAD-20` | Confirma que e-mails vazios, inválidos ou com 255 caracteres são rejeitados e que um endereço válido com 254 caracteres é aceito. |
-| Tela Entre na sua conta > Campo Senha > Obrigatório | `CAD-21` | Testa o impedimento do login com senha vazia e confirma que as regras de criação de senha não são aplicadas à senha informada. |
-| Tela Entre na sua conta > Campo Senha > Placeholder “Mínimo de 8 caracteres” | `CAD-22` | Verifica se “Mínimo de 8 caracteres” é exibido como orientação no campo Senha. |
-| Tela Entre na sua conta > Mostrar/Ocultar > Alterna visualização e preserva conteúdo | `CAD-23` | Confirma que o controle Mostrar/Ocultar alterna a visibilidade da senha sem alterar seu valor. |
-| Tela Entre na sua conta > Manter-me conectado > Inicia desmarcado | `CAD-24` | Verifica se “Manter-me conectado” é exibido inicialmente desmarcado. |
-| Tela Entre na sua conta > Manter-me conectado > Desmarcado: 12 horas/24 horas; marcado: até 30 dias | `CAD-25` | Confirma que a solicitação de login informa corretamente se “Manter-me conectado” foi marcado. Os prazos efetivos da sessão são validados no backend. |
-| Tela Entre na sua conta > Entrar > Dados incorretos exibem mensagem genérica | `CAD-26` | Confirma que tanto um e-mail inexistente quanto uma senha incorreta apresentam “E-mail ou senha inválidos”. |
-| Tela Entre na sua conta > Entrar > Bloqueio após tentativas malsucedidas | `CAD-27` | Verifica se uma resposta de bloqueio é reconhecida pelo serviço e faz a tela apresentar a mensagem normativa com o tempo de espera. |
-| Tela Entre na sua conta > Entrar > Sucesso abre rota solicitada ou Minhas Listas | `CAD-28` | Confirma que, após o login, é aberta a rota interna solicitada anteriormente ou, quando ela não existe, “Minhas Listas”. |
-| Tela Entre na sua conta > Entrar > Enquanto processa, não permite novo envio | `CAD-29` | Verifica se, durante o login, o envio permanece desabilitado e cliques adicionais não criam novas solicitações. |
-| Tela Entre na sua conta > Link Criar uma conta | `CAD-30` | Confirma que o link “Criar uma conta” abre a tela “Crie sua conta”. |
-| Tela Entre na sua conta > Link Esqueci minha senha | `CAD-31` | Confirma que o link “Esqueci minha senha” abre a tela de recuperação de senha. |
-| **Tela de recuperação de senha** | `CAD-32` | Verifica se o título acessível, o campo E-mail e o botão de envio estão presentes. |
-| Tela de recuperação > Campo E-mail > Obrigatório e válido | `CAD-33` | Testa o impedimento da solicitação de recuperação quando o e-mail está vazio ou é inválido. |
-| Tela de recuperação > Envio > Sempre apresenta a mesma mensagem | `CAD-34` | Confirma que e-mails de contas existentes e inexistentes apresentam a mesma confirmação de solicitação. |
-| Tela de recuperação > Conta existente recebe link único válido por 30 minutos | `CAD-35` | Verifica se uma solicitação aceita apresenta confirmação sem revelar se a conta existe. A geração, a unicidade e a validade do link são validadas no backend. |
-| Tela de recuperação > Novo pedido invalida links anteriores | `CAD-36` | Confirma que um link inválido oferece uma nova solicitação de recuperação. A invalidação dos links anteriores é validada no backend. |
-| Tela de recuperação > Enquanto processa, não permite novo envio | `CAD-37` | Verifica se, durante a solicitação, o envio permanece desabilitado e cliques adicionais não criam novas solicitações. |
-| **Tela de redefinição de senha** | `CAD-38` | Verifica se o título acessível, Nova senha, Confirmar nova senha, dois controles de visibilidade e o botão de confirmação estão presentes. |
-| Tela de redefinição > Nova senha > Obrigatória e de 8 a 128 caracteres | `CAD-39` | Confirma que senhas vazias ou com 7 ou 129 caracteres são rejeitadas e senhas com 8 ou 128 caracteres são aceitas. |
-| Tela de redefinição > Confirmar nova senha > Obrigatória e idêntica | `CAD-40` | Confirma a rejeição de uma confirmação vazia ou diferente da nova senha. |
-| Tela de redefinição > Mostrar/Ocultar > Alternam visualização e preservam conteúdo | `CAD-41` | Verifica se cada controle alterna somente a visibilidade de seu campo e preserva o valor digitado. |
-| Tela de redefinição > Link inválido, usado ou expirado | `CAD-42` | Confirma que um link inválido, usado ou expirado oferece nova solicitação, sem apresentar sucesso nem iniciar uma sessão. |
-| Tela de redefinição > Sucesso altera senha, encerra acessos e abre login | `CAD-43` | Verifica se uma redefinição bem-sucedida limpa a sessão local e abre o login. A alteração da senha e o encerramento dos acessos remotos são validados no backend. |
-| Tela de redefinição > Enquanto processa, não permite novo envio | `CAD-44` | Verifica se, durante a redefinição, a confirmação permanece desabilitada e cliques adicionais não criam novas solicitações. |
-| **Tela “Minhas Listas” após cadastro** | `CAD-45` | Verifica se a tela apresenta o título “Minhas Listas”. |
-| Tela Minhas Listas > Exibe somente o título | `CAD-46` | Confirma que a tela exibe somente o título, sem listas, itens, ações ou outros conteúdos. |
-| Navegação > Visitante abre página interna | `CAD-47` | Confirma que um visitante é direcionado ao login ao abrir uma página interna e retorna à página originalmente solicitada após se autenticar. |
-| Navegação > Autenticado abre login ou cadastro | `CAD-48` | Confirma que um usuário autenticado é direcionado a “Minhas Listas” ao abrir o login ou o cadastro. |
-| Navegação > Ao sair, abre login e exige nova autenticação | `CAD-49` | Verifica se, ao sair, o login é aberto e as páginas internas voltam a exigir autenticação. |
-| Formulários > Estados inicial, erro por campo, processamento, sucesso e erro geral | `CAD-50` | Verifica se cada formulário apresenta corretamente seus estados inicial, de validação, de processamento, de sucesso e de erro geral. |
-| Formulários > Erros preservam nome e e-mail, mas podem limpar senhas | `CAD-51` | Confirma que, após um erro, nome e e-mail permanecem preenchidos e as senhas podem ser limpas sem alterar os demais campos. |
-| Formulários > Perceptíveis e operáveis por teclado e tecnologias assistivas | `CAD-52` | Verifica se todos os controles funcionam por teclado, têm nomes acessíveis, associam os erros aos campos, anunciam mudanças de estado e não comunicam informações somente por cor. |
+| **Tela “Entre na sua conta” (imagem Login)** | `LOG-1` | Verifica se título, E-mail, Senha, Mostrar/Ocultar, “Manter-me conectado”, “Entrar”, “Criar uma conta” e “Esqueci minha senha” estão presentes na tela de login. |
+| Tela Entre na sua conta > Campo E-mail > Obrigatório e válido, com até 254 caracteres | `LOG-2` | Confirma que e-mails vazios, inválidos ou com 255 caracteres são rejeitados e que um endereço válido com 254 caracteres é aceito. |
+| Tela Entre na sua conta > Campo Senha > Obrigatório | `LOG-3` | Testa o impedimento do login com senha vazia e confirma que as regras de criação de senha não são aplicadas à senha informada. |
+| Tela Entre na sua conta > Campo Senha > Placeholder “Mínimo de 8 caracteres” | `LOG-4` | Verifica se “Mínimo de 8 caracteres” é exibido como orientação no campo Senha. |
+| Tela Entre na sua conta > Mostrar/Ocultar > Alterna visualização e preserva conteúdo | `LOG-5` | Confirma que o controle Mostrar/Ocultar alterna a visibilidade da senha sem alterar seu valor. |
+| Tela Entre na sua conta > Manter-me conectado > Inicia desmarcado | `LOG-6` | Verifica se “Manter-me conectado” é exibido inicialmente desmarcado. |
+| Tela Entre na sua conta > Manter-me conectado > Desmarcado: 12 horas/24 horas; marcado: até 30 dias | `LOG-7` | Confirma que a solicitação de login informa corretamente se “Manter-me conectado” foi marcado. Os prazos efetivos da sessão são validados no backend. |
+| Tela Entre na sua conta > Entrar > Dados incorretos exibem mensagem genérica | `LOG-8` | Confirma que tanto um e-mail inexistente quanto uma senha incorreta apresentam “E-mail ou senha inválidos”. |
+| Tela Entre na sua conta > Entrar > Bloqueio após tentativas malsucedidas | `LOG-9` | Verifica se uma resposta de bloqueio é reconhecida pelo serviço e faz a tela apresentar a mensagem normativa com o tempo de espera. |
+| Tela Entre na sua conta > Entrar > Sucesso abre rota solicitada ou Minhas Listas | `LOG-10` | Confirma que, após o login, é aberta a rota interna solicitada anteriormente ou, quando ela não existe, “Minhas Listas”. |
+| Tela Entre na sua conta > Entrar > Enquanto processa, não permite novo envio | `LOG-11` | Verifica se, durante o login, o envio permanece desabilitado e cliques adicionais não criam novas solicitações. |
+| Tela Entre na sua conta > Link Criar uma conta | `LOG-12` | Confirma que o link “Criar uma conta” abre a tela “Crie sua conta”. |
+| Tela Entre na sua conta > Link Esqueci minha senha | `LOG-13` | Confirma que o link “Esqueci minha senha” abre a tela de recuperação de senha. |
+| **Tela de recuperação de senha** | `REC-1` | Verifica se o título acessível, o campo E-mail e o botão de envio estão presentes. |
+| Tela de recuperação > Campo E-mail > Obrigatório e válido | `REC-2` | Testa o impedimento da solicitação de recuperação quando o e-mail está vazio ou é inválido. |
+| Tela de recuperação > Envio > Sempre apresenta a mesma mensagem | `REC-3` | Confirma que e-mails de contas existentes e inexistentes apresentam a mesma confirmação de solicitação. |
+| Tela de recuperação > Conta existente recebe link único válido por 30 minutos | `REC-4` | Verifica se uma solicitação aceita apresenta confirmação sem revelar se a conta existe. A geração, a unicidade e a validade do link são validadas no backend. |
+| Tela de recuperação > Novo pedido invalida links anteriores | `REC-5` | Confirma que um link inválido oferece uma nova solicitação de recuperação. A invalidação dos links anteriores é validada no backend. |
+| Tela de recuperação > Enquanto processa, não permite novo envio | `REC-6` | Verifica se, durante a solicitação, o envio permanece desabilitado e cliques adicionais não criam novas solicitações. |
+| **Tela de redefinição de senha** | `RED-1` | Verifica se o título acessível, Nova senha, Confirmar nova senha, dois controles de visibilidade e o botão de confirmação estão presentes. |
+| Tela de redefinição > Nova senha > Obrigatória e de 8 a 128 caracteres | `RED-2` | Confirma que senhas vazias ou com 7 ou 129 caracteres são rejeitadas e senhas com 8 ou 128 caracteres são aceitas. |
+| Tela de redefinição > Confirmar nova senha > Obrigatória e idêntica | `RED-3` | Confirma a rejeição de uma confirmação vazia ou diferente da nova senha. |
+| Tela de redefinição > Mostrar/Ocultar > Alternam visualização e preservam conteúdo | `RED-4` | Verifica se cada controle alterna somente a visibilidade de seu campo e preserva o valor digitado. |
+| Tela de redefinição > Link inválido, usado ou expirado | `RED-5` | Confirma que um link inválido, usado ou expirado oferece nova solicitação, sem apresentar sucesso nem iniciar uma sessão. |
+| Tela de redefinição > Sucesso altera senha, encerra acessos e abre login | `RED-6` | Verifica se uma redefinição bem-sucedida limpa a sessão local e abre o login. A alteração da senha e o encerramento dos acessos remotos são validados no backend. |
+| Tela de redefinição > Enquanto processa, não permite novo envio | `RED-7` | Verifica se, durante a redefinição, a confirmação permanece desabilitada e cliques adicionais não criam novas solicitações. |
+| **Tela “Minhas Listas” após cadastro** | `LIS-1` | Verifica se a tela apresenta o título “Minhas Listas”. |
+| Tela Minhas Listas > Exibe somente o título | `LIS-2` | Confirma que a tela exibe somente o título, sem listas, itens, ações ou outros conteúdos. |
+| Navegação > Visitante abre página interna | `NAV-1` | Confirma que um visitante é direcionado ao login ao abrir uma página interna e retorna à página originalmente solicitada após se autenticar. |
+| Navegação > Autenticado abre login ou cadastro | `NAV-2` | Confirma que um usuário autenticado é direcionado a “Minhas Listas” ao abrir o login ou o cadastro. |
+| Navegação > Ao sair, abre login e exige nova autenticação | `NAV-3` | Verifica se, ao sair, o login é aberto e as páginas internas voltam a exigir autenticação. |
+| Formulários > Estados inicial, erro por campo, processamento, sucesso e erro geral | `FOR-1` | Verifica se cada formulário apresenta corretamente seus estados inicial, de validação, de processamento, de sucesso e de erro geral. |
+| Formulários > Erros preservam nome e e-mail, mas podem limpar senhas | `FOR-2` | Confirma que, após um erro, nome e e-mail permanecem preenchidos e as senhas podem ser limpas sem alterar os demais campos. |
+| Formulários > Perceptíveis e operáveis por teclado e tecnologias assistivas | `FOR-3` | Verifica se todos os controles funcionam por teclado, têm nomes acessíveis, associam os erros aos campos, anunciam mudanças de estado e não comunicam informações somente por cor. |
 | **Testes de integração** |  |  |
 | Tela Entre na sua conta > Manter-me conectado > Restauração e expiração da sessão | `INT-1` | Confirma que, após recarregar a aplicação, uma sessão válida restaura a interface autenticada e uma sessão expirada abre a interface não autenticada. |
 | Navegação > Voltar após sair não revela dados protegidos | `INT-2` | Verifica se, após o logout, usar a ação Voltar do navegador não volta a exibir conteúdo protegido. |
