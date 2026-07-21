@@ -4,8 +4,11 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { fireEvent, render, screen } from '@testing-library/angular';
+import { throwError } from 'rxjs';
+import { vi } from 'vitest';
 import { routes } from '../../app.routes';
 import { Cadastro } from './cadastro';
+import { CadastroService, EmailJaCadastradoError } from './cadastro.service';
 
 const NOME = 'Nome';
 const EMAIL = 'E-mail';
@@ -229,14 +232,12 @@ describe('Testes unitários do componente Cadastro', () => {
   });
 
   it('CAD-14 - exibe pop-up quando o e-mail já está cadastrado', async () => {
-    const http = await renderizarCadastroComHttp();
+    const cadastroService = { cadastrar: vi.fn().mockReturnValue(throwError(() => new EmailJaCadastradoError())) };
+    await render(Cadastro, { providers: [{ provide: CadastroService, useValue: cadastroService }] });
     preencherCadastroValido();
-    const requisicao = http.expectOne(ENDPOINT_CADASTRO);
-    expect(requisicao.request.method).toBe('POST');
-    requisicao.flush({ status: 409, code: 'CONFLICT', fieldErrors: [{ field: 'email', message: EMAIL_JA_CADASTRADO }] }, { status: 409, statusText: 'Conflict' });
     expect((await screen.findByRole('dialog')).textContent).toContain(EMAIL_JA_CADASTRADO);
     expect(screen.getByRole('heading', { name: TITULO_CADASTRO })).toBeTruthy();
-    http.verify();
+    expect(cadastroService.cadastrar).toHaveBeenCalledOnce();
   });
 
   it('CAD-15 - falha não cria conta parcialmente', async () => {
