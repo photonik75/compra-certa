@@ -8,6 +8,7 @@ const CAMPO_EMAIL = 'email';
 const EMAIL_JA_CADASTRADO = 'E-mail já foi cadastrado';
 const ERRO_GERAL_CADASTRO = 'Ocorreu um erro ao tentar criar sua conta. Aguarde e tente novamente em alguns instantes.';
 const ROTA_LISTAS = '/listas';
+const ROTA_ENTRAR = '/entrar';
 
 @Component({
   selector: 'app-cadastro',
@@ -51,6 +52,11 @@ export class Cadastro {
 
   protected validarConfirmacao(evento: Event): void {
     this.atualizarValidadeConfirmacao(evento.target as HTMLInputElement);
+  }
+
+  protected entrar(evento: MouseEvent): void {
+    evento.preventDefault();
+    this.router.navigateByUrl(ROTA_ENTRAR);
   }
 
   protected validarCadastro(evento: SubmitEvent): void {

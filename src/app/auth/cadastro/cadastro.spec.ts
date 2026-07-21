@@ -324,4 +324,11 @@ describe('Testes unitários do componente Cadastro', () => {
       expect(cadastroService.cadastrar).toHaveBeenCalledOnce();
     },
   );
+
+  it('CAD-18 - Confirma que o link “Entrar” abre a tela “Entre na sua conta”.', async () => {
+    const router = { navigateByUrl: vi.fn().mockResolvedValue(true) };
+    await render(Cadastro, { providers: [{ provide: Router, useValue: router }] });
+    fireEvent.click(screen.getByRole('link', { name: 'Entrar' }));
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/entrar');
+  });
 });

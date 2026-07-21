@@ -2,9 +2,7 @@
 Forneça respostas sucintas e objetivas. Somente quando solicitado, dê maiores detalhes.
 
 # Arquitetura do frontend
-Componentes, diretivas e pipes não devem importar ou injetar `HttpClient`, conhecer URLs de endpoints ou interpretar contratos HTTP. Toda comunicação com o servidor deve ser encapsulada em um serviço injetável da funcionalidade.
-Nos testes unitários de componentes, substitua esses serviços por stubs, fakes ou spies. Não use `HttpTestingController`, `provideHttpClient()` ou `provideHttpClientTesting()` em testes unitários de componentes. Esses recursos pertencem aos testes dos serviços HTTP, interceptors e testes explícitos de integração.
-Crie somente a menor API de serviço exigida pelo caso de uso atual. Não antecipe serviços, métodos ou abstrações para funcionalidades futuras.
+Componentes, diretivas e pipes não devem fazer acesso direto ao servidor. Toda comunicação com o servidor deve ser encapsulada em serviços.
 
 # Codificação
 Evite pular linhas em métodos. Dê preferência a métodos compactos.
@@ -16,3 +14,4 @@ Evite passar de 120 caracteres por linha. Quebre e indente onde adequado.
 Implemente somente o teste pedido e garanta que falhe (vermelho). Só implemente o necessário para ficar verde quando solicitado.
 Ao implementar a solução para um teste que falha, implemente a mudança mais simples que faça o novo teste passar e mantenha os antigos testes funcionando, nada além.
 Se houver mais de uma opção de solução igualmente simples, antes de implementar me ofereça as opções.
+Nos testes unitários, não use configurações reais; sempre que houver chamada a outro componente ou serviço, use stubs ou spies.
