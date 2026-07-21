@@ -3,6 +3,8 @@
 - Testes unitários de componentes substituem o serviço injetável da funcionalidade por stub, fake ou spy. Eles verificam interação, estado visual e navegação sem conhecer URL, status ou formato HTTP.
 - Testes unitários dos serviços verificam URL, método, corpo, status e tradução do contrato HTTP com `HttpTestingController`.
 - Testes de guards e rotas substituem o serviço de sessão por stub e usam `RouterTestingHarness`.
+- Testes de integração dos interceptadores mock exercitam o serviço e a cadeia HTTP, confirmando a resposta
+  simulada e o encaminhamento de requisições fora do escopo.
 - Testes de integração com Playwright ficam ao fim da tabela e cobrem somente comportamentos que dependem de recarga ou do histórico real do navegador.
 
 | Trecho da seção Requisitos | Código(s) | Descrição do(s) teste(s) |
@@ -59,6 +61,11 @@
 | Formulários > Estados inicial, erro por campo, processamento, sucesso e erro geral | `FOR-1` | Verifica se cada formulário apresenta corretamente seus estados inicial, de validação, de processamento, de sucesso e de erro geral. |
 | Formulários > Erros preservam nome e e-mail, mas podem limpar senhas | `FOR-2` | Confirma que, após um erro, nome e e-mail permanecem preenchidos e as senhas podem ser limpas sem alterar os demais campos. |
 | Formulários > Perceptíveis e operáveis por teclado e tecnologias assistivas | `FOR-3` | Verifica se todos os controles funcionam por teclado, têm nomes acessíveis, associam os erros aos campos, anunciam mudanças de estado e não comunicam informações somente por cor. |
+| **Integração com interceptadores mock** |  |  |
+| Mock de login > Requisição de login | `MOCK-LOG-1` | Confirma que o interceptor captura a criação de sessão e retorna uma sessão simulada sem encaminhar a requisição ao backend. |
+| Mock de login > Requisição fora do escopo | `MOCK-LOG-2` | Confirma que o interceptor encaminha requisições que não correspondem ao endpoint de login. |
+| Mock de cadastro > Requisição de cadastro | `MOCK-CAD-1` | Confirma que o interceptor captura a criação de conta e retorna uma sessão simulada sem encaminhar a requisição ao backend. |
+| Mock de cadastro > Requisição fora do escopo | `MOCK-CAD-2` | Confirma que o interceptor encaminha requisições que não correspondem ao endpoint de cadastro. |
 | **Testes de integração** |  |  |
 | Tela Entre na sua conta > Manter-me conectado > Restauração e expiração da sessão | `INT-1` | Confirma que, após recarregar a aplicação, uma sessão válida restaura a interface autenticada e uma sessão expirada abre a interface não autenticada. |
 | Navegação > Voltar após sair não revela dados protegidos | `INT-2` | Verifica se, após o logout, usar a ação Voltar do navegador não volta a exibir conteúdo protegido. |

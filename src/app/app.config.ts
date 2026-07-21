@@ -4,8 +4,12 @@ import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
 import { cadastroMockInterceptor } from './auth/cadastro/cadastro-mock.interceptor';
+import { loginMockInterceptor } from './auth/login/login-mock.interceptor';
 
-const httpProvider = isDevMode() ? provideHttpClient(withInterceptors([cadastroMockInterceptor])) : provideHttpClient();
+const mockInterceptors = [cadastroMockInterceptor, loginMockInterceptor];
+const httpProvider = isDevMode()
+  ? provideHttpClient(withInterceptors(mockInterceptors))
+  : provideHttpClient();
 
 export const appConfig: ApplicationConfig = {
   providers: [
