@@ -66,7 +66,10 @@ export class Cadastro {
     if ([nome, email, senha, confirmacao].some((campo) => !campo.checkValidity())) return;
     this.emailDuplicado.set(null);
     this.erroGeral.set(null);
-    this.cadastroService.cadastrar({ name: nome.value, email: email.value, password: senha.value, passwordConfirmation: confirmacao.value }).subscribe({ next: () => this.router.navigateByUrl(ROTA_LISTAS), error: (erro: unknown) => this.tratarErroCadastro(erro) });
+    this.cadastroService.cadastrar({ 
+        name: nome.value, email: email.value, password: senha.value, passwordConfirmation: confirmacao.value }).subscribe({ 
+            next: () => this.router.navigateByUrl(ROTA_LISTAS), error: (erro: unknown) => this.tratarErroCadastro(erro) 
+        });
   }
 
   private atualizarValidadeNome(campo: HTMLInputElement): void {

@@ -10,6 +10,7 @@ Crie somente a menor API de serviço exigida pelo caso de uso atual. Não anteci
 Evite pular linhas em métodos. Dê preferência a métodos compactos.
 Se a mesma string for necessária em mais de um lugar, use constantes para promover reuso. Isso também vale para testes.
 Sempre que necessário criar um componente, use o comando "ng generate component <nomedocomponente>" ou implementar um resultado equivalente (código dividido em html, css, ts e spec.ts).
+Evite passar de 120 caracteres por linha. Quebre e indente onde adequado.
 
 # Testes automatizados
 Implemente somente o teste pedido e garanta que falhe (vermelho). Só implemente o necessário para ficar verde quando solicitado.

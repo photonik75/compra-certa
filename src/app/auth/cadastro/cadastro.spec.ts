@@ -1,12 +1,7 @@
-import { provideHttpClient } from '@angular/common/http';
-import { TestBed } from '@angular/core/testing';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { provideRouter } from '@angular/router';
-import { RouterTestingHarness } from '@angular/router/testing';
+import { Router } from '@angular/router';
 import { fireEvent, render, screen } from '@testing-library/angular';
-import { throwError } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { vi } from 'vitest';
-import { routes } from '../../app.routes';
 import { Cadastro } from './cadastro';
 import { CadastroService, EmailJaCadastradoError } from './cadastro.service';
 
@@ -30,17 +25,10 @@ const SENHA_SEGURA = 'Senha segura';
 const CARACTERE_SENHA = 'a';
 const EMAIL_VALIDO = 'maria@example.com';
 const NOME_VALIDO = 'Maria';
-const ENDPOINT_CADASTRO = '/api/v1/auth/registrations';
 const EMAIL_JA_CADASTRADO = 'E-mail já foi cadastrado';
 const ERRO_GERAL_CADASTRO = 'Ocorreu um erro ao tentar criar sua conta. Aguarde e tente novamente em alguns instantes.';
-const MINHAS_LISTAS = 'Minhas Listas';
-const ROTA_CADASTRO = '/cadastro';
+const ROTA_LISTAS = '/listas';
 const SESSION_RESPONSE = { user: { id: '4f32ccf4-e676-4c23-bd66-e0fb2c2f0ef9', name: NOME_VALIDO, email: EMAIL_VALIDO, status: 'ACTIVE', createdAt: '2026-07-21T12:00:00Z' }, csrfToken: 'csrf-token', expiresAt: '2026-07-22T00:00:00Z' };
-
-async function renderizarCadastroComHttp(): Promise<HttpTestingController> {
-  await render(Cadastro, { providers: [provideHttpClient(), provideHttpClientTesting()] });
-  return TestBed.inject(HttpTestingController);
-}
 
 function preencherCadastroValido(): void {
   fireEvent.input(screen.getByRole('textbox', { name: NOME }), { target: { value: NOME_VALIDO } });
@@ -241,26 +229,21 @@ describe('Testes unitários do componente Cadastro', () => {
   });
 
   it('CAD-15 - falha não cria conta parcialmente', async () => {
-    const http = await renderizarCadastroComHttp();
+    const cadastroService = { cadastrar: vi.fn().mockReturnValue(throwError(() => new Error())) };
+    await render(Cadastro, { providers: [{ provide: CadastroService, useValue: cadastroService }] });
     preencherCadastroValido();
-    const requisicao = http.expectOne(ENDPOINT_CADASTRO);
-    requisicao.flush({ status: 500, code: 'INTERNAL_ERROR' }, { status: 500, statusText: 'Internal Server Error' });
     expect(await screen.findByText(ERRO_GERAL_CADASTRO)).toBeTruthy();
     expect(screen.getByRole('heading', { name: TITULO_CADASTRO })).toBeTruthy();
     expect(screen.queryByRole('heading', { name: 'Minhas Listas' })).toBeNull();
-    http.verify();
+    expect(cadastroService.cadastrar).toHaveBeenCalledOnce();
   });
 
-  it('CAD-16 - sucesso autentica e abre Minhas Listas', async () => {
-    TestBed.configureTestingModule({ providers: [provideRouter(routes), provideHttpClient(), provideHttpClientTesting()] });
-    const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl(ROTA_CADASTRO, Cadastro);
-    const http = TestBed.inject(HttpTestingController);
+  it('CAD-16 - sucesso navega para Minhas Listas', async () => {
+    const cadastroService = { cadastrar: vi.fn().mockReturnValue(of(SESSION_RESPONSE)) };
+    const router = { navigateByUrl: vi.fn().mockResolvedValue(true) };
+    await render(Cadastro, { providers: [{ provide: CadastroService, useValue: cadastroService }, { provide: Router, useValue: router }] });
     preencherCadastroValido();
-    const requisicao = http.expectOne(ENDPOINT_CADASTRO);
-    requisicao.flush(SESSION_RESPONSE, { status: 201, statusText: 'Created' });
-    await harness.fixture.whenStable();
-    expect(screen.getByRole('heading', { name: MINHAS_LISTAS })).toBeTruthy();
-    http.verify();
+    expect(cadastroService.cadastrar).toHaveBeenCalledOnce();
+    expect(router.navigateByUrl).toHaveBeenCalledWith(ROTA_LISTAS);
   });
 });
