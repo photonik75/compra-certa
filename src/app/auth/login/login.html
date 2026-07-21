@@ -1,19 +1,29 @@
-<h1>Entre na sua conta</h1>
-
-<form>
-  <label for="email">E-mail</label>
-  <input id="email" name="email" type="email" />
-
-  <label for="senha">Senha</label>
-  <input id="senha" name="senha" type="password" />
-  <button type="button">Mostrar</button>
-
-  <label>
-    <input name="manterConectado" type="checkbox" />
-    Manter-me conectado
-  </label>
-
-  <button type="submit">Entrar</button>
-  <a href="/cadastro">Criar uma conta</a>
-  <a href="/recuperar-senha">Esqueci minha senha</a>
-</form>
+<main class="pagina-login">
+  <section class="cartao-login">
+    <p class="destaque">Bem-vinda(o)</p>
+    <h1>Entre na sua conta</h1>
+    <p class="ajuda">Por favor, informe seus dados para entrar no sistema.</p>
+    <form>
+      <div class="campo">
+        <label for="email">E-mail</label>
+        <input id="email" name="email" type="email" placeholder="voce@email.com" />
+      </div>
+      <div class="campo">
+        <label for="senha">Senha</label>
+        <div class="controle-senha">
+          <input id="senha" name="senha" type="password" placeholder="Mínimo de 8 caracteres" />
+          <button type="button">Mostrar</button>
+        </div>
+      </div>
+      <label class="manter-conectado">
+        <input name="manterConectado" type="checkbox" />
+        Manter-me conectado
+      </label>
+      <button class="entrar" type="submit">Entrar</button>
+      <nav class="links" aria-label="Opções de acesso">
+        <a href="/cadastro">Criar uma conta</a>
+        <a href="/recuperar-senha">Esqueci minha senha</a>
+      </nav>
+    </form>
+  </section>
+</main>
