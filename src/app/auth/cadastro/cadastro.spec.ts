@@ -1,6 +1,7 @@
+import { Provider } from '@angular/core';
 import { Router } from '@angular/router';
-import { fireEvent, render, screen } from '@testing-library/angular';
-import { of, throwError } from 'rxjs';
+import { fireEvent, render as renderComponent, screen } from '@testing-library/angular';
+import { NEVER, of, throwError } from 'rxjs';
 import { vi } from 'vitest';
 import { Cadastro } from './cadastro';
 import { CadastroService, EmailJaCadastradoError } from './cadastro.service';
@@ -28,7 +29,29 @@ const NOME_VALIDO = 'Maria';
 const EMAIL_JA_CADASTRADO = 'E-mail já foi cadastrado';
 const ERRO_GERAL_CADASTRO = 'Ocorreu um erro ao tentar criar sua conta. Aguarde e tente novamente em alguns instantes.';
 const ROTA_LISTAS = '/listas';
-const SESSION_RESPONSE = { user: { id: '4f32ccf4-e676-4c23-bd66-e0fb2c2f0ef9', name: NOME_VALIDO, email: EMAIL_VALIDO, status: 'ACTIVE', createdAt: '2026-07-21T12:00:00Z' }, csrfToken: 'csrf-token', expiresAt: '2026-07-22T00:00:00Z' };
+const SESSION_RESPONSE = {
+  user: {
+    id: '4f32ccf4-e676-4c23-bd66-e0fb2c2f0ef9',
+    name: NOME_VALIDO,
+    email: EMAIL_VALIDO,
+    status: 'ACTIVE',
+    createdAt: '2026-07-21T12:00:00Z',
+  },
+  csrfToken: 'csrf-token',
+  expiresAt: '2026-07-22T00:00:00Z',
+};
+
+async function render(_component: typeof Cadastro, options: { providers?: Provider[] } = {}) {
+  const cadastroService = { cadastrar: vi.fn().mockReturnValue(NEVER) };
+  const router = { navigateByUrl: vi.fn().mockResolvedValue(true) };
+  return renderComponent(Cadastro, {
+    providers: [
+      { provide: CadastroService, useValue: cadastroService },
+      { provide: Router, useValue: router },
+      ...(options.providers ?? []),
+    ],
+  });
+}
 
 function preencherCadastroValido(): void {
   fireEvent.input(screen.getByRole('textbox', { name: NOME }), { target: { value: NOME_VALIDO } });
@@ -42,23 +65,13 @@ describe('Testes unitários do componente Cadastro', () => {
   it('CAD-1 - renderiza todos os campos e controles do cadastro', async () => {
     await render(Cadastro);
 
-    expect(
-      screen.getByRole('heading', { name: TITULO_CADASTRO }),
-    ).toBeTruthy();
+    expect(screen.getByRole('heading', { name: TITULO_CADASTRO })).toBeTruthy();
     expect(screen.getByRole('textbox', { name: NOME })).toBeTruthy();
     expect(screen.getByRole('textbox', { name: EMAIL })).toBeTruthy();
-    expect((screen.getByLabelText(SENHA) as HTMLInputElement).type).toBe(
-      'password',
-    );
-    expect(
-      (screen.getByLabelText(CONFIRMAR_SENHA) as HTMLInputElement).type,
-    ).toBe('password');
-    expect(
-      screen.getAllByRole('button', { name: /^(mostrar|ocultar)$/i }),
-    ).toHaveLength(2);
-    expect(
-      screen.getByRole('button', { name: CRIAR_CONTA }),
-    ).toBeTruthy();
+    expect((screen.getByLabelText(SENHA) as HTMLInputElement).type).toBe('password');
+    expect((screen.getByLabelText(CONFIRMAR_SENHA) as HTMLInputElement).type).toBe('password');
+    expect(screen.getAllByRole('button', { name: /^(mostrar|ocultar)$/i })).toHaveLength(2);
+    expect(screen.getByRole('button', { name: CRIAR_CONTA })).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Entrar' })).toBeTruthy();
   });
 
@@ -241,7 +254,12 @@ describe('Testes unitários do componente Cadastro', () => {
   it('CAD-16 - sucesso navega para Minhas Listas', async () => {
     const cadastroService = { cadastrar: vi.fn().mockReturnValue(of(SESSION_RESPONSE)) };
     const router = { navigateByUrl: vi.fn().mockResolvedValue(true) };
-    await render(Cadastro, { providers: [{ provide: CadastroService, useValue: cadastroService }, { provide: Router, useValue: router }] });
+    await render(Cadastro, {
+      providers: [
+        { provide: CadastroService, useValue: cadastroService },
+        { provide: Router, useValue: router },
+      ],
+    });
     preencherCadastroValido();
     expect(cadastroService.cadastrar).toHaveBeenCalledOnce();
     expect(router.navigateByUrl).toHaveBeenCalledWith(ROTA_LISTAS);
