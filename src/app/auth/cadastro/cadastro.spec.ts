@@ -27,7 +27,8 @@ const CARACTERE_SENHA = 'a';
 const EMAIL_VALIDO = 'maria@example.com';
 const NOME_VALIDO = 'Maria';
 const EMAIL_JA_CADASTRADO = 'E-mail já foi cadastrado';
-const ERRO_GERAL_CADASTRO = 'Ocorreu um erro ao tentar criar sua conta. Aguarde e tente novamente em alguns instantes.';
+const ERRO_GERAL_CADASTRO =
+  'Ocorreu um erro ao tentar criar sua conta. Aguarde e tente novamente em alguns instantes.';
 const ROTA_LISTAS = '/listas';
 const SESSION_RESPONSE = {
   user: {
@@ -55,27 +56,33 @@ async function render(_component: typeof Cadastro, options: { providers?: Provid
 
 function preencherCadastroValido(): void {
   fireEvent.input(screen.getByRole('textbox', { name: NOME }), { target: { value: NOME_VALIDO } });
-  fireEvent.input(screen.getByRole('textbox', { name: EMAIL }), { target: { value: EMAIL_VALIDO } });
+  fireEvent.input(screen.getByRole('textbox', { name: EMAIL }), {
+    target: { value: EMAIL_VALIDO },
+  });
   fireEvent.input(screen.getByLabelText(SENHA), { target: { value: SENHA_VALIDA } });
   fireEvent.input(screen.getByLabelText(CONFIRMAR_SENHA), { target: { value: SENHA_VALIDA } });
   fireEvent.click(screen.getByRole('button', { name: CRIAR_CONTA }));
 }
 
 describe('Testes unitários do componente Cadastro', () => {
-  it('CAD-1 - renderiza todos os campos e controles do cadastro', async () => {
-    await render(Cadastro);
+  it(
+    'CAD-1 - Verifica se os componentes título, Nome, E-mail, Senha, Confirmar senha, dois controles de ' +
+      'visibilidade, botão “Criar conta” e link “Entrar” estão presentes na tela de cadastro.',
+    async () => {
+      await render(Cadastro);
 
-    expect(screen.getByRole('heading', { name: TITULO_CADASTRO })).toBeTruthy();
-    expect(screen.getByRole('textbox', { name: NOME })).toBeTruthy();
-    expect(screen.getByRole('textbox', { name: EMAIL })).toBeTruthy();
-    expect((screen.getByLabelText(SENHA) as HTMLInputElement).type).toBe('password');
-    expect((screen.getByLabelText(CONFIRMAR_SENHA) as HTMLInputElement).type).toBe('password');
-    expect(screen.getAllByRole('button', { name: /^(mostrar|ocultar)$/i })).toHaveLength(2);
-    expect(screen.getByRole('button', { name: CRIAR_CONTA })).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Entrar' })).toBeTruthy();
-  });
+      expect(screen.getByRole('heading', { name: TITULO_CADASTRO })).toBeTruthy();
+      expect(screen.getByRole('textbox', { name: NOME })).toBeTruthy();
+      expect(screen.getByRole('textbox', { name: EMAIL })).toBeTruthy();
+      expect((screen.getByLabelText(SENHA) as HTMLInputElement).type).toBe('password');
+      expect((screen.getByLabelText(CONFIRMAR_SENHA) as HTMLInputElement).type).toBe('password');
+      expect(screen.getAllByRole('button', { name: /^(mostrar|ocultar)$/i })).toHaveLength(2);
+      expect(screen.getByRole('button', { name: CRIAR_CONTA })).toBeTruthy();
+      expect(screen.getByRole('link', { name: 'Entrar' })).toBeTruthy();
+    },
+  );
 
-  it('CAD-2 - rejeita nome vazio ou composto somente por espaços', async () => {
+  it('CAD-2 - Testa o impedimento do cadastro quando o nome está vazio ou contém somente espaços.', async () => {
     await render(Cadastro);
     const nome = screen.getByRole('textbox', { name: NOME }) as HTMLInputElement;
     const criarConta = screen.getByRole('button', { name: CRIAR_CONTA });
@@ -88,20 +95,24 @@ describe('Testes unitários do componente Cadastro', () => {
     expect(screen.getByText(ERRO_NOME)).toBeTruthy();
   });
 
-  it('CAD-3 - aceita nome de 2 a 100 caracteres', async () => {
-    await render(Cadastro);
-    const nome = screen.getByRole('textbox', { name: NOME }) as HTMLInputElement;
-    fireEvent.input(nome, { target: { value: 'A' } });
-    expect(nome.checkValidity()).toBe(false);
-    fireEvent.input(nome, { target: { value: 'Al' } });
-    expect(nome.checkValidity()).toBe(true);
-    fireEvent.input(nome, { target: { value: 'A'.repeat(100) } });
-    expect(nome.checkValidity()).toBe(true);
-    fireEvent.input(nome, { target: { value: 'A'.repeat(101) } });
-    expect(nome.checkValidity()).toBe(false);
-  });
+  it(
+    'CAD-3 - Confirma que nomes com 1 ou 101 caracteres são rejeitados e nomes com 2 ou 100 caracteres são ' +
+      'aceitos.',
+    async () => {
+      await render(Cadastro);
+      const nome = screen.getByRole('textbox', { name: NOME }) as HTMLInputElement;
+      fireEvent.input(nome, { target: { value: 'A' } });
+      expect(nome.checkValidity()).toBe(false);
+      fireEvent.input(nome, { target: { value: 'Al' } });
+      expect(nome.checkValidity()).toBe(true);
+      fireEvent.input(nome, { target: { value: 'A'.repeat(100) } });
+      expect(nome.checkValidity()).toBe(true);
+      fireEvent.input(nome, { target: { value: 'A'.repeat(101) } });
+      expect(nome.checkValidity()).toBe(false);
+    },
+  );
 
-  it('CAD-4 - normaliza espaços sem modificar a capitalização do nome', async () => {
+  it('CAD-4 - Verifica a remoção de espaços excedentes do nome sem alterar letras maiúsculas ou minúsculas.', async () => {
     await render(Cadastro);
     const nome = screen.getByRole('textbox', { name: NOME }) as HTMLInputElement;
     fireEvent.input(nome, { target: { value: '  mARIA   sILVA  ' } });
@@ -109,40 +120,48 @@ describe('Testes unitários do componente Cadastro', () => {
     expect(nome.value).toBe('mARIA sILVA');
   });
 
-  it('CAD-5 - rejeita e-mail não informado corretamente', async () => {
-    await render(Cadastro);
-    const email = screen.getByRole('textbox', { name: EMAIL }) as HTMLInputElement;
-    const criarConta = screen.getByRole('button', { name: CRIAR_CONTA });
-    fireEvent.click(criarConta);
-    expect(email.getAttribute(ATRIBUTO_ARIA_INVALIDO)).toBe(ARIA_INVALIDO);
-    expect(screen.getByText(ERRO_EMAIL)).toBeTruthy();
-    fireEvent.input(email, { target: { value: 'maria@example.com' } });
-    expect(email.getAttribute(ATRIBUTO_ARIA_INVALIDO)).toBe(ARIA_VALIDO);
-    expect(screen.queryByText(ERRO_EMAIL)).toBeNull();
-    fireEvent.input(email, { target: { value: '   ' } });
-    fireEvent.click(criarConta);
-    expect(email.getAttribute(ATRIBUTO_ARIA_INVALIDO)).toBe(ARIA_INVALIDO);
-    expect(screen.getByText(ERRO_EMAIL)).toBeTruthy();
-    fireEvent.input(email, { target: { value: 'email-invalido' } });
-    fireEvent.click(criarConta);
-    expect(email.getAttribute(ATRIBUTO_ARIA_INVALIDO)).toBe(ARIA_INVALIDO);
-    expect(screen.getByText(ERRO_EMAIL)).toBeTruthy();
-  });
+  it(
+    'CAD-5 - Garante que o cadastro é bloqueado quando o e-mail está vazio, contém somente espaços ou é ' +
+      'inválido e que a mensagem “Por favor, informe um e-mail válido” é exibida.',
+    async () => {
+      await render(Cadastro);
+      const email = screen.getByRole('textbox', { name: EMAIL }) as HTMLInputElement;
+      const criarConta = screen.getByRole('button', { name: CRIAR_CONTA });
+      fireEvent.click(criarConta);
+      expect(email.getAttribute(ATRIBUTO_ARIA_INVALIDO)).toBe(ARIA_INVALIDO);
+      expect(screen.getByText(ERRO_EMAIL)).toBeTruthy();
+      fireEvent.input(email, { target: { value: 'maria@example.com' } });
+      expect(email.getAttribute(ATRIBUTO_ARIA_INVALIDO)).toBe(ARIA_VALIDO);
+      expect(screen.queryByText(ERRO_EMAIL)).toBeNull();
+      fireEvent.input(email, { target: { value: '   ' } });
+      fireEvent.click(criarConta);
+      expect(email.getAttribute(ATRIBUTO_ARIA_INVALIDO)).toBe(ARIA_INVALIDO);
+      expect(screen.getByText(ERRO_EMAIL)).toBeTruthy();
+      fireEvent.input(email, { target: { value: 'email-invalido' } });
+      fireEvent.click(criarConta);
+      expect(email.getAttribute(ATRIBUTO_ARIA_INVALIDO)).toBe(ARIA_INVALIDO);
+      expect(screen.getByText(ERRO_EMAIL)).toBeTruthy();
+    },
+  );
 
-  it('CAD-6 - aceita e-mail válido com até 254 caracteres', async () => {
-    await render(Cadastro);
-    const email = screen.getByRole('textbox', { name: EMAIL }) as HTMLInputElement;
-    for (const valor of ['email-invalido', 'maria@', '@example.com']) {
-      fireEvent.input(email, { target: { value: valor } });
+  it(
+    'CAD-6 - Confirma que formatos inválidos e endereços com 255 caracteres são rejeitados e que um endereço ' +
+      'válido com 254 caracteres é aceito.',
+    async () => {
+      await render(Cadastro);
+      const email = screen.getByRole('textbox', { name: EMAIL }) as HTMLInputElement;
+      for (const valor of ['email-invalido', 'maria@', '@example.com']) {
+        fireEvent.input(email, { target: { value: valor } });
+        expect(email.checkValidity()).toBe(false);
+      }
+      fireEvent.input(email, { target: { value: EMAIL_254 } });
+      expect(email.checkValidity()).toBe(true);
+      fireEvent.input(email, { target: { value: EMAIL_255 } });
       expect(email.checkValidity()).toBe(false);
-    }
-    fireEvent.input(email, { target: { value: EMAIL_254 } });
-    expect(email.checkValidity()).toBe(true);
-    fireEvent.input(email, { target: { value: EMAIL_255 } });
-    expect(email.checkValidity()).toBe(false);
-  });
+    },
+  );
 
-  it('CAD-7 - rejeita senha vazia', async () => {
+  it('CAD-7 - Testa o impedimento do cadastro quando a senha está vazia.', async () => {
     await render(Cadastro);
     const senha = screen.getByLabelText(SENHA) as HTMLInputElement;
     const criarConta = screen.getByRole('button', { name: CRIAR_CONTA });
@@ -152,20 +171,24 @@ describe('Testes unitários do componente Cadastro', () => {
     expect(senha.getAttribute(ATRIBUTO_ARIA_INVALIDO)).toBe(ARIA_VALIDO);
   });
 
-  it('CAD-8 - aceita senha de 8 a 128 caracteres', async () => {
-    await render(Cadastro);
-    const senha = screen.getByLabelText(SENHA) as HTMLInputElement;
-    fireEvent.input(senha, { target: { value: CARACTERE_SENHA.repeat(7) } });
-    expect(senha.checkValidity()).toBe(false);
-    fireEvent.input(senha, { target: { value: CARACTERE_SENHA.repeat(8) } });
-    expect(senha.checkValidity()).toBe(true);
-    fireEvent.input(senha, { target: { value: CARACTERE_SENHA.repeat(128) } });
-    expect(senha.checkValidity()).toBe(true);
-    fireEvent.input(senha, { target: { value: CARACTERE_SENHA.repeat(129) } });
-    expect(senha.checkValidity()).toBe(false);
-  });
+  it(
+    'CAD-8 - Confirma que senhas com 7 ou 129 caracteres são rejeitadas e senhas com 8 ou 128 caracteres são ' +
+      'aceitas.',
+    async () => {
+      await render(Cadastro);
+      const senha = screen.getByLabelText(SENHA) as HTMLInputElement;
+      fireEvent.input(senha, { target: { value: CARACTERE_SENHA.repeat(7) } });
+      expect(senha.checkValidity()).toBe(false);
+      fireEvent.input(senha, { target: { value: CARACTERE_SENHA.repeat(8) } });
+      expect(senha.checkValidity()).toBe(true);
+      fireEvent.input(senha, { target: { value: CARACTERE_SENHA.repeat(128) } });
+      expect(senha.checkValidity()).toBe(true);
+      fireEvent.input(senha, { target: { value: CARACTERE_SENHA.repeat(129) } });
+      expect(senha.checkValidity()).toBe(false);
+    },
+  );
 
-  it('CAD-9 - preserva espaços no início, meio e fim da senha', async () => {
+  it('CAD-9 - Verifica a preservação dos espaços digitados no início, no meio e no fim da senha.', async () => {
     await render(Cadastro);
     const senha = screen.getByLabelText(SENHA) as HTMLInputElement;
     const valor = '  senha  com espaços  ';
@@ -174,7 +197,7 @@ describe('Testes unitários do componente Cadastro', () => {
     expect(senha.value).toBe(valor);
   });
 
-  it('CAD-10 - rejeita confirmação de senha vazia', async () => {
+  it('CAD-10 - Testa o impedimento do cadastro quando a confirmação da senha está vazia.', async () => {
     await render(Cadastro);
     const senha = screen.getByLabelText(SENHA) as HTMLInputElement;
     const confirmacao = screen.getByLabelText(CONFIRMAR_SENHA) as HTMLInputElement;
@@ -186,20 +209,24 @@ describe('Testes unitários do componente Cadastro', () => {
     expect(confirmacao.getAttribute(ATRIBUTO_ARIA_INVALIDO)).toBe(ARIA_VALIDO);
   });
 
-  it('CAD-11 - exige confirmação idêntica à senha', async () => {
-    await render(Cadastro);
-    const senha = screen.getByLabelText(SENHA) as HTMLInputElement;
-    const confirmacao = screen.getByLabelText(CONFIRMAR_SENHA) as HTMLInputElement;
-    fireEvent.input(senha, { target: { value: SENHA_SEGURA } });
-    for (const valor of ['Senha segurA', 'Senha segura!', 'Senha  segura']) {
-      fireEvent.input(confirmacao, { target: { value: valor } });
-      expect(confirmacao.checkValidity()).toBe(false);
-    }
-    fireEvent.input(confirmacao, { target: { value: SENHA_SEGURA } });
-    expect(confirmacao.checkValidity()).toBe(true);
-  });
+  it(
+    'CAD-11 - Confirma a rejeição de uma confirmação que difere da senha por caractere, capitalização ou ' +
+      'espaço.',
+    async () => {
+      await render(Cadastro);
+      const senha = screen.getByLabelText(SENHA) as HTMLInputElement;
+      const confirmacao = screen.getByLabelText(CONFIRMAR_SENHA) as HTMLInputElement;
+      fireEvent.input(senha, { target: { value: SENHA_SEGURA } });
+      for (const valor of ['Senha segurA', 'Senha segura!', 'Senha  segura']) {
+        fireEvent.input(confirmacao, { target: { value: valor } });
+        expect(confirmacao.checkValidity()).toBe(false);
+      }
+      fireEvent.input(confirmacao, { target: { value: SENHA_SEGURA } });
+      expect(confirmacao.checkValidity()).toBe(true);
+    },
+  );
 
-  it('CAD-12 - alterna cada senha independentemente e preserva o conteúdo', async () => {
+  it('CAD-12 - Verifica se cada controle alterna somente a visibilidade de seu campo e preserva o valor digitado.', async () => {
     await render(Cadastro);
     const senha = screen.getByLabelText(SENHA) as HTMLInputElement;
     const confirmacao = screen.getByLabelText(CONFIRMAR_SENHA) as HTMLInputElement;
@@ -219,7 +246,7 @@ describe('Testes unitários do componente Cadastro', () => {
     expect(confirmacao.value).toBe(SENHA_VALIDA);
   });
 
-  it('CAD-13 - envio inválido mostra erros em todos os campos', async () => {
+  it('CAD-13 - Confirma que um envio inválido apresenta todos os erros e não solicita a criação da conta.', async () => {
     await render(Cadastro);
     const campos = [
       screen.getByRole('textbox', { name: NOME }),
@@ -228,30 +255,45 @@ describe('Testes unitários do componente Cadastro', () => {
       screen.getByLabelText(CONFIRMAR_SENHA),
     ];
     fireEvent.click(screen.getByRole('button', { name: CRIAR_CONTA }));
-    for (const campo of campos) expect(campo.getAttribute(ATRIBUTO_ARIA_INVALIDO)).toBe(ARIA_INVALIDO);
+    for (const campo of campos)
+      expect(campo.getAttribute(ATRIBUTO_ARIA_INVALIDO)).toBe(ARIA_INVALIDO);
     expect(screen.getAllByRole('alert')).toHaveLength(4);
   });
 
-  it('CAD-14 - exibe pop-up quando o e-mail já está cadastrado', async () => {
-    const cadastroService = { cadastrar: vi.fn().mockReturnValue(throwError(() => new EmailJaCadastradoError())) };
-    await render(Cadastro, { providers: [{ provide: CadastroService, useValue: cadastroService }] });
-    preencherCadastroValido();
-    expect((await screen.findByRole('dialog')).textContent).toContain(EMAIL_JA_CADASTRADO);
-    expect(screen.getByRole('heading', { name: TITULO_CADASTRO })).toBeTruthy();
-    expect(cadastroService.cadastrar).toHaveBeenCalledOnce();
-  });
+  it(
+    'CAD-14 - Verifica se uma resposta de e-mail duplicado é reconhecida pelo serviço e faz a tela informar ' +
+      '“E-mail já foi cadastrado”, sem autenticar ou sair do cadastro.',
+    async () => {
+      const cadastroService = {
+        cadastrar: vi.fn().mockReturnValue(throwError(() => new EmailJaCadastradoError())),
+      };
+      await render(Cadastro, {
+        providers: [{ provide: CadastroService, useValue: cadastroService }],
+      });
+      preencherCadastroValido();
+      expect((await screen.findByRole('dialog')).textContent).toContain(EMAIL_JA_CADASTRADO);
+      expect(screen.getByRole('heading', { name: TITULO_CADASTRO })).toBeTruthy();
+      expect(cadastroService.cadastrar).toHaveBeenCalledOnce();
+    },
+  );
 
-  it('CAD-15 - falha não cria conta parcialmente', async () => {
-    const cadastroService = { cadastrar: vi.fn().mockReturnValue(throwError(() => new Error())) };
-    await render(Cadastro, { providers: [{ provide: CadastroService, useValue: cadastroService }] });
-    preencherCadastroValido();
-    expect(await screen.findByText(ERRO_GERAL_CADASTRO)).toBeTruthy();
-    expect(screen.getByRole('heading', { name: TITULO_CADASTRO })).toBeTruthy();
-    expect(screen.queryByRole('heading', { name: 'Minhas Listas' })).toBeNull();
-    expect(cadastroService.cadastrar).toHaveBeenCalledOnce();
-  });
+  it(
+    'CAD-15 - Confirma que uma falha no cadastro apresenta a mensagem geral de erro, não exibe sucesso e não ' +
+      'autentica o usuário.',
+    async () => {
+      const cadastroService = { cadastrar: vi.fn().mockReturnValue(throwError(() => new Error())) };
+      await render(Cadastro, {
+        providers: [{ provide: CadastroService, useValue: cadastroService }],
+      });
+      preencherCadastroValido();
+      expect(await screen.findByText(ERRO_GERAL_CADASTRO)).toBeTruthy();
+      expect(screen.getByRole('heading', { name: TITULO_CADASTRO })).toBeTruthy();
+      expect(screen.queryByRole('heading', { name: 'Minhas Listas' })).toBeNull();
+      expect(cadastroService.cadastrar).toHaveBeenCalledOnce();
+    },
+  );
 
-  it('CAD-16 - sucesso navega para Minhas Listas', async () => {
+  it('CAD-16 - Confirma que uma criação bem-sucedida autentica o usuário e abre “Minhas Listas”.', async () => {
     const cadastroService = { cadastrar: vi.fn().mockReturnValue(of(SESSION_RESPONSE)) };
     const router = { navigateByUrl: vi.fn().mockResolvedValue(true) };
     await render(Cadastro, {
