@@ -1,20 +1,10 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { catchError, Observable, throwError } from 'rxjs';
+import { DadosLogin } from '../models/dados-login';
+import { SessionResponse } from '../models/session-response';
 
 const ENDPOINT_LOGIN = '/api/v1/auth/sessions';
-
-export interface DadosLogin {
-  email: string;
-  password: string;
-  manterConectado: boolean;
-}
-
-export interface SessionResponse {
-  user: { id: string; name: string; email: string; status: string; createdAt: string };
-  csrfToken: string;
-  expiresAt: string;
-}
 
 export class CredenciaisInvalidasError extends Error {}
 
