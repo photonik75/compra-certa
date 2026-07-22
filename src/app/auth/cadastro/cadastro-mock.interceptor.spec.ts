@@ -5,6 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cadastroMockInterceptor } from './cadastro-mock.interceptor';
 import { CadastroService } from './cadastro.service';
+import { SessaoMockStore } from '../mocks/sessao-mock.store';
 
 const ENDPOINT_CADASTRO = '/api/v1/auth/registrations';
 const ENDPOINT_FORA_ESCOPO = '/api/v1/outro-recurso';
@@ -47,6 +48,7 @@ describe('Testes de integração do cadastroMockInterceptor', () => {
     expect(resposta.user.email).toBe(DADOS_CADASTRO.email);
     expect(resposta.csrfToken).toBeTruthy();
     expect(resposta.expiresAt).toBeTruthy();
+    expect(TestBed.inject(SessaoMockStore).obter()).toEqual(resposta);
   });
 
   it('MOCK-CAD-2 - Encaminha requisições fora do endpoint de cadastro.', async () => {

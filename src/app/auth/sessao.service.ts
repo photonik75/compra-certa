@@ -3,8 +3,8 @@ import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { SessionResponse } from './models/session-response';
 
-const ENDPOINT_LOGOUT = '/api/v1/auth/sessions/current';
-const ENDPOINT_SESSAO = '/api/v1/auth/session';
+export const ENDPOINT_LOGOUT = '/api/v1/auth/sessions/current';
+export const ENDPOINT_SESSAO = '/api/v1/auth/session';
 
 @Injectable({ providedIn: 'root' })
 export class SessaoService {

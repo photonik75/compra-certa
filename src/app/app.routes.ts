@@ -4,10 +4,11 @@ import { MinhasListas } from './listas/minhas-listas';
 import { Login } from './auth/login/login';
 import { sessaoGuard } from './auth/sessao.guard';
 import { RecuperacaoSenha } from './auth/recuperacao-senha/recuperacao-senha';
+import { visitanteGuard } from './auth/visitante.guard';
 
 export const routes: Routes = [
-  { path: 'cadastro', component: Cadastro },
-  { path: 'entrar', component: Login },
+  { path: 'cadastro', component: Cadastro, canActivate: [visitanteGuard] },
+  { path: 'entrar', component: Login, canActivate: [visitanteGuard] },
   { path: 'recuperar-senha', component: RecuperacaoSenha },
   { path: 'listas', component: MinhasListas, canActivate: [sessaoGuard] },
   { path: '', pathMatch: 'full', redirectTo: 'entrar' },

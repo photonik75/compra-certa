@@ -12,6 +12,7 @@ const SENHA = 'Senha';
 const SENHA_VALIDA = 'senha123';
 const ROTA_ENTRAR = '/entrar';
 const ROTA_LISTAS = '/listas';
+const URL_ENTRAR = new RegExp(`${ROTA_ENTRAR}(?:\\?returnUrl=.*)?$`);
 const SESSION_RESPONSE = {
   user: {
     id: '4f32ccf4-e676-4c23-bd66-e0fb2c2f0ef9',
@@ -51,7 +52,7 @@ test('INT-1 - Restaura uma sessão válida após recarga e abre o login quando e
   expect(consultasDaSessao).toBeGreaterThan(0);
   sessaoValida = false;
   await page.reload();
-  await expect(page).toHaveURL(new RegExp(`${ROTA_ENTRAR}$`));
+  await expect(page).toHaveURL(URL_ENTRAR);
 });
 
 test('INT-2 - Voltar após sair não revela dados protegidos.', async ({ page }) => {
@@ -71,8 +72,8 @@ test('INT-2 - Voltar após sair não revela dados protegidos.', async ({ page })
   await page.getByRole('button', { name: ENTRAR }).click();
   await expect(page).toHaveURL(new RegExp(`${ROTA_LISTAS}$`));
   await page.getByRole('button', { name: SAIR }).click();
-  await expect(page).toHaveURL(new RegExp(`${ROTA_ENTRAR}$`));
+  await expect(page).toHaveURL(URL_ENTRAR);
   await page.goBack();
-  await expect(page).toHaveURL(new RegExp(`${ROTA_ENTRAR}$`));
+  await expect(page).toHaveURL(URL_ENTRAR);
   await expect(page.getByRole('heading', { name: MINHAS_LISTAS })).not.toBeVisible();
 });

@@ -5,6 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { loginMockInterceptor } from './login-mock.interceptor';
 import { LoginService } from './login.service';
+import { SessaoMockStore } from '../mocks/sessao-mock.store';
 
 const ENDPOINT_LOGIN = '/api/v1/auth/sessions';
 const ENDPOINT_FORA_ESCOPO = '/api/v1/outro-recurso';
@@ -45,6 +46,7 @@ describe('Testes de integração do loginMockInterceptor', () => {
     expect(resposta.user.email).toBe(DADOS_LOGIN.email);
     expect(resposta.csrfToken).toBeTruthy();
     expect(resposta.expiresAt).toBeTruthy();
+    expect(TestBed.inject(SessaoMockStore).obter()).toEqual(resposta);
   });
 
   it('MOCK-LOG-2 - Encaminha requisições fora do endpoint de login.', async () => {

@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { Cadastro } from './auth/cadastro/cadastro';
 import { CadastroService } from './auth/cadastro/cadastro.service';
 import { Login } from './auth/login/login';
@@ -18,7 +18,10 @@ describe('Testes das rotas da aplicação', () => {
         provideRouter(routes),
         { provide: CadastroService, useValue: {} },
         { provide: RecuperacaoSenhaService, useValue: {} },
-        { provide: SessaoService, useValue: { consultar: () => of({}), sair: () => of(undefined) } },
+        {
+          provide: SessaoService,
+          useValue: { consultar: () => throwError(() => new Error()), sair: () => of(undefined) },
+        },
       ],
     });
   });
@@ -34,6 +37,9 @@ describe('Testes das rotas da aplicação', () => {
   });
 
   it('ROT-3 - Exibe a tela de listas ao acessar /listas.', async () => {
+    TestBed.overrideProvider(SessaoService, {
+      useValue: { consultar: () => of({}), sair: () => of(undefined) },
+    });
     const harness = await RouterTestingHarness.create();
     expect(await harness.navigateByUrl('/listas', MinhasListas)).toBeInstanceOf(MinhasListas);
   });

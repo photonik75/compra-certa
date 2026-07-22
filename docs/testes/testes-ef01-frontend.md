@@ -80,12 +80,15 @@
 | LoginService > Muitas tentativas | `SLO-3` | Confirma que uma resposta `429 Too Many Requests` é traduzida para `MuitasTentativasError`. |
 | LoginService > Erro não mapeado | `SLO-4` | Confirma que respostas de erro diferentes de `401 Unauthorized` e `429 Too Many Requests` são preservadas para tratamento geral pelo componente. |
 | **Integração com interceptadores mock** |  |  |
-| Mock de login > Requisição de login | `MOCK-LOG-1` | Confirma que o interceptor captura a criação de sessão e retorna uma sessão simulada sem encaminhar a requisição ao backend. |
+| Mock de login > Requisição de login | `MOCK-LOG-1` | Confirma que o interceptor captura a criação de sessão, armazena e retorna uma sessão simulada sem encaminhar a requisição ao backend. |
 | Mock de login > Requisição fora do escopo | `MOCK-LOG-2` | Confirma que o interceptor encaminha requisições que não correspondem ao endpoint de login. |
-| Mock de cadastro > Requisição de cadastro | `MOCK-CAD-1` | Confirma que o interceptor captura a criação de conta e retorna uma sessão simulada sem encaminhar a requisição ao backend. |
+| Mock de cadastro > Requisição de cadastro | `MOCK-CAD-1` | Confirma que o interceptor captura a criação de conta, armazena e retorna uma sessão simulada sem encaminhar a requisição ao backend. |
 | Mock de cadastro > Requisição fora do escopo | `MOCK-CAD-2` | Confirma que o interceptor encaminha requisições que não correspondem ao endpoint de cadastro. |
 | Mock de recuperação > E-mail de sucesso | `MOCK-REC-1` | Confirma que o interceptor responde com sucesso para `maria@example.com`, sem encaminhar a requisição ao backend. |
 | Mock de recuperação > E-mail de falha | `MOCK-REC-2` | Confirma que o interceptor simula falha no envio para outro e-mail, sem encaminhar a requisição ao backend. |
+| Mock de sessão > Consulta autenticada | `MOCK-SES-1` | Confirma que a consulta retorna a sessão armazenada sem acessar o backend. |
+| Mock de sessão > Consulta sem autenticação | `MOCK-SES-2` | Confirma que a consulta sem sessão armazenada retorna `401 Unauthorized`. |
+| Mock de sessão > Logout | `MOCK-SES-3` | Confirma que o logout remove a sessão armazenada e responde com sucesso sem acessar o backend. |
 | **Testes de integração** |  |  |
 | Tela Entre na sua conta > Manter-me conectado > Restauração e expiração da sessão | `INT-1` | Confirma que, após recarregar a aplicação, uma sessão válida restaura a interface autenticada e uma sessão expirada abre a interface não autenticada. |
 | Navegação > Voltar após sair não revela dados protegidos | `INT-2` | Verifica se, após o logout, usar a ação Voltar do navegador não volta a exibir conteúdo protegido. |
