@@ -71,9 +71,24 @@
 }
 
 .apresentacao p { z-index: 1; max-width: 520px; margin: 0; color: #d9e8de; font-size: 1.08rem; }
+.ilustracao {
+  z-index: 1;
+  display: block;
+  width: min(480px, 80%);
+  margin: 2rem auto -5rem;
+  mix-blend-mode: screen;
+  opacity: .92;
+}
 .painel { display: grid; padding: 2rem; place-items: center; }
 .cartao { width: min(100%, 440px); }
-.destaque { margin: 0 0 .6rem; color: var(--verde); font-size: .78rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.destaque {
+  margin: 0 0 .6rem;
+  color: var(--verde);
+  font-size: .78rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
 h1 { margin: 0 0 .35rem; font-size: 2rem; }
 .ajuda { margin: 0 0 1.7rem; color: var(--suave); }
 form { display: grid; gap: 1rem; }
@@ -98,8 +113,31 @@ input {
 input:focus { border-color: var(--verde); box-shadow: 0 0 0 4px rgba(40, 122, 85, .12); }
 input[aria-invalid="true"] { border-color: var(--coral); }
 .erro-campo { margin: 0; color: #b33a25; font-size: .82rem; }
-.controle-senha button { position: absolute; top: 50%; right: .55rem; padding: .35rem; border: 0; background: transparent; color: var(--verde); font: inherit; font-weight: 700; transform: translateY(-50%); cursor: pointer; }
-.acao-principal { min-height: 48px; border: 0; border-radius: 12px; background: var(--verde); color: white; font: inherit; font-weight: 750; cursor: pointer; box-shadow: 0 5px 14px rgba(40, 122, 85, .24); }
+.controle-senha button {
+  position: absolute;
+  top: 50%;
+  right: .55rem;
+  padding: .35rem;
+  border: 0;
+  background: transparent;
+  color: var(--verde);
+  font: inherit;
+  font-weight: 700;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+.acao-principal {
+  min-height: 48px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--verde);
+  color: white;
+  font: inherit;
+  font-weight: 750;
+  cursor: pointer;
+  box-shadow: 0 5px 14px rgba(40, 122, 85, .24);
+}
 .entrar { margin: .25rem 0 0; color: var(--suave); text-align: center; }
 a { color: var(--verde); font-weight: 700; text-decoration: none; }
 a:hover { text-decoration: underline; }
