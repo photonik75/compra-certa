@@ -7,6 +7,9 @@ const CAMPO_SENHA = 'senha';
 const CAMPO_EMAIL = 'email';
 const EMAIL_JA_CADASTRADO = 'E-mail já foi cadastrado';
 const ERRO_GERAL_CADASTRO = 'Ocorreu um erro ao tentar criar sua conta. Aguarde e tente novamente em alguns instantes.';
+const ERRO_EMAIL = 'Por favor, informe um e-mail válido';
+const ERRO_SENHA = 'A senha deve ter entre 8 e 128 caracteres';
+const ERRO_CONFIRMACAO = 'As senhas devem ser idênticas';
 const ROTA_LISTAS = '/listas';
 const ROTA_ENTRAR = '/entrar';
 
@@ -22,9 +25,9 @@ export class Cadastro {
   protected readonly senhaVisivel = signal(false);
   protected readonly confirmacaoVisivel = signal(false);
   protected readonly erroNome = signal<string | null>(null);
-  protected readonly erroEmail = signal(false);
-  protected readonly erroSenha = signal(false);
-  protected readonly erroConfirmacao = signal(false);
+  protected readonly erroEmail = signal<string | null>(null);
+  protected readonly erroSenha = signal<string | null>(null);
+  protected readonly erroConfirmacao = signal<string | null>(null);
   protected readonly emailDuplicado = signal<string | null>(null);
   protected readonly erroGeral = signal<string | null>(null);
   protected readonly processando = signal(false);
@@ -113,21 +116,21 @@ export class Cadastro {
 
   private atualizarValidadeEmail(campo: HTMLInputElement): void {
     const invalido = campo.value.trim().length === 0 || campo.value.length > 254 || campo.validity.typeMismatch;
-    campo.setCustomValidity(invalido ? 'Por favor, informe um e-mail válido' : '');
-    this.erroEmail.set(invalido);
+    campo.setCustomValidity(invalido ? ERRO_EMAIL : '');
+    this.erroEmail.set(invalido ? ERRO_EMAIL : null);
   }
 
   private atualizarValidadeSenha(campo: HTMLInputElement): void {
     const invalido = campo.value.length < 8 || campo.value.length > 128;
-    campo.setCustomValidity(invalido ? 'A senha deve ter entre 8 e 128 caracteres' : '');
-    this.erroSenha.set(invalido);
+    campo.setCustomValidity(invalido ? ERRO_SENHA : '');
+    this.erroSenha.set(invalido ? ERRO_SENHA : null);
   }
 
   private atualizarValidadeConfirmacao(campo: HTMLInputElement): void {
     const senha = (campo.form?.elements.namedItem(CAMPO_SENHA) as HTMLInputElement).value;
     const invalido = campo.value.length === 0 || campo.value !== senha;
-    campo.setCustomValidity(invalido ? 'As senhas devem ser idênticas' : '');
-    this.erroConfirmacao.set(invalido);
+    campo.setCustomValidity(invalido ? ERRO_CONFIRMACAO : '');
+    this.erroConfirmacao.set(invalido ? ERRO_CONFIRMACAO : null);
   }
 
   private tratarErroCadastro(erro: unknown): void {

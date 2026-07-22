@@ -62,11 +62,11 @@
             maxlength="254"
             (input)="validarEmail($event)"
             (blur)="validarEmail($event)"
-            [attr.aria-invalid]="erroEmail()"
+            [attr.aria-invalid]="erroEmail() !== null"
             [attr.aria-describedby]="erroEmail() ? 'erro-email' : null"
           />
           @if (erroEmail()) {
-            <p id="erro-email" class="erro-campo" role="alert">Por favor, informe um e-mail válido</p>
+            <p id="erro-email" class="erro-campo" role="alert">{{ erroEmail() }}</p>
           }
         </div>
 
@@ -85,7 +85,7 @@
                 maxlength="128"
                 (input)="validarSenha($event)"
                 (blur)="validarSenha($event)"
-                [attr.aria-invalid]="erroSenha()"
+                [attr.aria-invalid]="erroSenha() !== null"
                 [attr.aria-describedby]="erroSenha() ? 'erro-senha' : null"
               />
               <button type="button" (click)="alternarSenha()">
@@ -93,7 +93,7 @@
               </button>
             </div>
             @if (erroSenha()) {
-              <p id="erro-senha" class="erro-campo" role="alert">A senha deve ter entre 8 e 128 caracteres</p>
+              <p id="erro-senha" class="erro-campo" role="alert">{{ erroSenha() }}</p>
             }
           </div>
 
@@ -109,7 +109,7 @@
                 required
                 (input)="validarConfirmacao($event)"
                 (blur)="validarConfirmacao($event)"
-                [attr.aria-invalid]="erroConfirmacao()"
+                [attr.aria-invalid]="erroConfirmacao() !== null"
                 [attr.aria-describedby]="erroConfirmacao() ? 'erro-confirmacao' : null"
               />
               <button type="button" (click)="alternarConfirmacao()">
@@ -117,7 +117,7 @@
               </button>
             </div>
             @if (erroConfirmacao()) {
-              <p id="erro-confirmacao" class="erro-campo" role="alert">As senhas devem ser idênticas</p>
+              <p id="erro-confirmacao" class="erro-campo" role="alert">{{ erroConfirmacao() }}</p>
             }
           </div>
         </div>

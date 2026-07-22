@@ -25,7 +25,7 @@ export class Login {
   protected readonly senhaVisivel = signal(false);
   protected readonly processando = signal(false);
   protected readonly erro = signal<string | null>(null);
-  protected readonly erroEmail = signal(false);
+  protected readonly erroEmail = signal<string | null>(null);
   protected readonly erroSenha = signal<string | null>(null);
   protected readonly formularioValido = signal(false);
 
@@ -84,7 +84,7 @@ export class Login {
   private atualizarValidadeEmail(campo: HTMLInputElement): void {
     const invalido = campo.value.length === 0 || campo.value.length > 254 || campo.validity.typeMismatch;
     campo.setCustomValidity(invalido ? ERRO_EMAIL : '');
-    this.erroEmail.set(invalido);
+    this.erroEmail.set(invalido ? ERRO_EMAIL : null);
   }
 
   private atualizarValidadeSenha(campo: HTMLInputElement): void {
