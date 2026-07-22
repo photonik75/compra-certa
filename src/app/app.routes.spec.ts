@@ -7,6 +7,8 @@ import { CadastroService } from './auth/cadastro/cadastro.service';
 import { Login } from './auth/login/login';
 import { RecuperacaoSenha } from './auth/recuperacao-senha/recuperacao-senha';
 import { RecuperacaoSenhaService } from './auth/recuperacao-senha/recuperacao-senha.service';
+import { RedefinicaoSenha } from './auth/redefinicao-senha/redefinicao-senha';
+import { RedefinicaoSenhaService } from './auth/redefinicao-senha/redefinicao-senha.service';
 import { SessaoService } from './auth/sessao.service';
 import { MinhasListas } from './listas/minhas-listas';
 import { routes } from './app.routes';
@@ -18,6 +20,7 @@ describe('Testes das rotas da aplicação', () => {
         provideRouter(routes),
         { provide: CadastroService, useValue: {} },
         { provide: RecuperacaoSenhaService, useValue: {} },
+        { provide: RedefinicaoSenhaService, useValue: {} },
         {
           provide: SessaoService,
           useValue: { consultar: () => throwError(() => new Error()), sair: () => of(undefined) },
@@ -48,5 +51,11 @@ describe('Testes das rotas da aplicação', () => {
     const harness = await RouterTestingHarness.create();
     const componente = await harness.navigateByUrl('/recuperar-senha', RecuperacaoSenha);
     expect(componente).toBeInstanceOf(RecuperacaoSenha);
+  });
+
+  it('ROT-5 - Exibe a tela de redefinição de senha ao acessar /redefinir-senha.', async () => {
+    const harness = await RouterTestingHarness.create();
+    const componente = await harness.navigateByUrl('/redefinir-senha#token=token-recuperacao', RedefinicaoSenha);
+    expect(componente).toBeInstanceOf(RedefinicaoSenha);
   });
 });

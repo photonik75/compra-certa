@@ -64,6 +64,7 @@
 | Rotas > Cadastro | `ROT-2` | Confirma que `/cadastro` exibe a tela de cadastro. |
 | Rotas > Minhas Listas | `ROT-3` | Confirma que `/listas` exibe a tela “Minhas Listas” para uma sessão válida. |
 | Rotas > Recuperação de senha | `ROT-4` | Confirma que `/recuperar-senha` exibe a tela de recuperação de senha. |
+| Rotas > Redefinição de senha | `ROT-5` | Confirma que `/redefinir-senha` exibe a tela de redefinição de senha. |
 | Navegação > Visitante abre página interna | `NAV-1` | Confirma que um visitante é direcionado ao login ao abrir uma página interna e retorna à página originalmente solicitada após se autenticar. |
 | Navegação > Autenticado abre login ou cadastro | `NAV-2` | Confirma que um usuário autenticado é direcionado a “Minhas Listas” ao abrir o login ou o cadastro. |
 | Navegação > Ao sair, abre login e exige nova autenticação | `NAV-3` | Verifica se, ao sair, o login é aberto e as páginas internas voltam a exigir autenticação. |
@@ -86,6 +87,9 @@
 | Mock de cadastro > Requisição fora do escopo | `MOCK-CAD-2` | Confirma que o interceptor encaminha requisições que não correspondem ao endpoint de cadastro. |
 | Mock de recuperação > E-mail de sucesso | `MOCK-REC-1` | Confirma que o interceptor responde com sucesso para `maria@example.com`, sem encaminhar a requisição ao backend. |
 | Mock de recuperação > E-mail de falha | `MOCK-REC-2` | Confirma que o interceptor simula falha no envio para outro e-mail, sem encaminhar a requisição ao backend. |
+| Mock de redefinição > Link válido | `MOCK-RED-1` | Confirma que o interceptor simula a redefinição e encerra a sessão armazenada. |
+| Mock de redefinição > Link inválido | `MOCK-RED-2` | Confirma que o interceptor simula link inválido sem encerrar a sessão armazenada. |
+| Mock de redefinição > Requisição fora do escopo | `MOCK-RED-3` | Confirma o encaminhamento de requisições que não correspondem ao endpoint de redefinição. |
 | Mock de sessão > Consulta autenticada | `MOCK-SES-1` | Confirma que a consulta retorna a sessão armazenada sem acessar o backend. |
 | Mock de sessão > Consulta sem autenticação | `MOCK-SES-2` | Confirma que a consulta sem sessão armazenada retorna `401 Unauthorized`. |
 | Mock de sessão > Logout | `MOCK-SES-3` | Confirma que o logout remove a sessão armazenada e responde com sucesso sem acessar o backend. |

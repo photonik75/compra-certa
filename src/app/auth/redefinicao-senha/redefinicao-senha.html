@@ -1,0 +1,82 @@
+<main class="pagina-recuperacao">
+  <section class="apresentacao" aria-label="Apresentação do CompraCerta">
+    <div class="conteudo-apresentacao">
+      <div class="marca"><span aria-hidden="true">✓</span> CompraCerta</div>
+      <h2>Sua compra leve, organizada e compartilhada.</h2>
+      <p>Defina uma nova senha segura e volte a organizar suas compras.</p>
+      <img
+        class="ilustracao"
+        src="/images/sacola-compras.png"
+        alt="Sacola reutilizável com alimentos e uma lista marcada"
+      />
+    </div>
+  </section>
+  <section class="painel-recuperacao">
+    <div class="cartao-recuperacao">
+      <p class="destaque">Recupere o acesso</p>
+      <h1>Redefina sua senha</h1>
+      <p class="ajuda">Informe e confirme sua nova senha.</p>
+      @if (linkInvalido()) {
+        <div class="resultado" role="alert">
+          <p>{{ mensagemLinkInvalido }}</p>
+          <a href="/recuperar-senha">Solicitar nova recuperação</a>
+        </div>
+      } @else {
+        @if (erroGeral()) {
+          <p class="erro-campo erro-geral" role="alert">{{ erroGeral() }}</p>
+        }
+        <form novalidate (submit)="redefinir($event)">
+          <div class="campo">
+            <label for="nova-senha">Nova senha</label>
+            <div class="controle-senha">
+              <input
+                id="nova-senha"
+                name="novaSenha"
+                [type]="senhaVisivel() ? 'text' : 'password'"
+                autocomplete="new-password"
+                required
+                minlength="8"
+                maxlength="128"
+                (input)="validarSenha($event)"
+                (blur)="validarSenha($event)"
+                [attr.aria-invalid]="erroSenha() !== null"
+                [attr.aria-describedby]="erroSenha() ? 'erro-nova-senha' : null"
+              />
+              <button type="button" (click)="alternarSenha()">
+                {{ senhaVisivel() ? 'Ocultar' : 'Mostrar' }}
+              </button>
+            </div>
+            @if (erroSenha()) {
+              <p id="erro-nova-senha" class="erro-campo" role="alert">{{ erroSenha() }}</p>
+            }
+          </div>
+          <div class="campo">
+            <label for="confirmar-nova-senha">Confirmar nova senha</label>
+            <div class="controle-senha">
+              <input
+                id="confirmar-nova-senha"
+                name="confirmarNovaSenha"
+                [type]="confirmacaoVisivel() ? 'text' : 'password'"
+                autocomplete="new-password"
+                required
+                (input)="validarConfirmacao($event)"
+                (blur)="validarConfirmacao($event)"
+                [attr.aria-invalid]="erroConfirmacao() !== null"
+                [attr.aria-describedby]="erroConfirmacao() ? 'erro-confirmacao' : null"
+              />
+              <button type="button" (click)="alternarConfirmacao()">
+                {{ confirmacaoVisivel() ? 'Ocultar' : 'Mostrar' }}
+              </button>
+            </div>
+            @if (erroConfirmacao()) {
+              <p id="erro-confirmacao" class="erro-campo" role="alert">{{ erroConfirmacao() }}</p>
+            }
+          </div>
+          <button class="acao-principal" type="submit" [disabled]="!formularioValido() || processando()">
+            Redefinir senha
+          </button>
+        </form>
+      }
+    </div>
+  </section>
+</main>
