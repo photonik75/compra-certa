@@ -345,4 +345,40 @@ describe('Testes unitários do componente Cadastro', () => {
     fireEvent.click(screen.getByRole('link', { name: 'Entrar' }));
     expect(router.navigateByUrl).toHaveBeenCalledWith('/entrar');
   });
+
+  it('FOR-2 - Preserva nome e e-mail após um erro e permite limpar somente as senhas.', async () => {
+    const cadastroService = { cadastrar: vi.fn().mockReturnValue(throwError(() => new Error())) };
+    await render(Cadastro, {
+      providers: [{ provide: CadastroService, useValue: cadastroService }],
+    });
+    preencherCadastroValido();
+    await screen.findByText(ERRO_GERAL_CADASTRO);
+    expect((screen.getByRole('textbox', { name: NOME }) as HTMLInputElement).value).toBe(NOME_VALIDO);
+    expect((screen.getByRole('textbox', { name: EMAIL }) as HTMLInputElement).value).toBe(EMAIL_VALIDO);
+  });
+
+  it(
+    'FOR-3 - Mantém controles acessíveis, associa erros aos campos e anuncia mudanças sem depender de cor.',
+    async () => {
+      await render(Cadastro);
+      const nome = screen.getByRole('textbox', { name: NOME }) as HTMLInputElement;
+      const email = screen.getByRole('textbox', { name: EMAIL }) as HTMLInputElement;
+      const senha = screen.getByLabelText(SENHA) as HTMLInputElement;
+      const confirmacao = screen.getByLabelText(CONFIRMAR_SENHA) as HTMLInputElement;
+      const controles = [
+        nome,
+        email,
+        senha,
+        confirmacao,
+        ...screen.getAllByRole('button'),
+        screen.getByRole('link', { name: 'Entrar' }),
+      ];
+      for (const controle of controles) expect.soft(controle.tabIndex).toBeGreaterThanOrEqual(0);
+      fireEvent.blur(nome);
+      const erro = screen.getByText(ERRO_NOME);
+      expect(nome.getAttribute('aria-describedby')).toBe(erro.id);
+      expect(erro.getAttribute('role')).toBe('alert');
+      expect(nome.getAttribute(ATRIBUTO_ARIA_INVALIDO)).toBe(ARIA_INVALIDO);
+    },
+  );
 });

@@ -16,6 +16,7 @@ const CONFIRMACAO = 'Se houver uma conta para este e-mail, enviaremos as instru�
 const SUCESSO_ENVIO = 'Solicitação de recuperação enviada com sucesso.';
 const ERRO_EMAIL = 'Por favor, informe um e-mail válido';
 const ERRO_ENVIO = 'Não foi possível enviar as instruções. Tente novamente mais tarde.';
+const MENSAGEM_PROCESSAMENTO = 'Enviando instruções';
 
 async function render(_component: typeof RecuperacaoSenha, options: { providers?: Provider[] } = {}) {
   const service = { solicitar: vi.fn().mockReturnValue(NEVER) };
@@ -114,5 +115,31 @@ describe('Testes unitários do componente RecuperacaoSenha', () => {
     enviar(EMAIL_EXISTENTE);
     expect(screen.getByText(SUCESSO_ENVIO)).toBeTruthy();
     expect(screen.getByRole('status').textContent).toBe(CONFIRMACAO);
+  });
+
+  it('FOR-1 - Apresenta os estados inicial, erro por campo, processamento, sucesso e erro geral.', async () => {
+    const resposta = new Subject<void>();
+    const service = { solicitar: vi.fn().mockReturnValue(resposta) };
+    const { fixture } = await render(RecuperacaoSenha, {
+      providers: [{ provide: RecuperacaoSenhaService, useValue: service }],
+    });
+    const email = screen.getByRole('textbox', { name: EMAIL }) as HTMLInputElement;
+    const botao = screen.getByRole('button', { name: ENVIAR }) as HTMLButtonElement;
+    expect.soft(botao.disabled).toBe(true);
+    expect.soft(screen.queryByRole('alert')).toBeNull();
+    fireEvent.blur(email);
+    expect.soft(screen.getByRole('alert').textContent).toBe(ERRO_EMAIL);
+    informarEmail(EMAIL_EXISTENTE);
+    fireEvent.click(botao);
+    expect.soft(botao.disabled).toBe(true);
+    expect.soft(screen.queryByRole('status', { name: MENSAGEM_PROCESSAMENTO })).toBeTruthy();
+    resposta.next();
+    resposta.complete();
+    fixture.detectChanges();
+    expect.soft(screen.getByRole('status').textContent).toBe(CONFIRMACAO);
+    fireEvent.click(screen.getByRole('button', { name: SOLICITAR_NOVAMENTE }));
+    service.solicitar.mockReturnValue(throwError(() => new Error()));
+    enviar(EMAIL_EXISTENTE);
+    expect.soft((await screen.findByRole('alert')).textContent).toBe(ERRO_ENVIO);
   });
 });

@@ -6,6 +6,7 @@ const CONFIRMACAO = 'Se houver uma conta para este e-mail, enviaremos as instru�
 const SUCESSO_ENVIO = 'Solicitação de recuperação enviada com sucesso.';
 const ERRO_EMAIL = 'Por favor, informe um e-mail válido';
 const ERRO_ENVIO = 'Não foi possível enviar as instruções. Tente novamente mais tarde.';
+const MENSAGEM_PROCESSAMENTO = 'Enviando instruções';
 
 @Component({
   selector: 'app-recuperacao-senha',
@@ -14,6 +15,7 @@ const ERRO_ENVIO = 'Não foi possível enviar as instruções. Tente novamente m
 })
 export class RecuperacaoSenha {
   private readonly service = inject(RecuperacaoSenhaService);
+  protected readonly mensagemProcessamento = MENSAGEM_PROCESSAMENTO;
   protected readonly processando = signal(false);
   protected readonly formularioValido = signal(false);
   protected readonly erroEmail = signal<string | null>(null);

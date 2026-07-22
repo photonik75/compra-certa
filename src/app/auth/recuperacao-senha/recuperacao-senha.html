@@ -28,6 +28,9 @@
         @if (erroGeral()) {
           <p class="erro-campo erro-geral" role="alert">{{ erroGeral() }}</p>
         }
+        @if (processando()) {
+          <p role="status" [attr.aria-label]="mensagemProcessamento">{{ mensagemProcessamento }}</p>
+        }
         <form novalidate (submit)="solicitar($event)">
           <div class="campo">
             <label for="email">E-mail</label>
