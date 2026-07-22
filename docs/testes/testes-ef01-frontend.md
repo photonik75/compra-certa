@@ -54,7 +54,9 @@
 | Tela de redefinição > Sucesso altera senha, encerra acessos e abre login | `RED-6` | Verifica se uma redefinição bem-sucedida limpa a sessão local e abre o login. A alteração da senha e o encerramento dos acessos remotos são validados no backend. |
 | Tela de redefinição > Enquanto processa, não permite novo envio | `RED-7` | Verifica se, durante a redefinição, a confirmação permanece desabilitada e cliques adicionais não criam novas solicitações. |
 | **Tela “Minhas Listas” após cadastro** | `LIS-1` | Verifica se a tela apresenta o título “Minhas Listas”. |
-| Tela Minhas Listas > Exibe somente o título | `LIS-2` | Confirma que a tela exibe somente o título, sem listas, itens, ações ou outros conteúdos. |
+| Tela Minhas Listas > Estado vazio | `LIS-2` | Confirma que a tela não exibe listas nem itens enquanto mantém disponível a ação “Sair”. |
+| Tela Minhas Listas > Sair > Bloqueio durante o processamento | `LIS-3` | Confirma que “Sair” solicita o encerramento da sessão uma única vez, permanece desabilitado durante o processamento e volta a ser habilitado ao final. |
+| Tela Minhas Listas > Sair > Sucesso abre login | `LIS-4` | Confirma que o encerramento bem-sucedido da sessão abre a tela de login. |
 | Navegação > Visitante abre página interna | `NAV-1` | Confirma que um visitante é direcionado ao login ao abrir uma página interna e retorna à página originalmente solicitada após se autenticar. |
 | Navegação > Autenticado abre login ou cadastro | `NAV-2` | Confirma que um usuário autenticado é direcionado a “Minhas Listas” ao abrir o login ou o cadastro. |
 | Navegação > Ao sair, abre login e exige nova autenticação | `NAV-3` | Verifica se, ao sair, o login é aberto e as páginas internas voltam a exigir autenticação. |
