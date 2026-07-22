@@ -16,7 +16,7 @@ const ROTA_LISTAS = '/listas';
   selector: 'app-login',
   imports: [],
   templateUrl: './login.html',
-  styleUrl: './login.css',
+  styleUrls: ['../auth.css', './login.css'],
 })
 export class Login {
   private readonly loginService = inject(LoginService);

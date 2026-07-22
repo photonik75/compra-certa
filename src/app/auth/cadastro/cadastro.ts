@@ -17,7 +17,7 @@ const ROTA_ENTRAR = '/entrar';
   selector: 'app-cadastro',
   imports: [],
   templateUrl: './cadastro.html',
-  styleUrl: './cadastro.css',
+  styleUrls: ['../auth.css', './cadastro.css'],
 })
 export class Cadastro {
   private readonly cadastroService = inject(CadastroService);
