@@ -61,6 +61,15 @@
 | Formulários > Estados inicial, erro por campo, processamento, sucesso e erro geral | `FOR-1` | Verifica se cada formulário apresenta corretamente seus estados inicial, de validação, de processamento, de sucesso e de erro geral. |
 | Formulários > Erros preservam nome e e-mail, mas podem limpar senhas | `FOR-2` | Confirma que, após um erro, nome e e-mail permanecem preenchidos e as senhas podem ser limpas sem alterar os demais campos. |
 | Formulários > Perceptíveis e operáveis por teclado e tecnologias assistivas | `FOR-3` | Verifica se todos os controles funcionam por teclado, têm nomes acessíveis, associam os erros aos campos, anunciam mudanças de estado e não comunicam informações somente por cor. |
+| **Serviço de cadastro** |  |  |
+| CadastroService > Criar conta | `SCA-1` | Confirma o envio de `POST /api/v1/auth/registrations` com nome, e-mail, senha e confirmação, e o retorno da sessão recebida. |
+| CadastroService > E-mail já cadastrado | `SCA-2` | Confirma que uma resposta `409 Conflict` é traduzida para `EmailJaCadastradoError`. |
+| CadastroService > Erro não mapeado | `SCA-3` | Confirma que respostas de erro diferentes de `409 Conflict` são preservadas para tratamento geral pelo componente. |
+| **Serviço de login** |  |  |
+| LoginService > Criar sessão | `SLO-1` | Confirma o envio de `POST /api/v1/auth/sessions` com e-mail, senha e a opção “Manter-me conectado”, e o retorno da sessão recebida. |
+| LoginService > Credenciais inválidas | `SLO-2` | Confirma que uma resposta `401 Unauthorized` é traduzida para `CredenciaisInvalidasError`. |
+| LoginService > Muitas tentativas | `SLO-3` | Confirma que uma resposta `429 Too Many Requests` é traduzida para `MuitasTentativasError`. |
+| LoginService > Erro não mapeado | `SLO-4` | Confirma que respostas de erro diferentes de `401 Unauthorized` e `429 Too Many Requests` são preservadas para tratamento geral pelo componente. |
 | **Integração com interceptadores mock** |  |  |
 | Mock de login > Requisição de login | `MOCK-LOG-1` | Confirma que o interceptor captura a criação de sessão e retorna uma sessão simulada sem encaminhar a requisição ao backend. |
 | Mock de login > Requisição fora do escopo | `MOCK-LOG-2` | Confirma que o interceptor encaminha requisições que não correspondem ao endpoint de login. |
