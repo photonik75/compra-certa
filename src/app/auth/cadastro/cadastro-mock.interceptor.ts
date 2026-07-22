@@ -1,5 +1,6 @@
 import { HttpInterceptorFn, HttpResponse } from '@angular/common/http';
 import { delay, of } from 'rxjs';
+import { criarSessaoMock } from '../mocks/criar-sessao-mock';
 import { DadosCadastro } from '../models/dados-cadastro';
 
 const ENDPOINT_CADASTRO = '/api/v1/auth/registrations';
@@ -11,17 +12,7 @@ export const cadastroMockInterceptor: HttpInterceptorFn = (request, next) => {
     new HttpResponse({
       status: 201,
       statusText: 'Created',
-      body: {
-        user: {
-          id: crypto.randomUUID(),
-          name: dados.name,
-          email: dados.email,
-          status: 'ACTIVE',
-          createdAt: new Date().toISOString(),
-        },
-        csrfToken: 'mock-csrf-token',
-        expiresAt: new Date(Date.now() + 86_400_000).toISOString(),
-      },
+      body: criarSessaoMock({ name: dados.name, email: dados.email }),
     }),
   ).pipe(delay(500));
 };

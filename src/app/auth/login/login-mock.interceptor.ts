@@ -1,5 +1,6 @@
 import { HttpInterceptorFn, HttpResponse } from '@angular/common/http';
 import { delay, of } from 'rxjs';
+import { criarSessaoMock } from '../mocks/criar-sessao-mock';
 import { DadosLogin } from '../models/dados-login';
 
 const ENDPOINT_LOGIN = '/api/v1/auth/sessions';
@@ -11,17 +12,7 @@ export const loginMockInterceptor: HttpInterceptorFn = (request, next) => {
     new HttpResponse({
       status: 200,
       statusText: 'OK',
-      body: {
-        user: {
-          id: crypto.randomUUID(),
-          name: 'Usuário',
-          email: dados.email,
-          status: 'ACTIVE',
-          createdAt: new Date().toISOString(),
-        },
-        csrfToken: 'mock-csrf-token',
-        expiresAt: new Date(Date.now() + 86_400_000).toISOString(),
-      },
+      body: criarSessaoMock({ name: 'Usuário', email: dados.email }),
     }),
   ).pipe(delay(500));
 };
