@@ -81,7 +81,9 @@ Permitir que visitantes criem uma conta, autentiquem-se, encerrem a sessão e re
   - **Campo “E-mail”**
     - Obrigatório e deve conter um endereço válido.
   - **Botão de envio**
-    - Sempre exibe “Se houver uma conta para este e-mail, enviaremos as instruções”, exista ou não uma conta cadastrada.
+    - Em caso de sucesso, exibe “Solicitação de recuperação enviada com sucesso.”.
+    - Também exibe “Se houver uma conta para este e-mail, enviaremos as instruções”, exista ou não uma conta cadastrada.
+    - Em caso de falha no envio, exibe “Não foi possível enviar as instruções. Tente novamente mais tarde.”.
     - Para uma conta existente, envia um link de uso único, válido por 30 minutos.
     - Um novo pedido torna inválidos os links enviados anteriormente.
     - Enquanto processa a solicitação, não permite novo envio.

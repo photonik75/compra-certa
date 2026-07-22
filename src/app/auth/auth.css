@@ -32,7 +32,8 @@
 * { box-sizing: border-box; }
 
 .pagina-login,
-.pagina-cadastro {
+.pagina-cadastro,
+.pagina-recuperacao {
   display: grid;
   min-height: 100vh;
   grid-template-columns: minmax(420px, 1fr) minmax(420px, 1fr);
@@ -91,13 +92,15 @@
 }
 
 .painel,
-.painel-login {
+.painel-login,
+.painel-recuperacao {
   display: grid;
   padding: clamp(3rem, 22vh, 12.5rem) 2rem 2rem;
   place-items: start center;
 }
 .cartao,
-.cartao-login { width: min(100%, 440px); }
+.cartao-login,
+.cartao-recuperacao { width: min(100%, 440px); }
 .destaque {
   margin: 0 0 .6rem;
   color: var(--verde);
@@ -173,13 +176,16 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--foco); outline-
 
 @media (max-width: 900px) {
   .pagina-login,
-  .pagina-cadastro { grid-template-columns: 1fr; }
+  .pagina-cadastro,
+  .pagina-recuperacao { grid-template-columns: 1fr; }
   .apresentacao { display: none; }
   .painel,
-  .painel-login { min-height: 100vh; }
+  .painel-login,
+  .painel-recuperacao { min-height: 100vh; }
 }
 
 @media (max-width: 640px) {
   .painel,
-  .painel-login { padding: var(--painel-mobile-padding); }
+  .painel-login,
+  .painel-recuperacao { padding: var(--painel-mobile-padding); }
 }

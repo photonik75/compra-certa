@@ -46,6 +46,8 @@
 | Tela de recuperação > Conta existente recebe link único válido por 30 minutos | `REC-4` | Verifica se uma solicitação aceita apresenta confirmação sem revelar se a conta existe. A geração, a unicidade e a validade do link são validadas no backend. |
 | Tela de recuperação > Novo pedido invalida links anteriores | `REC-5` | Confirma que um link inválido oferece uma nova solicitação de recuperação. A invalidação dos links anteriores é validada no backend. |
 | Tela de recuperação > Enquanto processa, não permite novo envio | `REC-6` | Verifica se, durante a solicitação, o envio permanece desabilitado e cliques adicionais não criam novas solicitações. |
+| Tela de recuperação > Falha no envio | `REC-7` | Confirma que uma falha mantém a tela de recuperação e exibe “Não foi possível enviar as instruções. Tente novamente mais tarde.”. |
+| Tela de recuperação > Sucesso no envio | `REC-8` | Confirma que uma solicitação aceita exibe “Solicitação de recuperação enviada com sucesso.”. |
 | **Tela de redefinição de senha** | `RED-1` | Verifica se o título acessível, Nova senha, Confirmar nova senha, dois controles de visibilidade e o botão de confirmação estão presentes. |
 | Tela de redefinição > Nova senha > Obrigatória e de 8 a 128 caracteres | `RED-2` | Confirma que senhas vazias ou com 7 ou 129 caracteres são rejeitadas e senhas com 8 ou 128 caracteres são aceitas. |
 | Tela de redefinição > Confirmar nova senha > Obrigatória e idêntica | `RED-3` | Confirma a rejeição de uma confirmação vazia ou diferente da nova senha. |
@@ -57,6 +59,11 @@
 | Tela Minhas Listas > Estado vazio | `LIS-2` | Confirma que a tela não exibe listas nem itens enquanto mantém disponível a ação “Sair”. |
 | Tela Minhas Listas > Sair > Bloqueio durante o processamento | `LIS-3` | Confirma que “Sair” solicita o encerramento da sessão uma única vez, permanece desabilitado durante o processamento e volta a ser habilitado ao final. |
 | Tela Minhas Listas > Sair > Sucesso abre login | `LIS-4` | Confirma que o encerramento bem-sucedido da sessão abre a tela de login. |
+| **Rotas da aplicação** |  |  |
+| Rotas > Login | `ROT-1` | Confirma que `/entrar` exibe a tela de login. |
+| Rotas > Cadastro | `ROT-2` | Confirma que `/cadastro` exibe a tela de cadastro. |
+| Rotas > Minhas Listas | `ROT-3` | Confirma que `/listas` exibe a tela “Minhas Listas” para uma sessão válida. |
+| Rotas > Recuperação de senha | `ROT-4` | Confirma que `/recuperar-senha` exibe a tela de recuperação de senha. |
 | Navegação > Visitante abre página interna | `NAV-1` | Confirma que um visitante é direcionado ao login ao abrir uma página interna e retorna à página originalmente solicitada após se autenticar. |
 | Navegação > Autenticado abre login ou cadastro | `NAV-2` | Confirma que um usuário autenticado é direcionado a “Minhas Listas” ao abrir o login ou o cadastro. |
 | Navegação > Ao sair, abre login e exige nova autenticação | `NAV-3` | Verifica se, ao sair, o login é aberto e as páginas internas voltam a exigir autenticação. |
@@ -77,6 +84,8 @@
 | Mock de login > Requisição fora do escopo | `MOCK-LOG-2` | Confirma que o interceptor encaminha requisições que não correspondem ao endpoint de login. |
 | Mock de cadastro > Requisição de cadastro | `MOCK-CAD-1` | Confirma que o interceptor captura a criação de conta e retorna uma sessão simulada sem encaminhar a requisição ao backend. |
 | Mock de cadastro > Requisição fora do escopo | `MOCK-CAD-2` | Confirma que o interceptor encaminha requisições que não correspondem ao endpoint de cadastro. |
+| Mock de recuperação > E-mail de sucesso | `MOCK-REC-1` | Confirma que o interceptor responde com sucesso para `maria@example.com`, sem encaminhar a requisição ao backend. |
+| Mock de recuperação > E-mail de falha | `MOCK-REC-2` | Confirma que o interceptor simula falha no envio para outro e-mail, sem encaminhar a requisição ao backend. |
 | **Testes de integração** |  |  |
 | Tela Entre na sua conta > Manter-me conectado > Restauração e expiração da sessão | `INT-1` | Confirma que, após recarregar a aplicação, uma sessão válida restaura a interface autenticada e uma sessão expirada abre a interface não autenticada. |
 | Navegação > Voltar após sair não revela dados protegidos | `INT-2` | Verifica se, após o logout, usar a ação Voltar do navegador não volta a exibir conteúdo protegido. |

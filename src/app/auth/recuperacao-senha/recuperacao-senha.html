@@ -1,0 +1,62 @@
+<main class="pagina-recuperacao">
+  <section class="apresentacao" aria-label="Apresentação do CompraCerta">
+    <div class="conteudo-apresentacao">
+      <div class="marca"><span aria-hidden="true">✓</span> CompraCerta</div>
+      <h2>Sua compra leve, organizada e compartilhada.</h2>
+      <p>Recupere seu acesso e volte a organizar as compras com quem você quiser.</p>
+      <img
+        class="ilustracao"
+        src="/images/sacola-compras.png"
+        alt="Sacola reutilizável com alimentos e uma lista marcada"
+      />
+    </div>
+  </section>
+  <section class="painel-recuperacao">
+    <div class="cartao-recuperacao">
+      <p class="destaque">Recupere o acesso</p>
+      <h1>Recupere sua senha</h1>
+      <p class="ajuda">Informe seu e-mail para receber as instruções de recuperação.</p>
+      @if (confirmacao()) {
+        <div class="resultado">
+          <p class="sucesso">{{ sucesso() }}</p>
+          <p role="status">{{ confirmacao() }}</p>
+          <button class="acao-principal" type="button" (click)="solicitarNovamente()">
+            Solicitar novamente
+          </button>
+        </div>
+      } @else {
+        @if (erroGeral()) {
+          <p class="erro-campo erro-geral" role="alert">{{ erroGeral() }}</p>
+        }
+        <form novalidate (submit)="solicitar($event)">
+          <div class="campo">
+            <label for="email">E-mail</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              placeholder="voce@email.com"
+              required
+              maxlength="254"
+              (input)="validarEmail($event)"
+              (blur)="validarEmail($event)"
+              [attr.aria-invalid]="erroEmail() !== null"
+              [attr.aria-describedby]="erroEmail() ? 'erro-email' : null"
+            />
+            @if (erroEmail()) {
+              <p id="erro-email" class="erro-campo" role="alert">{{ erroEmail() }}</p>
+            }
+          </div>
+          <button
+            class="acao-principal"
+            type="submit"
+            [disabled]="!formularioValido() || processando()"
+          >
+            Enviar instruções
+          </button>
+        </form>
+      }
+    </div>
+  </section>
+</main>
