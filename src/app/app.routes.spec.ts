@@ -4,8 +4,10 @@ import { RouterTestingHarness } from '@angular/router/testing';
 import { Cadastro } from './auth/cadastro/cadastro';
 import { CadastroService } from './auth/cadastro/cadastro.service';
 import { Login } from './auth/login/login';
+import { SessaoService } from './auth/sessao.service';
 import { MinhasListas } from './listas/minhas-listas';
 import { routes } from './app.routes';
+import { of } from 'rxjs';
 
 describe('Testes das rotas da aplicação', () => {
   beforeEach(() => {
@@ -13,6 +15,7 @@ describe('Testes das rotas da aplicação', () => {
       providers: [
         provideRouter(routes),
         { provide: CadastroService, useValue: {} },
+        { provide: SessaoService, useValue: { consultar: () => of({}), sair: () => of(undefined) } },
       ],
     });
   });
