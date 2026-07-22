@@ -21,12 +21,14 @@ Permitir que visitantes criem uma conta, autentiquem-se, encerrem a sessão e re
 - **Tela “Crie sua conta” (imagem Cadastro)**
   - **Campo “Nome”**
     - Obrigatório.
+    - Quando não informado ou composto somente por espaços, exibe “Por favor, informe seu nome”.
     - Aceita de 2 a 100 caracteres.
     - Preserva a capitalização informada.
   - **Campo “E-mail”**
     - Obrigatório.
     - Aceita um endereço válido com até 254 caracteres.
-    - Não diferencia letras maiúsculas e minúsculas ao verificar duplicidade.
+    - Quando não informado corretamente, exibe “Por favor, informe um e-mail válido”.
+    - O sistema normaliza o endereço para minúsculas antes de verificar duplicidade; essa regra deve ser garantida pelo backend.
   - **Campo “Senha”**
     - Obrigatório.
     - Aceita de 8 a 128 caracteres, inclusive espaços, sem removê-los.
@@ -37,9 +39,10 @@ Permitir que visitantes criem uma conta, autentiquem-se, encerrem a sessão e re
     - Alternam somente a visualização dos campos “Senha” e “Confirmar senha”.
     - Preservam o conteúdo digitado.
   - **Botão “Criar conta”**
+    - Inicia desabilitado e somente é habilitado quando todos os campos atendem aos requisitos de validade.
     - Valida todos os campos antes de concluir o cadastro.
     - Se o e-mail já estiver cadastrado, não cria outra conta, não autentica o visitante e exibe o pop-up “E-mail já foi cadastrado”.
-    - Em caso de falha, não cria conta parcialmente.
+    - Em caso de falha, não cria conta parcialmente e exibe “Ocorreu um erro ao tentar criar sua conta. Aguarde e tente novamente em alguns instantes.”.
     - Em caso de sucesso, cria somente a conta, autentica o novo usuário e abre a tela “Minhas Listas”.
     - Enquanto processa o cadastro, não permite novo envio.
   - **Link “Entrar”**
@@ -50,9 +53,13 @@ Permitir que visitantes criem uma conta, autentiquem-se, encerrem a sessão e re
     - Obrigatório.
     - Aceita um endereço válido com até 254 caracteres.
     - Não diferencia letras maiúsculas e minúsculas ao localizar a conta.
+    - Quando não informado corretamente, exibe “Por favor, informe um e-mail válido”.
   - **Campo “Senha”**
     - Obrigatório.
+    - Aceita no mínimo 8 caracteres.
     - Exibe o placeholder “Mínimo de 8 caracteres”.
+    - Quando não informada, exibe “Por favor, informe sua senha”.
+    - Quando possui menos de 8 caracteres, exibe “A senha deve ter pelo menos 8 caracteres”.
   - **Controle “Mostrar/Ocultar”**
     - Alterna somente a visualização da senha e preserva o conteúdo digitado.
   - **Checkbox “Manter-me conectado”**
@@ -60,6 +67,7 @@ Permitir que visitantes criem uma conta, autentiquem-se, encerrem a sessão e re
     - Desmarcado: o acesso expira após 12 horas sem atividade e, no máximo, após 24 horas.
     - Marcado: mantém o usuário conectado no mesmo navegador por até 30 dias, salvo se ele sair manualmente.
   - **Botão “Entrar”**
+    - Inicia desabilitado e somente é habilitado quando E-mail e Senha atendem aos requisitos de validade.
     - Dados incorretos exibem “E-mail ou senha inválidos”, sem indicar qual campo está incorreto.
     - Após 5 tentativas malsucedidas em 15 minutos, impede novas tentativas por 15 minutos e exibe “Muitas tentativas de acesso. Tente novamente em 15 minutos”.
     - Em caso de sucesso, abre a página solicitada anteriormente ou “Minhas Listas”.
@@ -73,7 +81,9 @@ Permitir que visitantes criem uma conta, autentiquem-se, encerrem a sessão e re
   - **Campo “E-mail”**
     - Obrigatório e deve conter um endereço válido.
   - **Botão de envio**
-    - Sempre exibe “Se houver uma conta para este e-mail, enviaremos as instruções”, exista ou não uma conta cadastrada.
+    - Em caso de sucesso, exibe “Solicitação de recuperação enviada com sucesso.”.
+    - Também exibe “Se houver uma conta para este e-mail, enviaremos as instruções”, exista ou não uma conta cadastrada.
+    - Em caso de falha no envio, exibe “Não foi possível enviar as instruções. Tente novamente mais tarde.”.
     - Para uma conta existente, envia um link de uso único, válido por 30 minutos.
     - Um novo pedido torna inválidos os links enviados anteriormente.
     - Enquanto processa a solicitação, não permite novo envio.
@@ -159,6 +169,7 @@ Regras contratuais:
 |---|---:|---|---|---|
 | `AUTH-001` | P0 | Visitante e e-mail novo | Cadastrar dados válidos | Uma conta, usuário autenticado, página vazia com o título “Minhas Listas” e acesso mantido após recarga |
 | `AUTH-002` | P0 | Cadastro aberto | Testar obrigatório vazio, e-mail inválido, senhas com 7 e 129 caracteres e confirmação divergente | Erro no campo; nenhuma conta criada e visitante não autenticado |
+| `AUTH-012` | P0 | Login aberto | Testar e-mail vazio, inválido ou com 255 caracteres e senha vazia ou com 7 caracteres | Mensagem normativa do campo; nenhuma autenticação solicitada |
 | `AUTH-003` | P0 | Conta `Pessoa@Exemplo.com` | Cadastrar `pessoa@exemplo.com` | Pop-up “E-mail já foi cadastrado”; nenhuma conta adicional e visitante não autenticado |
 | `AUTH-004` | P0 | Conta ativa e rota interna solicitada | Entrar, sair e usar Voltar | Retorna à rota guardada; após logout, rotas e cache não revelam dados |
 | `AUTH-005` | P0 | Conta ativa | Tentar senha errada e e-mail inexistente | “E-mail ou senha inválidos” nos dois casos, sem revelar se a conta existe |

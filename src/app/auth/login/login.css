@@ -1,0 +1,18 @@
+.erro { margin: 0 0 1rem; color: #b33a25; }
+.campo input::placeholder { color: #657076; opacity: 1; }
+.manter-conectado {
+  display: flex;
+  align-items: center;
+  gap: .85rem;
+  color: var(--suave);
+  font-size: 1.05rem;
+  font-weight: 500;
+}
+
+.manter-conectado input { width: 24px; height: 24px; margin: 0; accent-color: var(--verde); }
+.links { display: grid; gap: 2rem; justify-items: center; margin-top: .5rem; }
+.links a { font-weight: 750; }
+
+@media (max-width: 640px) {
+  .links { gap: 1.5rem; }
+}

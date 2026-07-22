@@ -1,0 +1,4 @@
+.erro-geral { margin: 0 0 1rem; }
+.resultado { display: grid; gap: 1rem; }
+.resultado p { margin: 0; color: var(--suave); }
+.resultado .sucesso { color: var(--verde); font-weight: 700; }

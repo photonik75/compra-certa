@@ -1,0 +1,458 @@
+openapi: 3.0.3
+info:
+  title: CompraCerta - API de autenticação e conta
+  version: 1.0.0
+  description: |
+    Contrato da API da EF-01 — Autenticação e conta.
+
+    A autenticação utiliza o cookie seguro `cc_session`. Operações autenticadas que
+    alteram estado também exigem o token CSRF retornado em `SessionResponse`.
+servers:
+  - url: http://localhost:4200
+    description: Ambiente local
+tags:
+  - name: Autenticação
+    description: Cadastro, sessão e recuperação de senha.
+paths:
+  /api/v1/auth/registrations:
+    post:
+      tags: [Autenticação]
+      summary: Criar uma conta
+      description: |
+        Cria uma única conta e autentica o novo usuário. O e-mail é normalizado
+        para letras minúsculas antes da verificação de duplicidade.
+      operationId: createRegistration
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistrationRequest'
+      responses:
+        '201':
+          description: Conta criada e usuário autenticado.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+            Set-Cookie:
+              $ref: '#/components/headers/SessionCookie'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '409':
+          description: O e-mail informado já está cadastrado.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                code: CONFLICT
+                detail: E-mail já foi cadastrado
+                fieldErrors:
+                  - field: email
+                    message: E-mail já foi cadastrado
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/auth/sessions:
+    post:
+      tags: [Autenticação]
+      summary: Entrar em uma conta
+      operationId: createSession
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Usuário autenticado.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+            Set-Cookie:
+              $ref: '#/components/headers/SessionCookie'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          description: Credenciais inválidas, sem revelar qual campo está incorreto.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                code: INVALID_CREDENTIALS
+                detail: E-mail ou senha inválidos
+        '429':
+          description: Novas tentativas estão temporariamente bloqueadas.
+          headers:
+            Retry-After:
+              description: Tempo restante do bloqueio, em segundos.
+              schema:
+                type: integer
+                minimum: 1
+              example: 900
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                code: TOO_MANY_ATTEMPTS
+                detail: Muitas tentativas de acesso. Tente novamente em 15 minutos
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/auth/session:
+    get:
+      tags: [Autenticação]
+      summary: Consultar o acesso atual
+      description: Recupera o usuário autenticado e pode renovar o token CSRF.
+      operationId: getCurrentSession
+      security:
+        - sessionCookie: []
+      responses:
+        '200':
+          description: Sessão válida.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/v1/auth/sessions/current:
+    delete:
+      tags: [Autenticação]
+      summary: Sair da conta
+      operationId: deleteCurrentSession
+      security:
+        - sessionCookie: []
+          csrfToken: []
+      responses:
+        '204':
+          description: Acesso encerrado. O cookie de sessão é expirado.
+          headers:
+            Set-Cookie:
+              description: Cookie `cc_session` expirado pelo servidor.
+              schema:
+                type: string
+              example: cc_session=; Max-Age=0; HttpOnly; Secure; SameSite=Lax; Path=/api/v1
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/InvalidCsrfToken'
+  /api/v1/auth/password-reset-requests:
+    post:
+      tags: [Autenticação]
+      summary: Solicitar recuperação de senha
+      description: |
+        Retorna a mesma resposta para e-mails existentes e inexistentes. Para uma
+        conta existente, invalida links anteriores e envia um link de uso único,
+        válido por 30 minutos.
+      operationId: createPasswordResetRequest
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequest'
+      responses:
+        '202':
+          description: Solicitação aceita, exista ou não uma conta para o e-mail.
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          description: Não foi possível enviar as instruções.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              example:
+                code: PASSWORD_RESET_DELIVERY_FAILED
+                detail: Não foi possível enviar as instruções. Tente novamente mais tarde.
+  /api/v1/auth/password-resets:
+    post:
+      tags: [Autenticação]
+      summary: Redefinir a senha
+      description: |
+        Usa o token recebido no corpo HTTPS. Após o sucesso, invalida os acessos
+        abertos em outros dispositivos e não autentica automaticamente o usuário.
+      operationId: createPasswordReset
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirmation'
+      responses:
+        '204':
+          description: Senha alterada e acessos anteriores encerrados.
+        '400':
+          description: Dados inválidos ou token inválido, usado ou expirado.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              examples:
+                invalidToken:
+                  summary: Token inválido, usado ou expirado
+                  value:
+                    code: INVALID_PASSWORD_RESET_TOKEN
+                    detail: Link de recuperação inválido, usado ou expirado
+                invalidFields:
+                  $ref: '#/components/examples/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: cc_session
+      description: Cookie HttpOnly de sessão enviado automaticamente pelo navegador.
+    csrfToken:
+      type: apiKey
+      in: header
+      name: X-CSRF-Token
+      description: Token retornado no campo `csrfToken` de `SessionResponse`.
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: Chave única que impede o processamento duplicado da solicitação.
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 255
+      example: 8a7935aa-79f2-40c9-9845-b721fe8f53c0
+  headers:
+    CacheControlNoStore:
+      description: Impede o armazenamento de dados de sessão em cache.
+      schema:
+        type: string
+        enum: [no-store]
+      example: no-store
+    SessionCookie:
+      description: Cookie seguro que identifica a sessão autenticada.
+      schema:
+        type: string
+      example: cc_session=opaque; HttpOnly; Secure; SameSite=Lax; Path=/api/v1
+  responses:
+    ValidationError:
+      description: Um ou mais campos são inválidos.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          examples:
+            validationError:
+              $ref: '#/components/examples/ValidationError'
+    Unauthorized:
+      description: O acesso não está autenticado ou expirou.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          example:
+            code: UNAUTHORIZED
+            detail: Sua sessão expirou. Entre novamente para continuar.
+    InvalidCsrfToken:
+      description: O token de proteção CSRF está ausente ou é inválido.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          example:
+            code: INVALID_CSRF_TOKEN
+            detail: Não foi possível validar sua solicitação. Atualize a página e tente novamente.
+    InternalServerError:
+      description: Falha inesperada ao processar a solicitação.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          example:
+            code: INTERNAL_ERROR
+            detail: Ocorreu um erro ao processar sua solicitação. Tente novamente em alguns instantes.
+  examples:
+    ValidationError:
+      summary: Campos inválidos
+      value:
+        code: VALIDATION_ERROR
+        detail: Verifique os campos informados e tente novamente.
+        fieldErrors:
+          - field: email
+            message: Por favor, informe um e-mail válido
+  schemas:
+    UserSummary:
+      type: object
+      additionalProperties: false
+      required: [id, name, email, status, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: d8da6d6b-0086-4aa4-a310-34a97703f5d3
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+          example: Maria Silva
+        email:
+          type: string
+          format: email
+          maxLength: 254
+          example: maria@example.com
+        status:
+          type: string
+          enum: [ACTIVE]
+        createdAt:
+          type: string
+          format: date-time
+          example: '2026-07-22T14:30:00Z'
+    RegistrationRequest:
+      type: object
+      additionalProperties: false
+      required: [name, email, password, passwordConfirmation]
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+          pattern: '^(?=.*\S).{2,100}$'
+          description: Nome com capitalização preservada; não pode conter somente espaços.
+          example: Maria Silva
+        email:
+          type: string
+          format: email
+          maxLength: 254
+          description: Normalizado para letras minúsculas pelo backend.
+          example: maria@example.com
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 128
+          description: Espaços são permitidos e preservados.
+          example: senha segura
+        passwordConfirmation:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 128
+          description: Deve ser idêntica a `password`.
+          example: senha segura
+    LoginRequest:
+      type: object
+      additionalProperties: false
+      required: [email, password, manterConectado]
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+          description: A localização da conta não diferencia maiúsculas e minúsculas.
+          example: maria@example.com
+        password:
+          type: string
+          format: password
+          minLength: 8
+          example: senha segura
+        manterConectado:
+          type: boolean
+          default: false
+          description: |
+            Quando `true`, mantém o acesso por até 30 dias. Quando `false`, o acesso
+            expira após 12 horas sem atividade e, no máximo, após 24 horas.
+    SessionResponse:
+      type: object
+      additionalProperties: false
+      required: [user, csrfToken, expiresAt]
+      properties:
+        user:
+          $ref: '#/components/schemas/UserSummary'
+        csrfToken:
+          type: string
+          minLength: 1
+          description: Token a enviar no header `X-CSRF-Token` em operações protegidas.
+          example: opaque-csrf-token
+        expiresAt:
+          type: string
+          format: date-time
+          example: '2026-07-23T14:30:00Z'
+    PasswordResetRequest:
+      type: object
+      additionalProperties: false
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+          example: maria@example.com
+    PasswordResetConfirmation:
+      type: object
+      additionalProperties: false
+      required: [token, newPassword, passwordConfirmation]
+      properties:
+        token:
+          type: string
+          minLength: 1
+          description: Token de uso único recebido no fragmento do link de recuperação.
+          example: opaque-password-reset-token
+        newPassword:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 128
+          example: nova senha segura
+        passwordConfirmation:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 128
+          description: Deve ser idêntica a `newPassword`.
+          example: nova senha segura
+    ApiError:
+      type: object
+      additionalProperties: false
+      required: [code, detail]
+      properties:
+        code:
+          type: string
+          description: Código estável e legível por máquina.
+          example: VALIDATION_ERROR
+        detail:
+          type: string
+          description: Mensagem polida e apropriada para apresentação ao usuário.
+          example: Verifique os campos informados e tente novamente.
+        fieldErrors:
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldError'
+    FieldError:
+      type: object
+      additionalProperties: false
+      required: [field, message]
+      properties:
+        field:
+          type: string
+          example: email
+        message:
+          type: string
+          example: Por favor, informe um e-mail válido

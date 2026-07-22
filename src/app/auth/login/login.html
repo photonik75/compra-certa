@@ -1,0 +1,74 @@
+<main class="pagina-login">
+  <section class="apresentacao" aria-label="Apresentação do CompraCerta">
+    <div class="conteudo-apresentacao">
+      <div class="marca"><span aria-hidden="true">✓</span> CompraCerta</div>
+      <h2>Sua compra leve, organizada e compartilhada.</h2>
+      <p>Planeje a semana, marque o que já está no carrinho e mantenha toda a casa em sintonia.</p>
+      <img
+        class="ilustracao"
+        src="/images/sacola-compras.png"
+        alt="Sacola reutilizável com alimentos e uma lista marcada"
+      />
+    </div>
+  </section>
+  <section class="painel-login">
+    <div class="cartao-login">
+    <p class="destaque">Bem-vinda(o)</p>
+    <h1>Entre na sua conta</h1>
+    <p class="ajuda">Por favor, informe seus dados para entrar no sistema.</p>
+    @if (erro()) {
+      <p class="erro" role="alert">{{ erro() }}</p>
+    }
+    <form novalidate (submit)="entrar($event)">
+      <div class="campo">
+        <label for="email">E-mail</label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          placeholder="voce@email.com"
+          required
+          maxlength="254"
+          (input)="validarEmail($event)"
+          (blur)="validarEmail($event)"
+          [attr.aria-invalid]="erroEmail() !== null"
+          [attr.aria-describedby]="erroEmail() ? 'erro-email' : null"
+        />
+        @if (erroEmail()) {
+          <p id="erro-email" class="erro-campo" role="alert">{{ erroEmail() }}</p>
+        }
+      </div>
+      <div class="campo">
+        <label for="senha">Senha</label>
+        <div class="controle-senha">
+          <input
+            id="senha"
+            name="senha"
+            [type]="senhaVisivel() ? 'text' : 'password'"
+            placeholder="Mínimo de 8 caracteres"
+            required
+            minlength="8"
+            (input)="validarSenha($event)"
+            (blur)="validarSenha($event)"
+            [attr.aria-invalid]="erroSenha() !== null"
+            [attr.aria-describedby]="erroSenha() ? 'erro-senha' : null"
+          />
+          <button type="button" (click)="alternarSenha()">{{ senhaVisivel() ? 'Ocultar' : 'Mostrar' }}</button>
+        </div>
+        @if (erroSenha()) {
+          <p id="erro-senha" class="erro-campo" role="alert">{{ erroSenha() }}</p>
+        }
+      </div>
+      <label class="manter-conectado">
+        <input name="manterConectado" type="checkbox" />
+        Manter-me conectado
+      </label>
+      <button class="entrar" type="submit" [disabled]="!formularioValido() || processando()">Entrar</button>
+      <nav class="links" aria-label="Opções de acesso">
+        <a href="/cadastro" (click)="criarConta($event)">Criar uma conta</a>
+        <a href="/recuperar-senha" (click)="recuperarSenha($event)">Esqueci minha senha</a>
+      </nav>
+    </form>
+    </div>
+  </section>
+</main>

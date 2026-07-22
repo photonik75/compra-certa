@@ -1,0 +1,6 @@
+.linha-senhas { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.entrar { margin: .25rem 0 0; color: var(--suave); text-align: center; }
+
+@media (max-width: 640px) {
+  .linha-senhas { grid-template-columns: 1fr; }
+}
