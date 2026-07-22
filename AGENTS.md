@@ -7,6 +7,10 @@ Garanta que todas as validações exibam mensagens de erro polidas ao usuário.
 # Arquitetura do frontend
 Componentes, diretivas e pipes não devem fazer acesso direto ao servidor. Toda comunicação com o servidor deve ser encapsulada em serviços.
 
+# Arquitetura do backend
+Siga as convenções do Spring Boot, separando Controllers, Services e Repositories.
+Organize os pacotes por funcionalidade.
+
 # Codificação
 Evite pular linhas em métodos. Dê preferência a métodos compactos.
 Se a mesma string for necessária em mais de um lugar, use constantes para promover reuso. Isso também vale para testes.
