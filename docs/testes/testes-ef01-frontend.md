@@ -21,7 +21,7 @@
 | Tela Crie sua conta > Confirmar senha > Obrigatório | `CAD-10` | Testa o impedimento do cadastro quando a confirmação da senha está vazia. |
 | Tela Crie sua conta > Confirmar senha > Deve ser idêntico à Senha | `CAD-11` | Confirma a rejeição de uma confirmação que difere da senha por caractere, capitalização ou espaço. |
 | Tela Crie sua conta > Mostrar/Ocultar > Alternam somente os respectivos campos e preservam conteúdo | `CAD-12` | Verifica se cada controle alterna somente a visibilidade de seu campo e preserva o valor digitado. |
-| Tela Crie sua conta > Criar conta > Valida todos os campos | `CAD-13` | Confirma que um envio inválido apresenta todos os erros e não solicita a criação da conta. |
+| Tela Crie sua conta > Criar conta > Habilita somente com todos os campos válidos | `CAD-13` | Confirma que “Criar conta” inicia desabilitado, permanece assim enquanto houver campo inválido e é habilitado quando todos os campos são válidos. |
 | Tela Crie sua conta > Criar conta > E-mail já cadastrado | `CAD-14` | Verifica se uma resposta de e-mail duplicado é reconhecida pelo serviço e faz a tela informar “E-mail já foi cadastrado”, sem autenticar ou sair do cadastro. |
 | Tela Crie sua conta > Criar conta > Em caso de falha, não cria conta parcialmente | `CAD-15` | Confirma que uma falha no cadastro apresenta a mensagem geral de erro, não exibe sucesso e não autentica o usuário. |
 | Tela Crie sua conta > Criar conta > Sucesso autentica e abre Minhas Listas | `CAD-16` | Confirma que uma criação bem-sucedida autentica o usuário e abre “Minhas Listas”. |
@@ -37,7 +37,7 @@
 | Tela Entre na sua conta > Entrar > Dados incorretos exibem mensagem genérica | `LOG-8` | Confirma que tanto um e-mail inexistente quanto uma senha incorreta apresentam “E-mail ou senha inválidos”. |
 | Tela Entre na sua conta > Entrar > Bloqueio após tentativas malsucedidas | `LOG-9` | Verifica se uma resposta de bloqueio é reconhecida pelo serviço e faz a tela apresentar a mensagem normativa com o tempo de espera. |
 | Tela Entre na sua conta > Entrar > Sucesso abre rota solicitada ou Minhas Listas | `LOG-10` | Confirma que, após o login, é aberta a rota interna solicitada anteriormente ou, quando ela não existe, “Minhas Listas”. |
-| Tela Entre na sua conta > Entrar > Enquanto processa, não permite novo envio | `LOG-11` | Verifica se, durante o login, o envio permanece desabilitado e cliques adicionais não criam novas solicitações. |
+| Tela Entre na sua conta > Entrar > Habilita somente com os campos válidos e bloqueia durante o processamento | `LOG-11` | Verifica se “Entrar” inicia desabilitado, é habilitado somente quando E-mail e Senha são válidos e volta a ficar desabilitado durante o login, sem criar solicitações adicionais. |
 | Tela Entre na sua conta > Link Criar uma conta | `LOG-12` | Confirma que o link “Criar uma conta” abre a tela “Crie sua conta”. |
 | Tela Entre na sua conta > Link Esqueci minha senha | `LOG-13` | Confirma que o link “Esqueci minha senha” abre a tela de recuperação de senha. |
 | **Tela de recuperação de senha** | `REC-1` | Verifica se o título acessível, o campo E-mail e o botão de envio estão presentes. |

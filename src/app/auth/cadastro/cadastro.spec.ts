@@ -64,6 +64,12 @@ function preencherCadastroValido(): void {
   fireEvent.click(screen.getByRole('button', { name: CRIAR_CONTA }));
 }
 
+function preencherCamposExcetoNome(senha = SENHA_VALIDA): void {
+  fireEvent.input(screen.getByRole('textbox', { name: EMAIL }), { target: { value: EMAIL_VALIDO } });
+  fireEvent.input(screen.getByLabelText(SENHA), { target: { value: senha } });
+  fireEvent.input(screen.getByLabelText(CONFIRMAR_SENHA), { target: { value: senha } });
+}
+
 describe('Testes unitários do componente Cadastro', () => {
   it(
     'CAD-1 - Verifica se os componentes título, Nome, E-mail, Senha, Confirmar senha, dois controles de ' +
@@ -85,13 +91,12 @@ describe('Testes unitários do componente Cadastro', () => {
   it('CAD-2 - Testa o impedimento do cadastro quando o nome está vazio ou contém somente espaços.', async () => {
     await render(Cadastro);
     const nome = screen.getByRole('textbox', { name: NOME }) as HTMLInputElement;
-    const criarConta = screen.getByRole('button', { name: CRIAR_CONTA });
-    fireEvent.click(criarConta);
+    fireEvent.blur(nome);
     expect(screen.getByText(ERRO_NOME)).toBeTruthy();
     fireEvent.input(nome, { target: { value: NOME_VALIDO } });
     expect(screen.queryByText(ERRO_NOME)).toBeNull();
     fireEvent.input(nome, { target: { value: '   ' } });
-    fireEvent.click(criarConta);
+    fireEvent.blur(nome);
     expect(screen.getByText(ERRO_NOME)).toBeTruthy();
   });
 
@@ -112,13 +117,17 @@ describe('Testes unitários do componente Cadastro', () => {
     },
   );
 
-  it('CAD-4 - Verifica a remoção de espaços excedentes do nome sem alterar letras maiúsculas ou minúsculas.', async () => {
+  it(
+    'CAD-4 - Verifica a remoção de espaços excedentes do nome sem alterar letras maiúsculas ou minúsculas.',
+    async () => {
     await render(Cadastro);
     const nome = screen.getByRole('textbox', { name: NOME }) as HTMLInputElement;
     fireEvent.input(nome, { target: { value: '  mARIA   sILVA  ' } });
+    preencherCamposExcetoNome();
     fireEvent.click(screen.getByRole('button', { name: CRIAR_CONTA }));
-    expect(nome.value).toBe('mARIA sILVA');
-  });
+      expect(nome.value).toBe('mARIA sILVA');
+    },
+  );
 
   it(
     'CAD-5 - Garante que o cadastro é bloqueado quando o e-mail está vazio, contém somente espaços ou é ' +
@@ -126,19 +135,18 @@ describe('Testes unitários do componente Cadastro', () => {
     async () => {
       await render(Cadastro);
       const email = screen.getByRole('textbox', { name: EMAIL }) as HTMLInputElement;
-      const criarConta = screen.getByRole('button', { name: CRIAR_CONTA });
-      fireEvent.click(criarConta);
+      fireEvent.blur(email);
       expect(email.getAttribute(ATRIBUTO_ARIA_INVALIDO)).toBe(ARIA_INVALIDO);
       expect(screen.getByText(ERRO_EMAIL)).toBeTruthy();
       fireEvent.input(email, { target: { value: 'maria@example.com' } });
       expect(email.getAttribute(ATRIBUTO_ARIA_INVALIDO)).toBe(ARIA_VALIDO);
       expect(screen.queryByText(ERRO_EMAIL)).toBeNull();
       fireEvent.input(email, { target: { value: '   ' } });
-      fireEvent.click(criarConta);
+      fireEvent.blur(email);
       expect(email.getAttribute(ATRIBUTO_ARIA_INVALIDO)).toBe(ARIA_INVALIDO);
       expect(screen.getByText(ERRO_EMAIL)).toBeTruthy();
       fireEvent.input(email, { target: { value: 'email-invalido' } });
-      fireEvent.click(criarConta);
+      fireEvent.blur(email);
       expect(email.getAttribute(ATRIBUTO_ARIA_INVALIDO)).toBe(ARIA_INVALIDO);
       expect(screen.getByText(ERRO_EMAIL)).toBeTruthy();
     },
@@ -164,8 +172,7 @@ describe('Testes unitários do componente Cadastro', () => {
   it('CAD-7 - Testa o impedimento do cadastro quando a senha está vazia.', async () => {
     await render(Cadastro);
     const senha = screen.getByLabelText(SENHA) as HTMLInputElement;
-    const criarConta = screen.getByRole('button', { name: CRIAR_CONTA });
-    fireEvent.click(criarConta);
+    fireEvent.blur(senha);
     expect(senha.getAttribute(ATRIBUTO_ARIA_INVALIDO)).toBe(ARIA_INVALIDO);
     fireEvent.input(senha, { target: { value: SENHA_VALIDA } });
     expect(senha.getAttribute(ATRIBUTO_ARIA_INVALIDO)).toBe(ARIA_VALIDO);
@@ -192,7 +199,10 @@ describe('Testes unitários do componente Cadastro', () => {
     await render(Cadastro);
     const senha = screen.getByLabelText(SENHA) as HTMLInputElement;
     const valor = '  senha  com espaços  ';
+    fireEvent.input(screen.getByRole('textbox', { name: NOME }), { target: { value: NOME_VALIDO } });
     fireEvent.input(senha, { target: { value: valor } });
+    fireEvent.input(screen.getByRole('textbox', { name: EMAIL }), { target: { value: EMAIL_VALIDO } });
+    fireEvent.input(screen.getByLabelText(CONFIRMAR_SENHA), { target: { value: valor } });
     fireEvent.click(screen.getByRole('button', { name: CRIAR_CONTA }));
     expect(senha.value).toBe(valor);
   });
@@ -201,8 +211,7 @@ describe('Testes unitários do componente Cadastro', () => {
     await render(Cadastro);
     const senha = screen.getByLabelText(SENHA) as HTMLInputElement;
     const confirmacao = screen.getByLabelText(CONFIRMAR_SENHA) as HTMLInputElement;
-    const criarConta = screen.getByRole('button', { name: CRIAR_CONTA });
-    fireEvent.click(criarConta);
+    fireEvent.blur(confirmacao);
     expect(confirmacao.getAttribute(ATRIBUTO_ARIA_INVALIDO)).toBe(ARIA_INVALIDO);
     fireEvent.input(senha, { target: { value: SENHA_VALIDA } });
     fireEvent.input(confirmacao, { target: { value: SENHA_VALIDA } });
@@ -226,7 +235,9 @@ describe('Testes unitários do componente Cadastro', () => {
     },
   );
 
-  it('CAD-12 - Verifica se cada controle alterna somente a visibilidade de seu campo e preserva o valor digitado.', async () => {
+  it(
+    'CAD-12 - Verifica se cada controle alterna somente a visibilidade de seu campo e preserva o valor digitado.',
+    async () => {
     await render(Cadastro);
     const senha = screen.getByLabelText(SENHA) as HTMLInputElement;
     const confirmacao = screen.getByLabelText(CONFIRMAR_SENHA) as HTMLInputElement;
@@ -243,21 +254,24 @@ describe('Testes unitários do componente Cadastro', () => {
     expect(senha.type).toBe('password');
     expect(confirmacao.type).toBe('text');
     expect(senha.value).toBe(SENHA_VALIDA);
-    expect(confirmacao.value).toBe(SENHA_VALIDA);
-  });
+      expect(confirmacao.value).toBe(SENHA_VALIDA);
+    },
+  );
 
-  it('CAD-13 - Confirma que um envio inválido apresenta todos os erros e não solicita a criação da conta.', async () => {
+  it('CAD-13 - Habilita “Criar conta” somente quando todos os campos são válidos.', async () => {
     await render(Cadastro);
-    const campos = [
-      screen.getByRole('textbox', { name: NOME }),
-      screen.getByRole('textbox', { name: EMAIL }),
-      screen.getByLabelText(SENHA),
-      screen.getByLabelText(CONFIRMAR_SENHA),
-    ];
-    fireEvent.click(screen.getByRole('button', { name: CRIAR_CONTA }));
-    for (const campo of campos)
-      expect(campo.getAttribute(ATRIBUTO_ARIA_INVALIDO)).toBe(ARIA_INVALIDO);
-    expect(screen.getAllByRole('alert')).toHaveLength(4);
+    const criarConta = screen.getByRole('button', { name: CRIAR_CONTA }) as HTMLButtonElement;
+    expect(criarConta.disabled).toBe(true);
+    fireEvent.input(screen.getByRole('textbox', { name: NOME }), { target: { value: NOME_VALIDO } });
+    expect(criarConta.disabled).toBe(true);
+    fireEvent.input(screen.getByRole('textbox', { name: EMAIL }), { target: { value: EMAIL_VALIDO } });
+    expect(criarConta.disabled).toBe(true);
+    fireEvent.input(screen.getByLabelText(SENHA), { target: { value: SENHA_VALIDA } });
+    expect(criarConta.disabled).toBe(true);
+    fireEvent.input(screen.getByLabelText(CONFIRMAR_SENHA), { target: { value: SENHA_VALIDA } });
+    expect(criarConta.disabled).toBe(false);
+    fireEvent.input(screen.getByRole('textbox', { name: EMAIL }), { target: { value: 'inválido' } });
+    expect(criarConta.disabled).toBe(true);
   });
 
   it(

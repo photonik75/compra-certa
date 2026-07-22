@@ -39,6 +39,7 @@ Permitir que visitantes criem uma conta, autentiquem-se, encerrem a sessão e re
     - Alternam somente a visualização dos campos “Senha” e “Confirmar senha”.
     - Preservam o conteúdo digitado.
   - **Botão “Criar conta”**
+    - Inicia desabilitado e somente é habilitado quando todos os campos atendem aos requisitos de validade.
     - Valida todos os campos antes de concluir o cadastro.
     - Se o e-mail já estiver cadastrado, não cria outra conta, não autentica o visitante e exibe o pop-up “E-mail já foi cadastrado”.
     - Em caso de falha, não cria conta parcialmente e exibe “Ocorreu um erro ao tentar criar sua conta. Aguarde e tente novamente em alguns instantes.”.
@@ -64,6 +65,7 @@ Permitir que visitantes criem uma conta, autentiquem-se, encerrem a sessão e re
     - Desmarcado: o acesso expira após 12 horas sem atividade e, no máximo, após 24 horas.
     - Marcado: mantém o usuário conectado no mesmo navegador por até 30 dias, salvo se ele sair manualmente.
   - **Botão “Entrar”**
+    - Inicia desabilitado e somente é habilitado quando E-mail e Senha atendem aos requisitos de validade.
     - Dados incorretos exibem “E-mail ou senha inválidos”, sem indicar qual campo está incorreto.
     - Após 5 tentativas malsucedidas em 15 minutos, impede novas tentativas por 15 minutos e exibe “Muitas tentativas de acesso. Tente novamente em 15 minutos”.
     - Em caso de sucesso, abre a página solicitada anteriormente ou “Minhas Listas”.

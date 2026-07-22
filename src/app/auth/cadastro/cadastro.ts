@@ -28,6 +28,7 @@ export class Cadastro {
   protected readonly emailDuplicado = signal<string | null>(null);
   protected readonly erroGeral = signal<string | null>(null);
   protected readonly processando = signal(false);
+  protected readonly formularioValido = signal(false);
 
   protected alternarSenha(): void {
     this.senhaVisivel.update((visivel) => !visivel);
@@ -40,18 +41,27 @@ export class Cadastro {
   protected validarNome(evento: Event): void {
     const campo = evento.target as HTMLInputElement;
     this.atualizarValidadeNome(campo);
+    this.atualizarEstadoFormulario(campo);
   }
 
   protected validarEmail(evento: Event): void {
-    this.atualizarValidadeEmail(evento.target as HTMLInputElement);
+    const campo = evento.target as HTMLInputElement;
+    this.atualizarValidadeEmail(campo);
+    this.atualizarEstadoFormulario(campo);
   }
 
   protected validarSenha(evento: Event): void {
-    this.atualizarValidadeSenha(evento.target as HTMLInputElement);
+    const campo = evento.target as HTMLInputElement;
+    this.atualizarValidadeSenha(campo);
+    const confirmacao = campo.form?.elements.namedItem('confirmarSenha') as HTMLInputElement;
+    if (confirmacao.value.length > 0) this.atualizarValidadeConfirmacao(confirmacao);
+    this.atualizarEstadoFormulario(campo);
   }
 
   protected validarConfirmacao(evento: Event): void {
-    this.atualizarValidadeConfirmacao(evento.target as HTMLInputElement);
+    const campo = evento.target as HTMLInputElement;
+    this.atualizarValidadeConfirmacao(campo);
+    this.atualizarEstadoFormulario(campo);
   }
 
   protected entrar(evento: MouseEvent): void {
@@ -92,7 +102,11 @@ export class Cadastro {
 
   private atualizarValidadeNome(campo: HTMLInputElement): void {
     const tamanho = campo.value.trim().length;
-    const erro = tamanho === 0 ? 'Por favor, informe seu nome' : tamanho < 2 || tamanho > 100 ? 'O nome deve ter entre 2 e 100 caracteres' : null;
+    const erro = tamanho === 0
+      ? 'Por favor, informe seu nome'
+      : tamanho < 2 || tamanho > 100
+        ? 'O nome deve ter entre 2 e 100 caracteres'
+        : null;
     campo.setCustomValidity(erro ?? '');
     this.erroNome.set(erro);
   }
@@ -122,5 +136,9 @@ export class Cadastro {
       return;
     }
     this.erroGeral.set(ERRO_GERAL_CADASTRO);
+  }
+
+  private atualizarEstadoFormulario(campo: HTMLInputElement): void {
+    this.formularioValido.set(campo.form?.checkValidity() ?? false);
   }
 }

@@ -30,6 +30,7 @@
           required
           maxlength="254"
           (input)="validarEmail($event)"
+          (blur)="validarEmail($event)"
           [attr.aria-invalid]="erroEmail()"
           [attr.aria-describedby]="erroEmail() ? 'erro-email' : null"
         />
@@ -47,6 +48,7 @@
             placeholder="Mínimo de 8 caracteres"
             required
             (input)="validarSenha($event)"
+            (blur)="validarSenha($event)"
             [attr.aria-invalid]="erroSenha()"
             [attr.aria-describedby]="erroSenha() ? 'erro-senha' : null"
           />
@@ -60,7 +62,7 @@
         <input name="manterConectado" type="checkbox" />
         Manter-me conectado
       </label>
-      <button class="entrar" type="submit" [disabled]="processando()">Entrar</button>
+      <button class="entrar" type="submit" [disabled]="!formularioValido() || processando()">Entrar</button>
       <nav class="links" aria-label="Opções de acesso">
         <a href="/cadastro" (click)="criarConta($event)">Criar uma conta</a>
         <a href="/recuperar-senha" (click)="recuperarSenha($event)">Esqueci minha senha</a>

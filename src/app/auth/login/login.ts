@@ -26,17 +26,22 @@ export class Login {
   protected readonly erro = signal<string | null>(null);
   protected readonly erroEmail = signal(false);
   protected readonly erroSenha = signal(false);
+  protected readonly formularioValido = signal(false);
 
   protected alternarSenha(): void {
     this.senhaVisivel.update((visivel) => !visivel);
   }
 
   protected validarEmail(evento: Event): void {
-    this.atualizarValidadeEmail(evento.target as HTMLInputElement);
+    const campo = evento.target as HTMLInputElement;
+    this.atualizarValidadeEmail(campo);
+    this.atualizarEstadoFormulario(campo);
   }
 
   protected validarSenha(evento: Event): void {
-    this.atualizarValidadeSenha(evento.target as HTMLInputElement);
+    const campo = evento.target as HTMLInputElement;
+    this.atualizarValidadeSenha(campo);
+    this.atualizarEstadoFormulario(campo);
   }
 
   protected entrar(evento: SubmitEvent): void {
@@ -85,5 +90,9 @@ export class Login {
     const invalido = campo.value.length === 0;
     campo.setCustomValidity(invalido ? ERRO_SENHA : '');
     this.erroSenha.set(invalido);
+  }
+
+  private atualizarEstadoFormulario(campo: HTMLInputElement): void {
+    this.formularioValido.set(campo.form?.checkValidity() ?? false);
   }
 }

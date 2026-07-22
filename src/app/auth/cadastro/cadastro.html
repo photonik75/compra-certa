@@ -41,6 +41,7 @@
             minlength="2"
             maxlength="100"
             (input)="validarNome($event)"
+            (blur)="validarNome($event)"
             [attr.aria-invalid]="erroNome() !== null"
             [attr.aria-describedby]="erroNome() ? 'erro-nome' : null"
           />
@@ -60,6 +61,7 @@
             required
             maxlength="254"
             (input)="validarEmail($event)"
+            (blur)="validarEmail($event)"
             [attr.aria-invalid]="erroEmail()"
             [attr.aria-describedby]="erroEmail() ? 'erro-email' : null"
           />
@@ -82,6 +84,7 @@
                 minlength="8"
                 maxlength="128"
                 (input)="validarSenha($event)"
+                (blur)="validarSenha($event)"
                 [attr.aria-invalid]="erroSenha()"
                 [attr.aria-describedby]="erroSenha() ? 'erro-senha' : null"
               />
@@ -105,6 +108,7 @@
                 placeholder="Repita a senha"
                 required
                 (input)="validarConfirmacao($event)"
+                (blur)="validarConfirmacao($event)"
                 [attr.aria-invalid]="erroConfirmacao()"
                 [attr.aria-describedby]="erroConfirmacao() ? 'erro-confirmacao' : null"
               />
@@ -118,7 +122,9 @@
           </div>
         </div>
 
-        <button class="acao-principal" type="submit" [disabled]="processando()">Criar conta</button>
+        <button class="acao-principal" type="submit" [disabled]="!formularioValido() || processando()">
+          Criar conta
+        </button>
         <p class="entrar">Já tem uma conta? <a href="/entrar" (click)="entrar($event)">Entrar</a></p>
       </form>
     </div>

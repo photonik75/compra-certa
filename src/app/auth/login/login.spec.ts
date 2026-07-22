@@ -90,10 +90,9 @@ describe('Testes unitários do componente Login', () => {
     async () => {
       await render(Login);
       const email = screen.getByRole('textbox', { name: EMAIL }) as HTMLInputElement;
-      const entrar = screen.getByRole('button', { name: ENTRAR });
       for (const valor of ['', 'email-invalido', EMAIL_255]) {
         fireEvent.input(email, { target: { value: valor } });
-        fireEvent.click(entrar);
+        fireEvent.blur(email);
         expect(email.checkValidity()).toBe(false);
         expect(email.getAttribute(ATRIBUTO_ARIA_INVALIDO)).toBe(ARIA_INVALIDO);
         expect(screen.getByText(ERRO_EMAIL)).toBeTruthy();
@@ -111,7 +110,7 @@ describe('Testes unitários do componente Login', () => {
     async () => {
       await render(Login);
       const senha = screen.getByLabelText(SENHA) as HTMLInputElement;
-      fireEvent.click(screen.getByRole('button', { name: ENTRAR }));
+      fireEvent.blur(senha);
       expect(senha.checkValidity()).toBe(false);
       expect(senha.getAttribute(ATRIBUTO_ARIA_INVALIDO)).toBe(ARIA_INVALIDO);
       expect(screen.getByText(ERRO_SENHA)).toBeTruthy();
@@ -204,12 +203,16 @@ describe('Testes unitários do componente Login', () => {
     expect(router.navigateByUrl).toHaveBeenCalledWith(ROTA_LISTAS);
   });
 
-  it('LOG-11 - Durante o login, desabilita o envio e ignora cliques adicionais.', async () => {
+  it('LOG-11 - Habilita o envio somente com os campos válidos e o desabilita durante o login.', async () => {
     const resposta = new Subject<typeof SESSION_RESPONSE>();
     const loginService = { entrar: vi.fn().mockReturnValue(resposta) };
     await render(Login, { providers: [{ provide: LoginService, useValue: loginService }] });
-    preencherLoginValido();
     const entrar = screen.getByRole('button', { name: ENTRAR }) as HTMLButtonElement;
+    expect(entrar.disabled).toBe(true);
+    fireEvent.input(screen.getByRole('textbox', { name: EMAIL }), { target: { value: EMAIL_VALIDO } });
+    expect(entrar.disabled).toBe(true);
+    fireEvent.input(screen.getByLabelText(SENHA), { target: { value: SENHA_VALIDA } });
+    expect(entrar.disabled).toBe(false);
     fireEvent.click(entrar);
     fireEvent.click(entrar);
     expect.soft(entrar.disabled).toBe(true);
