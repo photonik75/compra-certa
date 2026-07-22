@@ -1,6 +1,9 @@
 # Geral
 Forneça respostas sucintas e objetivas. Somente quando solicitado, dê maiores detalhes.
 
+# Especificações funcionais
+Garanta que todas as validações exibam mensagens de erro polidas ao usuário.
+
 # Arquitetura do frontend
 Componentes, diretivas e pipes não devem fazer acesso direto ao servidor. Toda comunicação com o servidor deve ser encapsulada em serviços.
 

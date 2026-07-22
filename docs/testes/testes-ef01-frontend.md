@@ -28,8 +28,8 @@
 | Tela Crie sua conta > Criar conta > Enquanto processa, não permite novo envio | `CAD-17` | Verifica se, durante o cadastro, o envio permanece desabilitado e cliques adicionais não criam novas solicitações. |
 | Tela Crie sua conta > Link Entrar | `CAD-18` | Confirma que o link “Entrar” abre a tela “Entre na sua conta”. |
 | **Tela “Entre na sua conta” (imagem Login)** | `LOG-1` | Verifica se título, E-mail, Senha, Mostrar/Ocultar, “Manter-me conectado”, “Entrar”, “Criar uma conta” e “Esqueci minha senha” estão presentes na tela de login. |
-| Tela Entre na sua conta > Campo E-mail > Obrigatório e válido, com até 254 caracteres | `LOG-2` | Confirma que e-mails vazios, inválidos ou com 255 caracteres são rejeitados e que um endereço válido com 254 caracteres é aceito. |
-| Tela Entre na sua conta > Campo Senha > Obrigatório | `LOG-3` | Testa o impedimento do login com senha vazia e confirma que as regras de criação de senha não são aplicadas à senha informada. |
+| Tela Entre na sua conta > Campo E-mail > Obrigatório e válido, com até 254 caracteres | `LOG-2` | Confirma que e-mails vazios, inválidos ou com 255 caracteres são rejeitados com “Por favor, informe um e-mail válido” e que um endereço válido com 254 caracteres é aceito. |
+| Tela Entre na sua conta > Campo Senha > Obrigatório | `LOG-3` | Testa o impedimento do login com senha vazia e a mensagem “Por favor, informe sua senha”, confirmando que as regras de criação de senha não são aplicadas à senha informada. |
 | Tela Entre na sua conta > Campo Senha > Placeholder “Mínimo de 8 caracteres” | `LOG-4` | Verifica se “Mínimo de 8 caracteres” é exibido como orientação no campo Senha. |
 | Tela Entre na sua conta > Mostrar/Ocultar > Alterna visualização e preserva conteúdo | `LOG-5` | Confirma que o controle Mostrar/Ocultar alterna a visibilidade da senha sem alterar seu valor. |
 | Tela Entre na sua conta > Manter-me conectado > Inicia desmarcado | `LOG-6` | Verifica se “Manter-me conectado” é exibido inicialmente desmarcado. |

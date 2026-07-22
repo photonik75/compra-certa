@@ -34,6 +34,7 @@
 h1 { margin: 0 0 1rem; font-size: clamp(2.25rem, 6vw, 4rem); line-height: 1.05; }
 .ajuda { margin: 0 0 3.25rem; color: var(--suave); font-size: clamp(1rem, 2.5vw, 1.35rem); }
 .erro { margin: 0 0 1rem; color: #b33a25; }
+.erro-campo { margin: 0; color: #b33a25; font-size: .85rem; }
 form { display: grid; gap: 2rem; }
 .campo { display: grid; gap: .7rem; }
 label { font-size: 1rem; font-weight: 750; }

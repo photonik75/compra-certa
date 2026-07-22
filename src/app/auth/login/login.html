@@ -17,7 +17,12 @@
           required
           maxlength="254"
           (input)="validarEmail($event)"
+          [attr.aria-invalid]="erroEmail()"
+          [attr.aria-describedby]="erroEmail() ? 'erro-email' : null"
         />
+        @if (erroEmail()) {
+          <p id="erro-email" class="erro-campo" role="alert">Por favor, informe um e-mail válido</p>
+        }
       </div>
       <div class="campo">
         <label for="senha">Senha</label>
@@ -28,9 +33,15 @@
             [type]="senhaVisivel() ? 'text' : 'password'"
             placeholder="Mínimo de 8 caracteres"
             required
+            (input)="validarSenha($event)"
+            [attr.aria-invalid]="erroSenha()"
+            [attr.aria-describedby]="erroSenha() ? 'erro-senha' : null"
           />
           <button type="button" (click)="alternarSenha()">{{ senhaVisivel() ? 'Ocultar' : 'Mostrar' }}</button>
         </div>
+        @if (erroSenha()) {
+          <p id="erro-senha" class="erro-campo" role="alert">Por favor, informe sua senha</p>
+        }
       </div>
       <label class="manter-conectado">
         <input name="manterConectado" type="checkbox" />

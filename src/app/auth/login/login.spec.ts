@@ -17,6 +17,11 @@ const ENTRAR = 'Entrar';
 const CRIAR_CONTA = 'Criar uma conta';
 const ESQUECI_SENHA = 'Esqueci minha senha';
 const PLACEHOLDER_SENHA = 'Mínimo de 8 caracteres';
+const ERRO_EMAIL = 'Por favor, informe um e-mail válido';
+const ERRO_SENHA = 'Por favor, informe sua senha';
+const ATRIBUTO_ARIA_INVALIDO = 'aria-invalid';
+const ARIA_INVALIDO = 'true';
+const ARIA_VALIDO = 'false';
 const EMAIL_254 = `${'a'.repeat(64)}@${'b'.repeat(63)}.${'c'.repeat(63)}.${'d'.repeat(61)}`;
 const EMAIL_255 = `${EMAIL_254}d`;
 const EMAIL_VALIDO = 'maria@example.com';
@@ -80,29 +85,40 @@ describe('Testes unitários do componente Login', () => {
   );
 
   it(
-    'LOG-2 - Confirma que e-mails vazios, inválidos ou com 255 caracteres são rejeitados e que um endereço ' +
-      'válido com 254 caracteres é aceito.',
+    'LOG-2 - Confirma que e-mails vazios, inválidos ou com 255 caracteres são rejeitados com a mensagem ' +
+      'normativa e que um endereço válido com 254 caracteres é aceito.',
     async () => {
       await render(Login);
       const email = screen.getByRole('textbox', { name: EMAIL }) as HTMLInputElement;
+      const entrar = screen.getByRole('button', { name: ENTRAR });
       for (const valor of ['', 'email-invalido', EMAIL_255]) {
         fireEvent.input(email, { target: { value: valor } });
+        fireEvent.click(entrar);
         expect(email.checkValidity()).toBe(false);
+        expect(email.getAttribute(ATRIBUTO_ARIA_INVALIDO)).toBe(ARIA_INVALIDO);
+        expect(screen.getByText(ERRO_EMAIL)).toBeTruthy();
       }
       fireEvent.input(email, { target: { value: EMAIL_254 } });
       expect(email.checkValidity()).toBe(true);
+      expect(email.getAttribute(ATRIBUTO_ARIA_INVALIDO)).toBe(ARIA_VALIDO);
+      expect(screen.queryByText(ERRO_EMAIL)).toBeNull();
     },
   );
 
   it(
-    'LOG-3 - Testa o impedimento do login com senha vazia e confirma que as regras de criação de senha não ' +
-      'são aplicadas à senha informada.',
+    'LOG-3 - Testa o impedimento do login com senha vazia, exibe a mensagem normativa e confirma que as regras ' +
+      'de criação de senha não são aplicadas à senha informada.',
     async () => {
       await render(Login);
       const senha = screen.getByLabelText(SENHA) as HTMLInputElement;
+      fireEvent.click(screen.getByRole('button', { name: ENTRAR }));
       expect(senha.checkValidity()).toBe(false);
+      expect(senha.getAttribute(ATRIBUTO_ARIA_INVALIDO)).toBe(ARIA_INVALIDO);
+      expect(screen.getByText(ERRO_SENHA)).toBeTruthy();
       fireEvent.input(senha, { target: { value: 'a' } });
       expect(senha.checkValidity()).toBe(true);
+      expect(senha.getAttribute(ATRIBUTO_ARIA_INVALIDO)).toBe(ARIA_VALIDO);
+      expect(screen.queryByText(ERRO_SENHA)).toBeNull();
     },
   );
 

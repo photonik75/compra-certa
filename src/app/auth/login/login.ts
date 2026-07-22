@@ -5,6 +5,8 @@ import { CredenciaisInvalidasError, LoginService, MuitasTentativasError } from '
 
 const ERRO_CREDENCIAIS = 'E-mail ou senha inválidos';
 const ERRO_BLOQUEIO = 'Muitas tentativas de acesso. Tente novamente em 15 minutos';
+const ERRO_EMAIL = 'Por favor, informe um e-mail válido';
+const ERRO_SENHA = 'Por favor, informe sua senha';
 const ROTA_CADASTRO = '/cadastro';
 const ROTA_RECUPERAR_SENHA = '/recuperar-senha';
 const ROTA_LISTAS = '/listas';
@@ -22,25 +24,31 @@ export class Login {
   protected readonly senhaVisivel = signal(false);
   protected readonly processando = signal(false);
   protected readonly erro = signal<string | null>(null);
+  protected readonly erroEmail = signal(false);
+  protected readonly erroSenha = signal(false);
 
   protected alternarSenha(): void {
     this.senhaVisivel.update((visivel) => !visivel);
   }
 
   protected validarEmail(evento: Event): void {
-    const campo = evento.target as HTMLInputElement;
-    const invalido = campo.value.length === 0 || campo.value.length > 254 || campo.validity.typeMismatch;
-    campo.setCustomValidity(invalido ? 'Por favor, informe um e-mail válido' : '');
+    this.atualizarValidadeEmail(evento.target as HTMLInputElement);
+  }
+
+  protected validarSenha(evento: Event): void {
+    this.atualizarValidadeSenha(evento.target as HTMLInputElement);
   }
 
   protected entrar(evento: SubmitEvent): void {
     evento.preventDefault();
     if (this.processando()) return;
     const formulario = evento.currentTarget as HTMLFormElement;
-    if (!formulario.checkValidity()) return;
     const email = formulario.elements.namedItem('email') as HTMLInputElement;
     const senha = formulario.elements.namedItem('senha') as HTMLInputElement;
     const manterConectado = formulario.elements.namedItem('manterConectado') as HTMLInputElement;
+    this.atualizarValidadeEmail(email);
+    this.atualizarValidadeSenha(senha);
+    if (!formulario.checkValidity()) return;
     this.erro.set(null);
     this.processando.set(true);
     this.loginService
@@ -65,5 +73,17 @@ export class Login {
   private tratarErro(erro: unknown): void {
     if (erro instanceof CredenciaisInvalidasError) this.erro.set(ERRO_CREDENCIAIS);
     if (erro instanceof MuitasTentativasError) this.erro.set(ERRO_BLOQUEIO);
+  }
+
+  private atualizarValidadeEmail(campo: HTMLInputElement): void {
+    const invalido = campo.value.length === 0 || campo.value.length > 254 || campo.validity.typeMismatch;
+    campo.setCustomValidity(invalido ? ERRO_EMAIL : '');
+    this.erroEmail.set(invalido);
+  }
+
+  private atualizarValidadeSenha(campo: HTMLInputElement): void {
+    const invalido = campo.value.length === 0;
+    campo.setCustomValidity(invalido ? ERRO_SENHA : '');
+    this.erroSenha.set(invalido);
   }
 }
