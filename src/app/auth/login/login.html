@@ -47,15 +47,16 @@
             [type]="senhaVisivel() ? 'text' : 'password'"
             placeholder="Mínimo de 8 caracteres"
             required
+            minlength="8"
             (input)="validarSenha($event)"
             (blur)="validarSenha($event)"
-            [attr.aria-invalid]="erroSenha()"
+            [attr.aria-invalid]="erroSenha() !== null"
             [attr.aria-describedby]="erroSenha() ? 'erro-senha' : null"
           />
           <button type="button" (click)="alternarSenha()">{{ senhaVisivel() ? 'Ocultar' : 'Mostrar' }}</button>
         </div>
         @if (erroSenha()) {
-          <p id="erro-senha" class="erro-campo" role="alert">Por favor, informe sua senha</p>
+          <p id="erro-senha" class="erro-campo" role="alert">{{ erroSenha() }}</p>
         }
       </div>
       <label class="manter-conectado">

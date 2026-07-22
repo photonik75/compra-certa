@@ -56,8 +56,10 @@ Permitir que visitantes criem uma conta, autentiquem-se, encerrem a sessão e re
     - Quando não informado corretamente, exibe “Por favor, informe um e-mail válido”.
   - **Campo “Senha”**
     - Obrigatório.
+    - Aceita no mínimo 8 caracteres.
     - Exibe o placeholder “Mínimo de 8 caracteres”.
     - Quando não informada, exibe “Por favor, informe sua senha”.
+    - Quando possui menos de 8 caracteres, exibe “A senha deve ter pelo menos 8 caracteres”.
   - **Controle “Mostrar/Ocultar”**
     - Alterna somente a visualização da senha e preserva o conteúdo digitado.
   - **Checkbox “Manter-me conectado”**
@@ -165,7 +167,7 @@ Regras contratuais:
 |---|---:|---|---|---|
 | `AUTH-001` | P0 | Visitante e e-mail novo | Cadastrar dados válidos | Uma conta, usuário autenticado, página vazia com o título “Minhas Listas” e acesso mantido após recarga |
 | `AUTH-002` | P0 | Cadastro aberto | Testar obrigatório vazio, e-mail inválido, senhas com 7 e 129 caracteres e confirmação divergente | Erro no campo; nenhuma conta criada e visitante não autenticado |
-| `AUTH-012` | P0 | Login aberto | Testar e-mail vazio, inválido ou com 255 caracteres e senha vazia | “Por favor, informe um e-mail válido” ou “Por favor, informe sua senha”; nenhuma autenticação solicitada |
+| `AUTH-012` | P0 | Login aberto | Testar e-mail vazio, inválido ou com 255 caracteres e senha vazia ou com 7 caracteres | Mensagem normativa do campo; nenhuma autenticação solicitada |
 | `AUTH-003` | P0 | Conta `Pessoa@Exemplo.com` | Cadastrar `pessoa@exemplo.com` | Pop-up “E-mail já foi cadastrado”; nenhuma conta adicional e visitante não autenticado |
 | `AUTH-004` | P0 | Conta ativa e rota interna solicitada | Entrar, sair e usar Voltar | Retorna à rota guardada; após logout, rotas e cache não revelam dados |
 | `AUTH-005` | P0 | Conta ativa | Tentar senha errada e e-mail inexistente | “E-mail ou senha inválidos” nos dois casos, sem revelar se a conta existe |

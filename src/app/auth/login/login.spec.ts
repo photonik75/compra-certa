@@ -19,6 +19,7 @@ const ESQUECI_SENHA = 'Esqueci minha senha';
 const PLACEHOLDER_SENHA = 'Mínimo de 8 caracteres';
 const ERRO_EMAIL = 'Por favor, informe um e-mail válido';
 const ERRO_SENHA = 'Por favor, informe sua senha';
+const ERRO_SENHA_MINIMA = 'A senha deve ter pelo menos 8 caracteres';
 const ATRIBUTO_ARIA_INVALIDO = 'aria-invalid';
 const ARIA_INVALIDO = 'true';
 const ARIA_VALIDO = 'false';
@@ -105,8 +106,8 @@ describe('Testes unitários do componente Login', () => {
   );
 
   it(
-    'LOG-3 - Testa o impedimento do login com senha vazia, exibe a mensagem normativa e confirma que as regras ' +
-      'de criação de senha não são aplicadas à senha informada.',
+    'LOG-3 - Confirma que a senha vazia ou com 7 caracteres é rejeitada e que uma senha com 8 caracteres é ' +
+      'aceita.',
     async () => {
       await render(Login);
       const senha = screen.getByLabelText(SENHA) as HTMLInputElement;
@@ -114,7 +115,10 @@ describe('Testes unitários do componente Login', () => {
       expect(senha.checkValidity()).toBe(false);
       expect(senha.getAttribute(ATRIBUTO_ARIA_INVALIDO)).toBe(ARIA_INVALIDO);
       expect(screen.getByText(ERRO_SENHA)).toBeTruthy();
-      fireEvent.input(senha, { target: { value: 'a' } });
+      fireEvent.input(senha, { target: { value: 'a'.repeat(7) } });
+      expect(senha.checkValidity()).toBe(false);
+      expect(screen.getByText(ERRO_SENHA_MINIMA)).toBeTruthy();
+      fireEvent.input(senha, { target: { value: 'a'.repeat(8) } });
       expect(senha.checkValidity()).toBe(true);
       expect(senha.getAttribute(ATRIBUTO_ARIA_INVALIDO)).toBe(ARIA_VALIDO);
       expect(screen.queryByText(ERRO_SENHA)).toBeNull();
@@ -210,6 +214,8 @@ describe('Testes unitários do componente Login', () => {
     const entrar = screen.getByRole('button', { name: ENTRAR }) as HTMLButtonElement;
     expect(entrar.disabled).toBe(true);
     fireEvent.input(screen.getByRole('textbox', { name: EMAIL }), { target: { value: EMAIL_VALIDO } });
+    expect(entrar.disabled).toBe(true);
+    fireEvent.input(screen.getByLabelText(SENHA), { target: { value: 'a' } });
     expect(entrar.disabled).toBe(true);
     fireEvent.input(screen.getByLabelText(SENHA), { target: { value: SENHA_VALIDA } });
     expect(entrar.disabled).toBe(false);

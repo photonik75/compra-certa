@@ -7,6 +7,7 @@ const ERRO_CREDENCIAIS = 'E-mail ou senha inválidos';
 const ERRO_BLOQUEIO = 'Muitas tentativas de acesso. Tente novamente em 15 minutos';
 const ERRO_EMAIL = 'Por favor, informe um e-mail válido';
 const ERRO_SENHA = 'Por favor, informe sua senha';
+const ERRO_SENHA_MINIMA = 'A senha deve ter pelo menos 8 caracteres';
 const ROTA_CADASTRO = '/cadastro';
 const ROTA_RECUPERAR_SENHA = '/recuperar-senha';
 const ROTA_LISTAS = '/listas';
@@ -25,7 +26,7 @@ export class Login {
   protected readonly processando = signal(false);
   protected readonly erro = signal<string | null>(null);
   protected readonly erroEmail = signal(false);
-  protected readonly erroSenha = signal(false);
+  protected readonly erroSenha = signal<string | null>(null);
   protected readonly formularioValido = signal(false);
 
   protected alternarSenha(): void {
@@ -87,9 +88,9 @@ export class Login {
   }
 
   private atualizarValidadeSenha(campo: HTMLInputElement): void {
-    const invalido = campo.value.length === 0;
-    campo.setCustomValidity(invalido ? ERRO_SENHA : '');
-    this.erroSenha.set(invalido);
+    const erro = campo.value.length === 0 ? ERRO_SENHA : campo.value.length < 8 ? ERRO_SENHA_MINIMA : null;
+    campo.setCustomValidity(erro ?? '');
+    this.erroSenha.set(erro);
   }
 
   private atualizarEstadoFormulario(campo: HTMLInputElement): void {
