@@ -1,4 +1,4 @@
-package br.leobarros.compracerta.autenticacao.idempotencia;
+package br.leobarros.compracerta.autenticacao.cadastro.idempotencia;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;

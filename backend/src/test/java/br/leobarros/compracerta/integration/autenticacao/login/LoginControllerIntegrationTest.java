@@ -9,22 +9,22 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.time.Clock;
-import java.time.Duration;
 import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-import br.leobarros.compracerta.autenticacao.cadastro.CadastroSecurityConfiguration;
 import br.leobarros.compracerta.autenticacao.cadastro.Conta;
+import br.leobarros.compracerta.autenticacao.configuracao.AutenticacaoSecurityConfiguration;
+import br.leobarros.compracerta.autenticacao.erro.ApiErrorResponseService;
 import br.leobarros.compracerta.autenticacao.login.LoginContaRepository;
 import br.leobarros.compracerta.autenticacao.login.LoginController;
 import br.leobarros.compracerta.autenticacao.login.LoginService;
 import br.leobarros.compracerta.autenticacao.sessao.SessaoCookieService;
+import br.leobarros.compracerta.autenticacao.sessao.GeradorIdentificadorService;
+import br.leobarros.compracerta.autenticacao.sessao.SessaoHttpResponseService;
 import br.leobarros.compracerta.autenticacao.sessao.SessaoService;
+import br.leobarros.compracerta.support.MutableClock;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,9 +40,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 @Import({
-		CadastroSecurityConfiguration.class,
+		AutenticacaoSecurityConfiguration.class,
+		ApiErrorResponseService.class,
 		LoginService.class,
 		SessaoCookieService.class,
+		GeradorIdentificadorService.class,
+		SessaoHttpResponseService.class,
 		SessaoService.class,
 		LoginControllerIntegrationTest.Configuracao.class
 })
@@ -70,15 +73,10 @@ class LoginControllerIntegrationTest {
 	private LoginContaRepositoryEmMemoria contaRepository;
 
 	@Autowired
-	private MutableClock clock;
-
-	@Autowired
 	private PasswordEncoder passwordEncoder;
 
 	@BeforeEach
 	void prepararConta() {
-		contaRepository.limpar();
-		clock.definir(AGORA);
 		contaRepository.salvar(new Conta("Maria Silva", EMAIL, passwordEncoder.encode(SENHA_CORRETA)));
 	}
 
@@ -166,40 +164,6 @@ class LoginControllerIntegrationTest {
 			contas.put(conta.getEmail(), conta);
 		}
 
-		void limpar() {
-			contas.clear();
-		}
 	}
 
-	static class MutableClock extends Clock {
-
-		private Instant instant;
-
-		MutableClock(Instant instant) {
-			this.instant = instant;
-		}
-
-		void definir(Instant instant) {
-			this.instant = instant;
-		}
-
-		void avancar(Duration duration) {
-			instant = instant.plus(duration);
-		}
-
-		@Override
-		public ZoneId getZone() {
-			return ZoneOffset.UTC;
-		}
-
-		@Override
-		public Clock withZone(ZoneId zone) {
-			return this;
-		}
-
-		@Override
-		public Instant instant() {
-			return instant;
-		}
-	}
 }

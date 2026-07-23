@@ -1,5 +1,6 @@
-package br.leobarros.compracerta.autenticacao.cadastro;
+package br.leobarros.compracerta.autenticacao.configuracao;
 
+import br.leobarros.compracerta.autenticacao.cadastro.CadastroController;
 import br.leobarros.compracerta.autenticacao.login.LoginController;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -8,7 +9,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
-public class CadastroSecurityConfiguration {
+public class AutenticacaoSecurityConfiguration {
 
 	@Bean
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {

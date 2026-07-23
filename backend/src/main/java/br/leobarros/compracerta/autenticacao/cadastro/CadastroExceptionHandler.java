@@ -2,11 +2,13 @@ package br.leobarros.compracerta.autenticacao.cadastro;
 
 import java.util.List;
 
-import br.leobarros.compracerta.autenticacao.idempotencia.ChaveIdempotenciaInvalidaException;
-import br.leobarros.compracerta.autenticacao.idempotencia.ChaveIdempotenciaReutilizadaException;
+import br.leobarros.compracerta.autenticacao.cadastro.idempotencia.ChaveIdempotenciaInvalidaException;
+import br.leobarros.compracerta.autenticacao.cadastro.idempotencia.ChaveIdempotenciaReutilizadaException;
+import br.leobarros.compracerta.autenticacao.erro.ApiError;
+import br.leobarros.compracerta.autenticacao.erro.ApiErrorResponseService;
+import br.leobarros.compracerta.autenticacao.erro.ApiFieldError;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -20,50 +22,53 @@ public class CadastroExceptionHandler {
 	private static final String CODIGO_CONFLITO = "CONFLICT";
 	private static final String CODIGO_CHAVE_REUTILIZADA = "IDEMPOTENCY_KEY_REUSED";
 
+	private final ApiErrorResponseService responseService;
+
+	public CadastroExceptionHandler(ApiErrorResponseService responseService) {
+		this.responseService = responseService;
+	}
+
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	ResponseEntity<ApiError> tratarErroDeValidacao(MethodArgumentNotValidException exception) {
 		var erros = exception.getBindingResult().getFieldErrors().stream()
-				.map(erro -> new FieldError(erro.getField(), mensagem(erro)))
+				.map(erro -> new ApiFieldError(erro.getField(), mensagem(erro)))
 				.toList();
-		var corpo = new ApiError(CODIGO_ERRO_VALIDACAO, DETALHE_ERRO_VALIDACAO, erros);
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-				.contentType(MediaType.APPLICATION_PROBLEM_JSON)
-				.body(corpo);
+		return responseService.criar(
+				HttpStatus.BAD_REQUEST,
+				CODIGO_ERRO_VALIDACAO,
+				DETALHE_ERRO_VALIDACAO,
+				erros);
 	}
 
 	@ExceptionHandler(EmailJaCadastradoException.class)
 	ResponseEntity<ApiError> tratarEmailJaCadastrado(EmailJaCadastradoException exception) {
-		var erro = new FieldError("email", exception.getMessage());
-		var corpo = new ApiError(CODIGO_CONFLITO, exception.getMessage(), List.of(erro));
-		return ResponseEntity.status(HttpStatus.CONFLICT)
-				.contentType(MediaType.APPLICATION_PROBLEM_JSON)
-				.body(corpo);
+		var erro = new ApiFieldError("email", exception.getMessage());
+		return responseService.criar(
+				HttpStatus.CONFLICT,
+				CODIGO_CONFLITO,
+				exception.getMessage(),
+				List.of(erro));
 	}
 
 	@ExceptionHandler(ChaveIdempotenciaInvalidaException.class)
 	ResponseEntity<ApiError> tratarChaveIdempotenciaInvalida(ChaveIdempotenciaInvalidaException exception) {
-		var erro = new FieldError("Idempotency-Key", exception.getMessage());
-		var corpo = new ApiError(CODIGO_ERRO_VALIDACAO, DETALHE_ERRO_VALIDACAO, List.of(erro));
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-				.contentType(MediaType.APPLICATION_PROBLEM_JSON)
-				.body(corpo);
+		var erro = new ApiFieldError("Idempotency-Key", exception.getMessage());
+		return responseService.criar(
+				HttpStatus.BAD_REQUEST,
+				CODIGO_ERRO_VALIDACAO,
+				DETALHE_ERRO_VALIDACAO,
+				List.of(erro));
 	}
 
 	@ExceptionHandler(ChaveIdempotenciaReutilizadaException.class)
 	ResponseEntity<ApiError> tratarChaveIdempotenciaReutilizada(ChaveIdempotenciaReutilizadaException exception) {
-		var corpo = new ApiError(CODIGO_CHAVE_REUTILIZADA, exception.getMessage(), List.of());
-		return ResponseEntity.status(HttpStatus.CONFLICT)
-				.contentType(MediaType.APPLICATION_PROBLEM_JSON)
-				.body(corpo);
+		return responseService.criar(
+				HttpStatus.CONFLICT,
+				CODIGO_CHAVE_REUTILIZADA,
+				exception.getMessage());
 	}
 
 	private String mensagem(DefaultMessageSourceResolvable erro) {
 		return erro.getDefaultMessage();
-	}
-
-	record ApiError(String code, String detail, List<FieldError> fieldErrors) {
-	}
-
-	record FieldError(String field, String message) {
 	}
 }

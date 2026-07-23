@@ -3,17 +3,13 @@ package br.leobarros.compracerta.unit.autenticacao.login;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -23,6 +19,7 @@ import br.leobarros.compracerta.autenticacao.login.DadosLogin;
 import br.leobarros.compracerta.autenticacao.login.LoginBloqueadoException;
 import br.leobarros.compracerta.autenticacao.login.LoginContaRepository;
 import br.leobarros.compracerta.autenticacao.login.LoginService;
+import br.leobarros.compracerta.support.MutableClock;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -189,31 +186,4 @@ class LoginServiceTest {
 		return Stream.of(null, "false", 0).map(Arguments::of);
 	}
 
-	private static class MutableClock extends Clock {
-
-		private Instant instant;
-
-		MutableClock(Instant instant) {
-			this.instant = instant;
-		}
-
-		void avancar(Duration duration) {
-			instant = instant.plus(duration);
-		}
-
-		@Override
-		public ZoneId getZone() {
-			return ZoneOffset.UTC;
-		}
-
-		@Override
-		public Clock withZone(ZoneId zone) {
-			return this;
-		}
-
-		@Override
-		public Instant instant() {
-			return instant;
-		}
-	}
 }

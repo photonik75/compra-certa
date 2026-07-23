@@ -1,8 +1,7 @@
 package br.leobarros.compracerta.autenticacao.sessao;
 
 import java.time.Duration;
-import java.time.Instant;
-import java.util.UUID;
+import java.time.Clock;
 
 import br.leobarros.compracerta.autenticacao.cadastro.Conta;
 import org.springframework.stereotype.Service;
@@ -14,6 +13,14 @@ public class SessaoService {
 	private static final Duration DURACAO_SESSAO_PERSISTENTE = Duration.ofDays(30);
 	private static final String STATUS_CONTA_ATIVA = "ACTIVE";
 
+	private final Clock clock;
+	private final GeradorIdentificadorService geradorIdentificadorService;
+
+	public SessaoService(Clock clock, GeradorIdentificadorService geradorIdentificadorService) {
+		this.clock = clock;
+		this.geradorIdentificadorService = geradorIdentificadorService;
+	}
+
 	public SessaoCriada criarParaCadastro(Conta conta) {
 		return criar(conta, DURACAO_SESSAO_CADASTRO);
 	}
@@ -24,13 +31,17 @@ public class SessaoService {
 	}
 
 	private SessaoCriada criar(Conta conta, Duration duracao) {
-		var agora = Instant.now();
+		var agora = clock.instant();
 		var usuario = new SessionResponse.UserSummary(
-				UUID.randomUUID(), conta.getNome(), conta.getEmail(), STATUS_CONTA_ATIVA, agora);
+				geradorIdentificadorService.gerar(),
+				conta.getNome(),
+				conta.getEmail(),
+				STATUS_CONTA_ATIVA,
+				agora);
 		var resposta = new SessionResponse(
 				usuario,
-				UUID.randomUUID().toString(),
+				geradorIdentificadorService.gerarToken(),
 				agora.plus(duracao));
-		return new SessaoCriada(UUID.randomUUID().toString(), resposta);
+		return new SessaoCriada(geradorIdentificadorService.gerarToken(), resposta);
 	}
 }

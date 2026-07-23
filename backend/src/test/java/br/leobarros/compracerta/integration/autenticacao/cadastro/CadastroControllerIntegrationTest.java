@@ -18,17 +18,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.Clock;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 
-import br.leobarros.compracerta.autenticacao.cadastro.CadastroSecurityConfiguration;
 import br.leobarros.compracerta.autenticacao.cadastro.CadastroController;
 import br.leobarros.compracerta.autenticacao.cadastro.CadastroService;
 import br.leobarros.compracerta.autenticacao.cadastro.Conta;
 import br.leobarros.compracerta.autenticacao.cadastro.ContaRepository;
-import br.leobarros.compracerta.autenticacao.idempotencia.IdempotenciaCadastroService;
+import br.leobarros.compracerta.autenticacao.cadastro.idempotencia.IdempotenciaCadastroService;
+import br.leobarros.compracerta.autenticacao.configuracao.AutenticacaoSecurityConfiguration;
+import br.leobarros.compracerta.autenticacao.erro.ApiErrorResponseService;
+import br.leobarros.compracerta.autenticacao.sessao.GeradorIdentificadorService;
 import br.leobarros.compracerta.autenticacao.sessao.SessaoCookieService;
+import br.leobarros.compracerta.autenticacao.sessao.SessaoHttpResponseService;
 import br.leobarros.compracerta.autenticacao.sessao.SessaoService;
 import jakarta.servlet.ServletException;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,10 +49,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 @Import({
-		CadastroSecurityConfiguration.class,
+		AutenticacaoSecurityConfiguration.class,
+		ApiErrorResponseService.class,
 		CadastroService.class,
 		IdempotenciaCadastroService.class,
 		SessaoCookieService.class,
+		GeradorIdentificadorService.class,
+		SessaoHttpResponseService.class,
 		SessaoService.class,
 		CadastroControllerIntegrationTest.Configuracao.class
 })
@@ -249,6 +256,11 @@ class CadastroControllerIntegrationTest {
 		@Bean
 		PasswordEncoder passwordEncoder() {
 			return new BCryptPasswordEncoder();
+		}
+
+		@Bean
+		Clock clock() {
+			return Clock.systemUTC();
 		}
 	}
 

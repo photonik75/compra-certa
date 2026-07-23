@@ -4,24 +4,20 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayDeque;
-import java.util.Locale;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Pattern;
 
 import br.leobarros.compracerta.autenticacao.cadastro.Conta;
+import br.leobarros.compracerta.autenticacao.comum.Email;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class LoginService {
 
-	private static final int TAMANHO_MAXIMO_EMAIL = 254;
 	private static final int TAMANHO_MINIMO_SENHA = 8;
 	private static final int LIMITE_FALHAS = 5;
 	private static final Duration JANELA_FALHAS = Duration.ofMinutes(15);
 	private static final Duration DURACAO_BLOQUEIO = Duration.ofMinutes(15);
-	private static final Pattern FORMATO_EMAIL = Pattern.compile("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$");
-	private static final String EMAIL_INVALIDO = "Por favor, informe um e-mail válido";
 	private static final String SENHA_INVALIDA = "A senha deve ter pelo menos 8 caracteres";
 	private static final String MANTER_CONECTADO_INVALIDO = "Informe se deseja manter o acesso conectado";
 	private static final String HASH_FICTICIO =
@@ -40,7 +36,7 @@ public class LoginService {
 
 	public Conta autenticar(DadosLogin dadosLogin) {
 		validar(dadosLogin);
-		var email = dadosLogin.email().toLowerCase(Locale.ROOT);
+		var email = Email.validarENormalizar(dadosLogin.email());
 		var agora = clock.instant();
 		var historico = historicos.computeIfAbsent(email, chave -> new HistoricoFalhas());
 		synchronized (historico) {
@@ -58,10 +54,7 @@ public class LoginService {
 	}
 
 	private void validar(DadosLogin dadosLogin) {
-		var email = dadosLogin.email();
-		if (email == null || email.length() > TAMANHO_MAXIMO_EMAIL || !FORMATO_EMAIL.matcher(email).matches()) {
-			throw new IllegalArgumentException(EMAIL_INVALIDO);
-		}
+		Email.validarENormalizar(dadosLogin.email());
 		var senha = dadosLogin.senha();
 		if (senha == null || senha.length() < TAMANHO_MINIMO_SENHA) {
 			throw new IllegalArgumentException(SENHA_INVALIDA);

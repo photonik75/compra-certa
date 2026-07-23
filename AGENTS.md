@@ -23,4 +23,4 @@ Implemente somente o teste pedido e garanta que falhe (vermelho). Só implemente
 Ao implementar a solução para um teste que falha, implemente a mudança mais simples que faça o novo teste passar e mantenha os antigos testes funcionando, nada além.
 Se houver mais de uma opção de solução igualmente simples, antes de implementar me ofereça as opções.
 Nos testes unitários, não use configurações reais; sempre que houver chamada a outro componente ou serviço, use stubs ou spies.
-Após cada ciclo red/green, identifique oportunidades de refatoração para simplificar/remover duplicidades/melhorar a legibilidade. Se encontrar, proponha.
+Após cada ciclo red/green, identifique oportunidades de refatoração para simplificar/remover duplicidades/melhorar a legibilidade, bem como remover métodos ou propriedades que não são mais necessários. Se encontrar, proponha.
