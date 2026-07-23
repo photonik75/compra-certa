@@ -23,9 +23,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 
 import br.leobarros.compracerta.autenticacao.cadastro.CadastroSecurityConfiguration;
+import br.leobarros.compracerta.autenticacao.cadastro.CadastroController;
 import br.leobarros.compracerta.autenticacao.cadastro.CadastroService;
 import br.leobarros.compracerta.autenticacao.cadastro.Conta;
 import br.leobarros.compracerta.autenticacao.cadastro.ContaRepository;
+import br.leobarros.compracerta.autenticacao.idempotencia.IdempotenciaCadastroService;
 import br.leobarros.compracerta.autenticacao.sessao.SessaoCookieService;
 import br.leobarros.compracerta.autenticacao.sessao.SessaoService;
 import jakarta.servlet.ServletException;
@@ -45,11 +47,12 @@ import org.springframework.test.web.servlet.MvcResult;
 @Import({
 		CadastroSecurityConfiguration.class,
 		CadastroService.class,
+		IdempotenciaCadastroService.class,
 		SessaoCookieService.class,
 		SessaoService.class,
 		CadastroControllerIntegrationTest.Configuracao.class
 })
-@WebMvcTest
+@WebMvcTest(CadastroController.class)
 class CadastroControllerIntegrationTest {
 
 	private static final String ENDPOINT_CADASTRO = "/api/v1/auth/registrations";
@@ -184,6 +187,44 @@ class CadastroControllerIntegrationTest {
 				.andExpect(jsonPath("$.user", hasKey("email")))
 				.andExpect(jsonPath("$.user", hasKey("status")))
 				.andExpect(jsonPath("$.user", hasKey("createdAt")));
+	}
+
+	@Test
+	void beIdc01RejeitaChaveIdempotenteAusenteVaziaOuMaiorQue255Caracteres() throws Exception {
+		mockMvc.perform(post(ENDPOINT_CADASTRO)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(CORPO_VALIDO.formatted(EMAIL, SENHA, SENHA)))
+				.andExpect(status().isBadRequest());
+		cadastrar(EMAIL, "").andExpect(status().isBadRequest());
+		cadastrar(EMAIL, "a".repeat(256)).andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void beIdc02RepeteResultadoOriginalSemNovaContaOuSessao() throws Exception {
+		var primeiraResposta = cadastrar(EMAIL, "mesma-chave").andExpect(status().isCreated()).andReturn();
+		var segundaResposta = cadastrar(EMAIL, "mesma-chave").andExpect(status().isCreated()).andReturn();
+		assertEquals(primeiraResposta.getResponse().getContentAsString(),
+				segundaResposta.getResponse().getContentAsString());
+		assertEquals(primeiraResposta.getResponse().getHeader("Set-Cookie"),
+				segundaResposta.getResponse().getHeader("Set-Cookie"));
+		assertEquals(1, contaRepository.quantidadeDeContas());
+	}
+
+	@Test
+	void beIdc03RejeitaMesmaChaveComConteudoDiferente() throws Exception {
+		cadastrar(EMAIL, "chave-reutilizada").andExpect(status().isCreated());
+		cadastrar("outra@example.com", "chave-reutilizada")
+				.andExpect(status().isConflict())
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+				.andExpect(jsonPath("$.code").isNotEmpty())
+				.andExpect(jsonPath("$.detail").value(not(blankOrNullString())));
+	}
+
+	@Test
+	void beIdc04ProcessaChavesDiferentesIndependentemente() throws Exception {
+		cadastrar(EMAIL, "chave-independente-1").andExpect(status().isCreated());
+		cadastrar("outra@example.com", "chave-independente-2").andExpect(status().isCreated());
+		assertEquals(2, contaRepository.quantidadeDeContas());
 	}
 
 	private org.springframework.test.web.servlet.ResultActions cadastrar(String email, String chave) throws Exception {

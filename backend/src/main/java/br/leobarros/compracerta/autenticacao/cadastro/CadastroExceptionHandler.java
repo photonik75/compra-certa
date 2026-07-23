@@ -2,6 +2,8 @@ package br.leobarros.compracerta.autenticacao.cadastro;
 
 import java.util.List;
 
+import br.leobarros.compracerta.autenticacao.idempotencia.ChaveIdempotenciaInvalidaException;
+import br.leobarros.compracerta.autenticacao.idempotencia.ChaveIdempotenciaReutilizadaException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -16,6 +18,7 @@ public class CadastroExceptionHandler {
 	private static final String CODIGO_ERRO_VALIDACAO = "VALIDATION_ERROR";
 	private static final String DETALHE_ERRO_VALIDACAO = "Verifique os campos informados e tente novamente.";
 	private static final String CODIGO_CONFLITO = "CONFLICT";
+	private static final String CODIGO_CHAVE_REUTILIZADA = "IDEMPOTENCY_KEY_REUSED";
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	ResponseEntity<ApiError> tratarErroDeValidacao(MethodArgumentNotValidException exception) {
@@ -32,6 +35,23 @@ public class CadastroExceptionHandler {
 	ResponseEntity<ApiError> tratarEmailJaCadastrado(EmailJaCadastradoException exception) {
 		var erro = new FieldError("email", exception.getMessage());
 		var corpo = new ApiError(CODIGO_CONFLITO, exception.getMessage(), List.of(erro));
+		return ResponseEntity.status(HttpStatus.CONFLICT)
+				.contentType(MediaType.APPLICATION_PROBLEM_JSON)
+				.body(corpo);
+	}
+
+	@ExceptionHandler(ChaveIdempotenciaInvalidaException.class)
+	ResponseEntity<ApiError> tratarChaveIdempotenciaInvalida(ChaveIdempotenciaInvalidaException exception) {
+		var erro = new FieldError("Idempotency-Key", exception.getMessage());
+		var corpo = new ApiError(CODIGO_ERRO_VALIDACAO, DETALHE_ERRO_VALIDACAO, List.of(erro));
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+				.contentType(MediaType.APPLICATION_PROBLEM_JSON)
+				.body(corpo);
+	}
+
+	@ExceptionHandler(ChaveIdempotenciaReutilizadaException.class)
+	ResponseEntity<ApiError> tratarChaveIdempotenciaReutilizada(ChaveIdempotenciaReutilizadaException exception) {
+		var corpo = new ApiError(CODIGO_CHAVE_REUTILIZADA, exception.getMessage(), List.of());
 		return ResponseEntity.status(HttpStatus.CONFLICT)
 				.contentType(MediaType.APPLICATION_PROBLEM_JSON)
 				.body(corpo);
