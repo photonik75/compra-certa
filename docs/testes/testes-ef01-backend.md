@@ -32,9 +32,9 @@ Cada item representa um comportamento observável e deve ser implementado em um 
 | `BE-CAD-11` | Integração | E-mail já cadastrado, mesmo com outra caixa, retorna `409 CONFLICT` com o erro normativo. |
 | `BE-CAD-12` | Integração | Uma disputa de cadastros com o mesmo e-mail cria somente uma conta. |
 | `BE-CAD-13` | Integração | Falha durante o cadastro não deixa conta nem sessão parcialmente persistidas. |
-| `BE-CAD-14` | Segurança | Persiste somente hash forte e não reversível; nunca persiste a senha ou sua confirmação. |
+| `BE-CAD-14` | Integração | Persiste somente hash forte e não reversível; nunca persiste a senha ou sua confirmação. |
 | `BE-CAD-15` | Integração | Cadastro válido retorna `201`, `SessionResponse`, cookie seguro e `Cache-Control: no-store`. |
-| `BE-CAD-16` | Contrato | `SessionResponse.user` possui somente `id`, `name`, `email`, `status` e `createdAt`. |
+| `BE-CAD-16` | Integração | `SessionResponse.user` possui somente `id`, `name`, `email`, `status` e `createdAt`. |
 
 ## 2. Idempotência do cadastro
 
@@ -54,7 +54,7 @@ Cada item representa um comportamento observável e deve ser implementado em um 
 | `BE-LOG-03` | Unitário | Rejeita senha ausente ou com menos de 8 caracteres. |
 | `BE-LOG-04` | Unitário | Rejeita `manterConectado` ausente ou que não seja booleano. |
 | `BE-LOG-05` | Integração | E-mail inexistente e senha incorreta retornam o mesmo `401` e a mesma mensagem genérica. |
-| `BE-LOG-06` | Segurança | A verificação de senha também é executada para e-mail inexistente, reduzindo diferença temporal observável. |
+| `BE-LOG-06` | Unitário | A verificação de senha também é executada para e-mail inexistente, reduzindo diferença temporal observável. |
 | `BE-LOG-07` | Unitário | Cada falha de autenticação é contabilizada na janela móvel de 15 minutos. |
 | `BE-LOG-08` | Unitário | Até a quarta tentativa malsucedida o login ainda não está bloqueado. |
 | `BE-LOG-09` | Unitário | Após a quinta falha em 15 minutos, novas tentativas ficam bloqueadas por 15 minutos. |
@@ -72,11 +72,11 @@ Cada item representa um comportamento observável e deve ser implementado em um 
 | `BE-SES-02` | Unitário | Atividade válida renova somente o prazo de inatividade sem ultrapassar as 24 horas máximas. |
 | `BE-SES-03` | Unitário | Login com “manter conectado” cria sessão válida por no máximo 30 dias. |
 | `BE-SES-04` | Unitário | Sessão expirada por inatividade, prazo máximo ou 30 dias é rejeitada. |
-| `BE-SES-05` | Segurança | Identificador e token CSRF da sessão são imprevisíveis e armazenados de forma segura. |
+| `BE-SES-05` | Unitário | Identificador e token CSRF da sessão são imprevisíveis e armazenados de forma segura. |
 | `BE-SES-06` | Integração | O cookie `cc_session` possui `HttpOnly`, `Secure`, `SameSite=Lax` e `Path=/api/v1`. |
 | `BE-SES-07` | Integração | `GET /api/v1/auth/session` retorna `200`, dados da sessão válida e `Cache-Control: no-store`. |
 | `BE-SES-08` | Integração | Consulta sem cookie, com cookie desconhecido ou sessão expirada retorna `401` polido. |
-| `BE-SES-09` | Segurança | Nenhuma resposta de sessão contém senha, hash, identificador interno de sessão ou outro segredo. |
+| `BE-SES-09` | Integração | Nenhuma resposta de sessão contém senha, hash, identificador interno de sessão ou outro segredo. |
 | `BE-SES-10` | Unitário | A consulta pode renovar o token CSRF e invalida o anterior quando houver rotação. |
 
 ## 5. Logout e CSRF
@@ -100,8 +100,8 @@ Cada item representa um comportamento observável e deve ser implementado em um 
 | `BE-REC-04` | Unitário | Para conta existente, cria token imprevisível, de uso único e válido por 30 minutos. |
 | `BE-REC-05` | Unitário | Para e-mail inexistente, não cria token nem solicita envio de mensagem. |
 | `BE-REC-06` | Unitário | Um novo pedido invalida todos os tokens anteriores ainda válidos da conta. |
-| `BE-REC-07` | Segurança | Persiste somente o hash do token de recuperação, nunca o token em texto puro. |
-| `BE-REC-08` | Segurança | A mensagem enviada coloca o token no fragmento da URL, não na query string. |
+| `BE-REC-07` | Integração | Persiste somente o hash do token de recuperação, nunca o token em texto puro. |
+| `BE-REC-08` | Unitário | A mensagem enviada coloca o token no fragmento da URL, não na query string. |
 | `BE-REC-09` | Integração | Falha no envio retorna `500` com a mensagem polida definida no contrato. |
 | `BE-REC-10` | Integração | Repetir a mesma chave idempotente não cria nem envia um segundo token. |
 | `BE-REC-11` | Integração | Chave idempotente ausente, inválida ou reutilizada com outro conteúdo é rejeitada. |
@@ -125,18 +125,18 @@ Cada item representa um comportamento observável e deve ser implementado em um 
 | `BE-RED-13` | Integração | Repetir a mesma chave idempotente após sucesso retorna o resultado sem novo processamento. |
 | `BE-RED-14` | Integração | Chave idempotente ausente, inválida ou reutilizada com outro conteúdo é rejeitada. |
 
-## 8. Contrato, erros e segurança transversal
+## 8. Comportamentos transversais
 
 | ID | Nível | Teste necessário |
 |---|---|---|
-| `BE-CTR-01` | Contrato | Todos os seis endpoints aceitam somente os métodos, tipos de conteúdo e schemas documentados. |
-| `BE-CTR-02` | Contrato | Campos obrigatórios ausentes, tipos incorretos e propriedades adicionais retornam `400`. |
-| `BE-CTR-03` | Contrato | Erros usam `application/problem+json`, `code` estável, `detail` polido e `fieldErrors` quando aplicável. |
-| `BE-CTR-04` | Contrato | Erros inesperados retornam mensagem genérica sem stack trace ou detalhes internos. |
-| `BE-SEG-01` | Segurança | Senhas, confirmações, cookies, tokens CSRF e tokens de recuperação não aparecem nos logs. |
-| `BE-SEG-02` | Segurança | Respostas de autenticação e recuperação não permitem inferir a existência de uma conta. |
-| `BE-SEG-03` | Segurança | Endpoints autenticados não aceitam sessão expirada, revogada ou pertencente a conta inativa. |
-| `BE-SEG-04` | Segurança | Respostas que contêm dados de sessão nunca são armazenáveis em cache. |
+| `BE-CTR-01` | Integração | Todos os seis endpoints aceitam somente os métodos, tipos de conteúdo e schemas documentados. |
+| `BE-CTR-02` | Integração | Campos obrigatórios ausentes, tipos incorretos e propriedades adicionais retornam `400`. |
+| `BE-CTR-03` | Integração | Erros usam `application/problem+json`, `code` estável, `detail` polido e `fieldErrors` quando aplicável. |
+| `BE-CTR-04` | Integração | Erros inesperados retornam mensagem genérica sem stack trace ou detalhes internos. |
+| `BE-SEG-01` | Integração | Senhas, confirmações, cookies, tokens CSRF e tokens de recuperação não aparecem nos logs. |
+| `BE-SEG-02` | Integração | Respostas de autenticação e recuperação não permitem inferir a existência de uma conta. |
+| `BE-SEG-03` | Integração | Endpoints autenticados não aceitam sessão expirada, revogada ou pertencente a conta inativa. |
+| `BE-SEG-04` | Integração | Respostas que contêm dados de sessão nunca são armazenáveis em cache. |
 
 ## Ordem sugerida dos ciclos TDD
 
@@ -147,7 +147,7 @@ Cada item representa um comportamento observável e deve ser implementado em um 
 5. Logout e CSRF (`BE-SAI`).
 6. Solicitação de recuperação (`BE-REC`).
 7. Redefinição de senha (`BE-RED`).
-8. Conformidade do contrato e segurança transversal (`BE-CTR` e `BE-SEG`).
+8. Comportamentos transversais (`BE-CTR` e `BE-SEG`).
 
 ## Rastreabilidade com os critérios de aceite
 
