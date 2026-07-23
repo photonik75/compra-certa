@@ -1,4 +1,4 @@
-package br.leobarros.compracerta.autenticacao.cadastro.idempotencia;
+package br.leobarros.compracerta.autenticacao.comum.idempotencia;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -10,7 +10,7 @@ import java.util.function.Supplier;
 import org.springframework.stereotype.Service;
 
 @Service
-public class IdempotenciaCadastroService {
+public class IdempotenciaService {
 
 	private static final int TAMANHO_MAXIMO_CHAVE = 255;
 

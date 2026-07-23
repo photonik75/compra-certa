@@ -13,7 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import br.leobarros.compracerta.autenticacao.cadastro.idempotencia.IdempotenciaCadastroService;
+import br.leobarros.compracerta.autenticacao.comum.idempotencia.IdempotenciaService;
 import br.leobarros.compracerta.autenticacao.configuracao.AutenticacaoSecurityConfiguration;
 import br.leobarros.compracerta.autenticacao.erro.ApiErrorResponseService;
 import br.leobarros.compracerta.autenticacao.recuperacao.RecuperacaoSenhaController;
@@ -39,7 +39,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @Import({
 		AutenticacaoSecurityConfiguration.class,
 		ApiErrorResponseService.class,
-		IdempotenciaCadastroService.class,
+		IdempotenciaService.class,
 		RecuperacaoSenhaExceptionHandler.class
 		,SessaoController.class
 		,SessaoExceptionHandler.class

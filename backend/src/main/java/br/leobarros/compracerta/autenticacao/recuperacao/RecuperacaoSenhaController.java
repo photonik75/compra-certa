@@ -1,6 +1,6 @@
 package br.leobarros.compracerta.autenticacao.recuperacao;
 
-import br.leobarros.compracerta.autenticacao.cadastro.idempotencia.IdempotenciaCadastroService;
+import br.leobarros.compracerta.autenticacao.comum.idempotencia.IdempotenciaService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,12 +17,12 @@ public class RecuperacaoSenhaController {
 
 	private final SolicitacaoRecuperacaoService solicitacaoService;
 	private final RedefinicaoSenhaService redefinicaoService;
-	private final IdempotenciaCadastroService idempotenciaService;
+	private final IdempotenciaService idempotenciaService;
 
 	public RecuperacaoSenhaController(
 			SolicitacaoRecuperacaoService solicitacaoService,
 			RedefinicaoSenhaService redefinicaoService,
-			IdempotenciaCadastroService idempotenciaService) {
+			IdempotenciaService idempotenciaService) {
 		this.solicitacaoService = solicitacaoService;
 		this.redefinicaoService = redefinicaoService;
 		this.idempotenciaService = idempotenciaService;

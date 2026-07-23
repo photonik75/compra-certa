@@ -2,8 +2,8 @@ package br.leobarros.compracerta.autenticacao.cadastro;
 
 import java.util.List;
 
-import br.leobarros.compracerta.autenticacao.cadastro.idempotencia.ChaveIdempotenciaInvalidaException;
-import br.leobarros.compracerta.autenticacao.cadastro.idempotencia.ChaveIdempotenciaReutilizadaException;
+import br.leobarros.compracerta.autenticacao.comum.idempotencia.ChaveIdempotenciaInvalidaException;
+import br.leobarros.compracerta.autenticacao.comum.idempotencia.ChaveIdempotenciaReutilizadaException;
 import br.leobarros.compracerta.autenticacao.erro.ApiError;
 import br.leobarros.compracerta.autenticacao.erro.ApiErrorResponseService;
 import br.leobarros.compracerta.autenticacao.erro.ApiFieldError;

@@ -1,6 +1,6 @@
 package br.leobarros.compracerta.autenticacao.cadastro;
 
-import br.leobarros.compracerta.autenticacao.cadastro.idempotencia.IdempotenciaCadastroService;
+import br.leobarros.compracerta.autenticacao.comum.idempotencia.IdempotenciaService;
 import br.leobarros.compracerta.autenticacao.sessao.SessionResponse;
 import br.leobarros.compracerta.autenticacao.sessao.SessaoCriada;
 import br.leobarros.compracerta.autenticacao.sessao.SessaoHttpResponseService;
@@ -23,13 +23,13 @@ public class CadastroController {
 	private final CadastroService cadastroService;
 	private final SessaoService sessaoService;
 	private final SessaoHttpResponseService sessaoHttpResponseService;
-	private final IdempotenciaCadastroService idempotenciaService;
+	private final IdempotenciaService idempotenciaService;
 
 	public CadastroController(
 			CadastroService cadastroService,
 			SessaoService sessaoService,
 			SessaoHttpResponseService sessaoHttpResponseService,
-			IdempotenciaCadastroService idempotenciaService) {
+			IdempotenciaService idempotenciaService) {
 		this.cadastroService = cadastroService;
 		this.sessaoService = sessaoService;
 		this.sessaoHttpResponseService = sessaoHttpResponseService;

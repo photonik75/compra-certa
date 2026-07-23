@@ -27,7 +27,7 @@ import br.leobarros.compracerta.autenticacao.cadastro.CadastroController;
 import br.leobarros.compracerta.autenticacao.cadastro.CadastroService;
 import br.leobarros.compracerta.autenticacao.cadastro.Conta;
 import br.leobarros.compracerta.autenticacao.cadastro.ContaRepository;
-import br.leobarros.compracerta.autenticacao.cadastro.idempotencia.IdempotenciaCadastroService;
+import br.leobarros.compracerta.autenticacao.comum.idempotencia.IdempotenciaService;
 import br.leobarros.compracerta.autenticacao.configuracao.AutenticacaoSecurityConfiguration;
 import br.leobarros.compracerta.autenticacao.erro.ApiErrorResponseService;
 import br.leobarros.compracerta.autenticacao.sessao.GeradorIdentificadorService;
@@ -53,7 +53,7 @@ import org.springframework.test.web.servlet.MvcResult;
 		AutenticacaoSecurityConfiguration.class,
 		ApiErrorResponseService.class,
 		CadastroService.class,
-		IdempotenciaCadastroService.class,
+		IdempotenciaService.class,
 		SessaoCookieService.class,
 		GeradorIdentificadorService.class,
 		SessaoHttpResponseService.class,

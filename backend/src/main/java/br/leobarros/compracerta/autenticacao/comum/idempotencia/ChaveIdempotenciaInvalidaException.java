@@ -1,4 +1,4 @@
-package br.leobarros.compracerta.autenticacao.cadastro.idempotencia;
+package br.leobarros.compracerta.autenticacao.comum.idempotencia;
 
 public class ChaveIdempotenciaInvalidaException extends IllegalArgumentException {
 
