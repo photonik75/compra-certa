@@ -15,6 +15,7 @@ public class CadastroExceptionHandler {
 
 	private static final String CODIGO_ERRO_VALIDACAO = "VALIDATION_ERROR";
 	private static final String DETALHE_ERRO_VALIDACAO = "Verifique os campos informados e tente novamente.";
+	private static final String CODIGO_CONFLITO = "CONFLICT";
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	ResponseEntity<ApiError> tratarErroDeValidacao(MethodArgumentNotValidException exception) {
@@ -23,6 +24,15 @@ public class CadastroExceptionHandler {
 				.toList();
 		var corpo = new ApiError(CODIGO_ERRO_VALIDACAO, DETALHE_ERRO_VALIDACAO, erros);
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+				.contentType(MediaType.APPLICATION_PROBLEM_JSON)
+				.body(corpo);
+	}
+
+	@ExceptionHandler(EmailJaCadastradoException.class)
+	ResponseEntity<ApiError> tratarEmailJaCadastrado(EmailJaCadastradoException exception) {
+		var erro = new FieldError("email", exception.getMessage());
+		var corpo = new ApiError(CODIGO_CONFLITO, exception.getMessage(), List.of(erro));
+		return ResponseEntity.status(HttpStatus.CONFLICT)
 				.contentType(MediaType.APPLICATION_PROBLEM_JSON)
 				.body(corpo);
 	}

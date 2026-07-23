@@ -1,6 +1,7 @@
 package br.leobarros.compracerta.autenticacao.cadastro;
 
 import java.util.Locale;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,24 +20,42 @@ public class CadastroService {
 	private static final String EMAIL_INVALIDO = "Por favor, informe um e-mail válido";
 	private static final String SENHA_INVALIDA = "A senha deve ter entre 8 e 128 caracteres";
 	private static final String CONFIRMACAO_INVALIDA = "A confirmação deve ser idêntica à senha";
-	private static final String EMAIL_CADASTRADO = "E-mail já foi cadastrado";
 
 	private final ContaRepository contaRepository;
 	private final PasswordEncoder passwordEncoder;
+	private final ConcurrentHashMap<String, Object> bloqueiosPorEmail = new ConcurrentHashMap<>();
 
 	public CadastroService(ContaRepository contaRepository, PasswordEncoder passwordEncoder) {
 		this.contaRepository = contaRepository;
 		this.passwordEncoder = passwordEncoder;
 	}
 
-	public void cadastrar(DadosCadastro dadosCadastro) {
+	public Conta cadastrar(DadosCadastro dadosCadastro) {
 		validar(dadosCadastro);
 		var emailNormalizado = dadosCadastro.email().toLowerCase(Locale.ROOT);
+		var bloqueio = bloqueiosPorEmail.computeIfAbsent(emailNormalizado, email -> new Object());
+		try {
+			synchronized (bloqueio) {
+				return cadastrar(dadosCadastro, emailNormalizado);
+			}
+		} finally {
+			bloqueiosPorEmail.remove(emailNormalizado, bloqueio);
+		}
+	}
+
+	private Conta cadastrar(DadosCadastro dadosCadastro, String emailNormalizado) {
 		if (contaRepository.existePorEmail(emailNormalizado)) {
-			throw new IllegalArgumentException(EMAIL_CADASTRADO);
+			throw new EmailJaCadastradoException();
 		}
 		var senhaHash = passwordEncoder.encode(dadosCadastro.senha());
-		contaRepository.salvar(new Conta(dadosCadastro.nome(), emailNormalizado, senhaHash));
+		var conta = new Conta(dadosCadastro.nome(), emailNormalizado, senhaHash);
+		try {
+			contaRepository.salvar(conta);
+			return conta;
+		} catch (RuntimeException exception) {
+			contaRepository.remover(conta);
+			throw exception;
+		}
 	}
 
 	private void validar(DadosCadastro dadosCadastro) {
