@@ -26,6 +26,8 @@ import br.leobarros.compracerta.autenticacao.cadastro.CadastroSecurityConfigurat
 import br.leobarros.compracerta.autenticacao.cadastro.CadastroService;
 import br.leobarros.compracerta.autenticacao.cadastro.Conta;
 import br.leobarros.compracerta.autenticacao.cadastro.ContaRepository;
+import br.leobarros.compracerta.autenticacao.sessao.SessaoCookieService;
+import br.leobarros.compracerta.autenticacao.sessao.SessaoService;
 import jakarta.servlet.ServletException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,6 +45,8 @@ import org.springframework.test.web.servlet.MvcResult;
 @Import({
 		CadastroSecurityConfiguration.class,
 		CadastroService.class,
+		SessaoCookieService.class,
+		SessaoService.class,
 		CadastroControllerIntegrationTest.Configuracao.class
 })
 @WebMvcTest

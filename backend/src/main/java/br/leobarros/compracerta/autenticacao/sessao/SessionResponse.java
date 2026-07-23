@@ -1,4 +1,4 @@
-package br.leobarros.compracerta.autenticacao.cadastro;
+package br.leobarros.compracerta.autenticacao.sessao;
 
 import java.time.Instant;
 import java.util.UUID;
