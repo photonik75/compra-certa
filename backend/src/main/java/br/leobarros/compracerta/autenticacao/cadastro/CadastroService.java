@@ -4,7 +4,9 @@ import java.util.Locale;
 import java.util.regex.Pattern;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
+@Service
 public class CadastroService {
 
 	private static final int TAMANHO_MINIMO_NOME = 2;
