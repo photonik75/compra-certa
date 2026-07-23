@@ -7,7 +7,8 @@ public class Conta {
 	private final UUID id;
 	private final String nome;
 	private final String email;
-	private final String senhaHash;
+	private String senhaHash;
+	private boolean ativa = true;
 
 	public Conta(String nome, String email, String senhaHash) {
 		this.id = UUID.randomUUID();
@@ -30,5 +31,17 @@ public class Conta {
 
 	public String getSenhaHash() {
 		return senhaHash;
+	}
+
+	public void alterarSenhaHash(String senhaHash) {
+		this.senhaHash = senhaHash;
+	}
+
+	public boolean isAtiva() {
+		return ativa;
+	}
+
+	public void desativar() {
+		ativa = false;
 	}
 }

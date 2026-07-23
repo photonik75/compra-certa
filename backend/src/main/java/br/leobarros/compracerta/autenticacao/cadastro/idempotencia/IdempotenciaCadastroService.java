@@ -7,7 +7,6 @@ import java.util.HexFormat;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
-import br.leobarros.compracerta.autenticacao.sessao.SessaoCriada;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,7 +16,7 @@ public class IdempotenciaCadastroService {
 
 	private final ConcurrentHashMap<String, Registro> registros = new ConcurrentHashMap<>();
 
-	public SessaoCriada executar(String chave, String conteudo, Supplier<SessaoCriada> processamento) {
+	public <T> T executar(String chave, String conteudo, Supplier<T> processamento) {
 		validar(chave);
 		var fingerprint = fingerprint(conteudo);
 		var registro = registros.computeIfAbsent(chave, valor -> new Registro(fingerprint));
@@ -28,7 +27,7 @@ public class IdempotenciaCadastroService {
 			if (registro.resultado == null) {
 				processar(chave, registro, processamento);
 			}
-			return registro.resultado;
+			return (T) registro.resultado;
 		}
 	}
 
@@ -38,7 +37,7 @@ public class IdempotenciaCadastroService {
 		}
 	}
 
-	private void processar(String chave, Registro registro, Supplier<SessaoCriada> processamento) {
+	private <T> void processar(String chave, Registro registro, Supplier<T> processamento) {
 		try {
 			registro.resultado = processamento.get();
 		} catch (RuntimeException exception) {
@@ -59,7 +58,7 @@ public class IdempotenciaCadastroService {
 	private static class Registro {
 
 		private final String fingerprint;
-		private SessaoCriada resultado;
+		private Object resultado;
 
 		Registro(String fingerprint) {
 			this.fingerprint = fingerprint;

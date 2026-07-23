@@ -76,6 +76,10 @@ public class SessaoService {
 		sessao.revogar();
 	}
 
+	public void revogarDaConta(Conta conta) {
+		sessaoRepository.revogarDaConta(conta.getId());
+	}
+
 	public SessaoEstado obterEstado(String token) {
 		var sessao = buscar(token);
 		return new SessaoEstado(
@@ -117,6 +121,7 @@ public class SessaoService {
 		var sessao = buscar(token);
 		var agora = clock.instant();
 		if (sessao.revogada()
+				|| !sessao.conta().isAtiva()
 				|| agora.isAfter(sessao.expiraPorInatividade())
 				|| agora.isAfter(sessao.expiraEmDefinitivo())) {
 			throw new SessaoExpiradaException();
