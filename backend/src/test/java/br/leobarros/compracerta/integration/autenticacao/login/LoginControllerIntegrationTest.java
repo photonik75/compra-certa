@@ -24,6 +24,7 @@ import br.leobarros.compracerta.autenticacao.sessao.SessaoCookieService;
 import br.leobarros.compracerta.autenticacao.sessao.GeradorIdentificadorService;
 import br.leobarros.compracerta.autenticacao.sessao.SessaoHttpResponseService;
 import br.leobarros.compracerta.autenticacao.sessao.SessaoService;
+import br.leobarros.compracerta.autenticacao.sessao.SessaoRepository;
 import br.leobarros.compracerta.support.MutableClock;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,6 +48,7 @@ import org.springframework.test.web.servlet.MvcResult;
 		GeradorIdentificadorService.class,
 		SessaoHttpResponseService.class,
 		SessaoService.class,
+		SessaoRepository.class,
 		LoginControllerIntegrationTest.Configuracao.class
 })
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)

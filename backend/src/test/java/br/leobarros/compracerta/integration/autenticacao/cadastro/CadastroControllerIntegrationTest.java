@@ -34,6 +34,7 @@ import br.leobarros.compracerta.autenticacao.sessao.GeradorIdentificadorService;
 import br.leobarros.compracerta.autenticacao.sessao.SessaoCookieService;
 import br.leobarros.compracerta.autenticacao.sessao.SessaoHttpResponseService;
 import br.leobarros.compracerta.autenticacao.sessao.SessaoService;
+import br.leobarros.compracerta.autenticacao.sessao.SessaoRepository;
 import jakarta.servlet.ServletException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -57,6 +58,7 @@ import org.springframework.test.web.servlet.MvcResult;
 		GeradorIdentificadorService.class,
 		SessaoHttpResponseService.class,
 		SessaoService.class,
+		SessaoRepository.class,
 		CadastroControllerIntegrationTest.Configuracao.class
 })
 @WebMvcTest(CadastroController.class)

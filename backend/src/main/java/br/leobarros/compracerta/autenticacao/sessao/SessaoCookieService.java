@@ -1,5 +1,7 @@
 package br.leobarros.compracerta.autenticacao.sessao;
 
+import java.time.Duration;
+
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +18,16 @@ public class SessaoCookieService {
 				.secure(true)
 				.sameSite(SAME_SITE)
 				.path(PATH_API)
+				.build();
+	}
+
+	public ResponseCookie expirar() {
+		return ResponseCookie.from(NOME_COOKIE_SESSAO, "")
+				.httpOnly(true)
+				.secure(true)
+				.sameSite(SAME_SITE)
+				.path(PATH_API)
+				.maxAge(Duration.ZERO)
 				.build();
 	}
 }
