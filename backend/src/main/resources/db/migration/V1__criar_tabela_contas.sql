@@ -1,0 +1,7 @@
+CREATE TABLE contas (
+    id UUID PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    email VARCHAR(254) NOT NULL UNIQUE,
+    senha_hash VARCHAR(255) NOT NULL,
+    ativa BOOLEAN NOT NULL
+);
