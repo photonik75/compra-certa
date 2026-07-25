@@ -4,7 +4,7 @@ Diretório reservado para a API Spring Boot do CompraCerta.
 
 Stack definida:
 
-- Java 21;
+- Java 25;
 - Spring Boot;
 - Spring Web;
 - Spring Security;
