@@ -5,6 +5,7 @@ import { DadosCadastro } from '../models/dados-cadastro';
 import { SessionResponse } from '../models/session-response';
 
 const ENDPOINT_CADASTRO = '/api/v1/auth/registrations';
+const HEADER_IDEMPOTENCIA = 'Idempotency-Key';
 
 export class EmailJaCadastradoError extends Error {}
 
@@ -14,7 +15,9 @@ export class CadastroService {
 
   cadastrar(dados: DadosCadastro): Observable<SessionResponse> {
     return this.http
-      .post<SessionResponse>(ENDPOINT_CADASTRO, dados)
+      .post<SessionResponse>(ENDPOINT_CADASTRO, dados, {
+        headers: { [HEADER_IDEMPOTENCIA]: crypto.randomUUID() },
+      })
       .pipe(
         catchError((erro: HttpErrorResponse) =>
           throwError(() => erro.status === 409 ? new EmailJaCadastradoError() : erro),
