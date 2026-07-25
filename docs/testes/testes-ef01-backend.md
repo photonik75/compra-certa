@@ -138,6 +138,71 @@ Cada item representa um comportamento observável e deve ser implementado em um 
 | `BE-SEG-03` | Integração | Endpoints autenticados não aceitam sessão expirada, revogada ou pertencente a conta inativa. |
 | `BE-SEG-04` | Integração | Respostas que contêm dados de sessão nunca são armazenáveis em cache. |
 
+## 9. Validação ponta a ponta do backend
+
+### Classificação dos níveis
+
+Para evitar ambiguidade, os níveis deste documento possuem os seguintes significados:
+
+- **Unitário**: exercita uma classe isolada e substitui todas as dependências por stubs, fakes ou spies.
+- **Integração HTTP isolada**: exercita controller, serialização, validação, segurança e resposta HTTP, mas
+  substitui serviços, repositórios ou infraestrutura que não sejam o objeto do teste.
+- **Ponta a ponta do backend**: inicia o contexto real da aplicação e atravessa controller, service, repository,
+  transação, migrations e PostgreSQL em Testcontainers. Somente integrações externas inevitáveis, como entrega de
+  e-mail, são substituídas por fakes ou spies.
+
+Os testes já classificados apenas como **Integração** devem ser entendidos como **Integração HTTP isolada**. Os
+testes ponta a ponta usam o prefixo `BE-E2E` e não devem declarar implementações alternativas dos repositórios da
+aplicação.
+
+### Ambiente
+
+- Usar PostgreSQL real iniciado por Testcontainers.
+- Aplicar as migrations Flyway da aplicação, sem criar o schema manualmente no teste.
+- Limpar os dados entre os casos sem substituir os repositórios de produção.
+- Fazer requisições pela camada HTTP e validar resultados observáveis pela API sempre que possível.
+- Consultar diretamente o banco somente quando o objetivo do teste for validar persistência, restrição, hash ou
+  atomicidade que não seja observável pela API.
+- Substituir apenas a entrega de e-mail por fake ou spy; relógio e gerador de identificadores podem ser
+  controláveis quando o cenário exigir determinismo.
+
+### Testes necessários
+
+1. **`BE-E2E-01` — Inicialização e migrations:** a aplicação inicia com PostgreSQL vazio e todas as migrations
+   Flyway são aplicadas com sucesso.
+2. **`BE-E2E-02` — Persistência do cadastro:** cadastro válido atravessa a API e persiste uma única conta com nome
+   preservado, e-mail normalizado e status ativo.
+3. **`BE-E2E-03` — Proteção da senha:** a conta persiste somente o hash forte da senha; senha e confirmação nunca
+   são armazenadas.
+4. **`BE-E2E-04` — Unicidade concorrente:** a restrição do banco impede duas contas com o mesmo e-mail
+   normalizado, inclusive sob concorrência.
+5. **`BE-E2E-05` — Atomicidade do cadastro:** cadastro e criação da sessão são atômicos; uma falha após criar a
+   conta não deixa conta nem sessão persistida.
+6. **`BE-E2E-06` — Idempotência persistida:** repetir um cadastro com a mesma chave retorna o resultado original
+   após nova requisição HTTP, sem duplicar conta ou sessão.
+7. **`BE-E2E-07` — Login com conta persistida:** o login aceita a senha correta e rejeita a incorreta sem revelar
+   se o e-mail existe.
+8. **`BE-E2E-08` — Bloqueio de login persistido:** falhas e bloqueio temporário são respeitados por requisições
+   independentes.
+9. **`BE-E2E-09` — Persistência da sessão:** a sessão criada por cadastro ou login pode ser consultada em outra
+   requisição e contém os prazos correspondentes à opção de permanência.
+10. **`BE-E2E-10` — Revogação no logout:** logout com CSRF válido revoga no banco somente a sessão atual. O cookie
+    anterior deixa de autenticar.
+11. **`BE-E2E-11` — Token de recuperação persistido:** solicitação para conta existente persiste somente o hash do
+    token, invalida tokens anteriores e solicita uma única entrega.
+12. **`BE-E2E-12` — Recuperação indistinguível:** solicitação para e-mail inexistente mantém resposta
+    indistinguível e não persiste token nem solicita entrega.
+13. **`BE-E2E-13` — Redefinição atômica:** redefinição válida altera o hash da senha, consome o token e revoga
+    todas as sessões da conta na mesma transação.
+14. **`BE-E2E-14` — Rollback da redefinição:** uma falha reverte a alteração da senha, o consumo do token e a
+    revogação das sessões.
+15. **`BE-E2E-15` — Acesso após redefinição:** a senha antiga e as sessões anteriores falham, enquanto a nova
+    senha permite criar outra sessão.
+16. **`BE-E2E-16` — Restrições do schema:** tamanho, nulidade, unicidade e relacionamentos do schema são
+    compatíveis com as validações e regras da aplicação.
+17. **`BE-E2E-17` — Persistência entre contextos:** reiniciar o contexto preserva contas, sessões, idempotência e
+    tokens ainda válidos no PostgreSQL.
+
 ## Ordem sugerida dos ciclos TDD
 
 1. Cadastro e validações (`BE-CAD`).
@@ -148,6 +213,8 @@ Cada item representa um comportamento observável e deve ser implementado em um 
 6. Solicitação de recuperação (`BE-REC`).
 7. Redefinição de senha (`BE-RED`).
 8. Comportamentos transversais (`BE-CTR` e `BE-SEG`).
+9. Validação ponta a ponta do backend (`BE-E2E`), implementada incrementalmente junto da infraestrutura de cada
+   fluxo, e não somente ao final.
 
 ## Rastreabilidade com os critérios de aceite
 
