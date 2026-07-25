@@ -5,10 +5,9 @@ import java.time.Duration;
 import java.time.Instant;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
 
 import br.leobarros.compracerta.autenticacao.cadastro.Conta;
+import br.leobarros.compracerta.autenticacao.comum.Sha256;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -142,12 +141,7 @@ public class SessaoService {
 	}
 
 	private String hash(String valor) {
-		try {
-			var digest = MessageDigest.getInstance("SHA-256").digest(valor.getBytes(StandardCharsets.UTF_8));
-			return Base64.getEncoder().encodeToString(digest);
-		} catch (NoSuchAlgorithmException exception) {
-			throw new IllegalStateException("Não foi possível proteger os dados da sessão.", exception);
-		}
+		return Sha256.base64(valor);
 	}
 
 }

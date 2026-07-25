@@ -3,6 +3,7 @@ package br.leobarros.compracerta.autenticacao.recuperacao;
 import java.time.Clock;
 
 import br.leobarros.compracerta.autenticacao.sessao.SessaoService;
+import br.leobarros.compracerta.autenticacao.comum.Sha256;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,7 +33,7 @@ public class RedefinicaoSenhaService {
 	@Transactional
 	public void redefinir(String token, String novaSenha, String confirmacao) {
 		validar(token, novaSenha, confirmacao);
-		var registro = tokenRepository.buscar(HashSeguro.gerar(token))
+		var registro = tokenRepository.buscar(Sha256.hex(token))
 				.filter(item -> !item.usado() && !item.invalidado() && !clock.instant().isAfter(item.expiraEm()))
 				.orElseThrow(TokenRecuperacaoInvalidoException::new);
 		var conta = registro.conta();

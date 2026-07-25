@@ -1,12 +1,9 @@
 package br.leobarros.compracerta.e2e;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.sql.DatabaseMetaData;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -18,11 +15,8 @@ import javax.sql.DataSource;
 import br.leobarros.compracerta.CompraCertaBackendApplication;
 import br.leobarros.compracerta.TestcontainersConfiguration;
 import br.leobarros.compracerta.autenticacao.recuperacao.EntregaRecuperacaoSenha;
+import br.leobarros.compracerta.autenticacao.comum.Sha256;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -50,12 +44,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @Import({
 		TestcontainersConfiguration.class,
-		AutenticacaoBackendE2ETest.EntregaTestConfiguration.class
+		AutenticacaoBackendE2ESupport.EntregaTestConfiguration.class
 })
 @SpringBootTest
 @AutoConfigureMockMvc
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class AutenticacaoBackendE2ETest {
+abstract class AutenticacaoBackendE2ESupport {
 
 	private static final String CADASTRO = "/api/v1/auth/registrations";
 	private static final String LOGIN = "/api/v1/auth/sessions";
@@ -97,8 +90,6 @@ class AutenticacaoBackendE2ETest {
 		entrega.limpar();
 	}
 
-	@Test
-	@Order(2)
 	void beE2e02CadastroPersisteContaNormalizadaEAtiva() throws Exception {
 		cadastrar(EMAIL.toUpperCase(), "cadastro-02").andExpect(status().isCreated());
 		var conta = conta(EMAIL);
@@ -109,8 +100,6 @@ class AutenticacaoBackendE2ETest {
 		assertThat(quantidade("contas")).isOne();
 	}
 
-	@Test
-	@Order(3)
 	void beE2e03CadastroPersisteSomenteHashForteDaSenha() throws Exception {
 		cadastrar(EMAIL, "cadastro-03").andExpect(status().isCreated());
 		var hash = (String) conta(EMAIL).get("senha_hash");
@@ -119,8 +108,6 @@ class AutenticacaoBackendE2ETest {
 		assertThat(colunas("contas")).doesNotContain("senha", "password", "confirmacao", "password_confirmation");
 	}
 
-	@Test
-	@Order(4)
 	void beE2e04BancoGaranteUnicidadeConcorrenteDoEmailNormalizado() throws Exception {
 		try (var executor = Executors.newFixedThreadPool(2)) {
 			var inicio = new java.util.concurrent.CountDownLatch(1);
@@ -132,8 +119,6 @@ class AutenticacaoBackendE2ETest {
 		assertThat(quantidade("contas")).isOne();
 	}
 
-	@Test
-	@Order(5)
 	void beE2e05FalhaAoCriarSessaoReverteCadastro() throws Exception {
 		criarFalhaDeSessao();
 		try {
@@ -145,8 +130,6 @@ class AutenticacaoBackendE2ETest {
 		}
 	}
 
-	@Test
-	@Order(6)
 	void beE2e06IdempotenciaDeCadastroSobreviveANovaRequisicao() throws Exception {
 		var primeira = cadastrar(EMAIL, "cadastro-06").andExpect(status().isCreated()).andReturn();
 		var segunda = cadastrar(EMAIL, "cadastro-06").andExpect(status().isCreated()).andReturn();
@@ -158,8 +141,6 @@ class AutenticacaoBackendE2ETest {
 		assertThat(quantidade("idempotencias")).isOne();
 	}
 
-	@Test
-	@Order(7)
 	void beE2e07LoginUsaContaPersistidaESemEnumeracaoDeEmail() throws Exception {
 		cadastrar(EMAIL, "cadastro-07");
 		login(EMAIL, SENHA).andExpect(status().isOk());
@@ -171,8 +152,6 @@ class AutenticacaoBackendE2ETest {
 				.isEqualTo(senhaIncorreta.getResponse().getContentAsString());
 	}
 
-	@Test
-	@Order(8)
 	void beE2e08BloqueioDeLoginPersisteEntreRequisicoes() throws Exception {
 		cadastrar(EMAIL, "cadastro-08");
 		for (int tentativa = 0; tentativa < 5; tentativa++) {
@@ -184,8 +163,6 @@ class AutenticacaoBackendE2ETest {
 		assertThat(quantidade("tentativas_login")).isEqualTo(5);
 	}
 
-	@Test
-	@Order(9)
 	void beE2e09SessaoPersistidaPodeSerConsultadaEmOutraRequisicao() throws Exception {
 		var cadastro = cadastrar(EMAIL, "cadastro-09").andExpect(status().isCreated()).andReturn();
 		var consulta = consultar(cookie(cadastro)).andExpect(status().isOk()).andReturn();
@@ -196,8 +173,6 @@ class AutenticacaoBackendE2ETest {
 		assertThat(Duration.between(criadaEm, expiraEm)).isEqualTo(Duration.ofHours(24));
 	}
 
-	@Test
-	@Order(10)
 	void beE2e10LogoutRevogaSomenteSessaoAtual() throws Exception {
 		cadastrar(EMAIL, "cadastro-10");
 		var primeira = login(EMAIL, SENHA).andReturn();
@@ -212,8 +187,6 @@ class AutenticacaoBackendE2ETest {
 		assertThat(jdbc.queryForObject("SELECT count(*) FROM sessoes WHERE revogada", Long.class)).isOne();
 	}
 
-	@Test
-	@Order(11)
 	void beE2e11RecuperacaoPersisteHashInvalidaAnteriorEEntregaUmaVez() throws Exception {
 		cadastrar(EMAIL, "cadastro-11");
 		solicitarRecuperacao(EMAIL, "rec-11-a").andExpect(status().isAccepted());
@@ -235,8 +208,6 @@ class AutenticacaoBackendE2ETest {
 				tokenAtual)).isZero();
 	}
 
-	@Test
-	@Order(12)
 	void beE2e12RecuperacaoDeEmailInexistenteEIndistinguivelESemEfeito() throws Exception {
 		cadastrar(EMAIL, "cadastro-12");
 		var existente = solicitarRecuperacao(EMAIL, "rec-12-a").andReturn().getResponse();
@@ -249,8 +220,6 @@ class AutenticacaoBackendE2ETest {
 		assertThat(entrega.links()).isEmpty();
 	}
 
-	@Test
-	@Order(13)
 	void beE2e13RedefinicaoAlteraSenhaConsomeTokenERevogaSessoesAtomicamente() throws Exception {
 		var sessao = prepararRedefinicao("13");
 		redefinir(tokenDaUltimaEntrega(), NOVA_SENHA, "reset-13").andExpect(status().isNoContent());
@@ -262,8 +231,6 @@ class AutenticacaoBackendE2ETest {
 				UUID.fromString(json(sessao).at("/user/id").asText()))).isGreaterThan(0L);
 	}
 
-	@Test
-	@Order(14)
 	void beE2e14FalhaNaRedefinicaoReverteSenhaTokenESessoes() throws Exception {
 		prepararRedefinicao("14");
 		var hashAnterior = (String) conta(EMAIL).get("senha_hash");
@@ -279,8 +246,6 @@ class AutenticacaoBackendE2ETest {
 		assertThat(jdbc.queryForObject("SELECT count(*) FROM sessoes WHERE revogada", Long.class)).isZero();
 	}
 
-	@Test
-	@Order(15)
 	void beE2e15AposRedefinicaoSomenteNovaSenhaCriaSessao() throws Exception {
 		var sessaoAntiga = prepararRedefinicao("15");
 		redefinir(tokenDaUltimaEntrega(), NOVA_SENHA, "reset-15").andExpect(status().isNoContent());
@@ -289,8 +254,6 @@ class AutenticacaoBackendE2ETest {
 		login(EMAIL, NOVA_SENHA).andExpect(status().isOk());
 	}
 
-	@Test
-	@Order(16)
 	void beE2e16SchemaImpoeRestricoesCompativeisComODominio() {
 		assertThatThrownBy(() -> jdbc.update(
 				"INSERT INTO contas (id, nome, email, senha_hash, ativa) VALUES (?, NULL, ?, ?, true)",
@@ -319,8 +282,6 @@ class AutenticacaoBackendE2ETest {
 				UUID.randomUUID())).isInstanceOf(RuntimeException.class);
 	}
 
-	@Test
-	@Order(17)
 	void beE2e17DadosPermanecemDisponiveisEmNovoContexto() throws Exception {
 		cadastrar(EMAIL, "cadastro-17");
 		solicitarRecuperacao(EMAIL, "rec-17");
@@ -433,8 +394,7 @@ class AutenticacaoBackendE2ETest {
 	}
 
 	private String sha256(String valor) throws Exception {
-		return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
-				.digest(valor.getBytes(StandardCharsets.UTF_8)));
+		return Sha256.hex(valor);
 	}
 
 	private void criarFalhaDeSessao() {

@@ -1,13 +1,11 @@
 package br.leobarros.compracerta.autenticacao.comum.idempotencia;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.HexFormat;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
+import br.leobarros.compracerta.autenticacao.comum.Sha256;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -21,13 +19,18 @@ public class IdempotenciaService {
 	private final Map<String, Registro> registros = new ConcurrentHashMap<>();
 	private final Map<String, Object> bloqueios = new ConcurrentHashMap<>();
 	private final JdbcTemplate jdbc;
-	private final ObjectMapper objectMapper;
+	private final List<IdempotenciaResultadoCodec<?>> codecs;
 
 	public IdempotenciaService(
 			ObjectProvider<JdbcTemplate> jdbcProvider,
 			ObjectProvider<ObjectMapper> objectMapperProvider) {
 		this.jdbc = jdbcProvider.getIfAvailable();
-		this.objectMapper = objectMapperProvider.getIfAvailable();
+		var objectMapper = objectMapperProvider.getIfAvailable();
+		this.codecs = objectMapper == null
+				? List.of()
+				: List.of(
+						new BooleanIdempotenciaCodec(objectMapper),
+						new SessaoCriadaIdempotenciaCodec(objectMapper));
 	}
 
 	public <T> T executar(String chave, String conteudo, Supplier<T> processamento) {
@@ -77,10 +80,11 @@ public class IdempotenciaService {
 				hash);
 		try {
 			var resultado = processamento.get();
+			var codec = buscarCodec(resultado);
 			jdbc.update(
 					"UPDATE idempotencias SET resultado_tipo = ?, resultado_json = ? WHERE chave = ?",
-					resultado.getClass().getName(),
-					objectMapper.writeValueAsString(resultado),
+					codec.codigo(),
+					serializar(codec, resultado),
 					chave);
 			return resultado;
 		} catch (RuntimeException exception) {
@@ -97,11 +101,12 @@ public class IdempotenciaService {
 		if (registro.resultadoTipo() == null) {
 			throw new IllegalStateException("O processamento idempotente anterior ainda não foi concluído.");
 		}
-		try {
-			return objectMapper.readValue(registro.resultadoJson(), Class.forName(registro.resultadoTipo()));
-		} catch (ClassNotFoundException exception) {
-			throw new IllegalStateException("Não foi possível recuperar o resultado idempotente.", exception);
-		}
+		return codecs.stream()
+				.filter(codec -> codec.codigo().equals(registro.resultadoTipo()))
+				.findFirst()
+				.map(codec -> codec.desserializar(registro.resultadoJson()))
+				.orElseThrow(() -> new IllegalStateException(
+						"Não foi possível recuperar o resultado idempotente."));
 	}
 
 	private void validar(String chave) {
@@ -126,12 +131,20 @@ public class IdempotenciaService {
 	}
 
 	private String fingerprint(String conteudo) {
-		try {
-			var digest = MessageDigest.getInstance("SHA-256");
-			return HexFormat.of().formatHex(digest.digest(conteudo.getBytes(StandardCharsets.UTF_8)));
-		} catch (NoSuchAlgorithmException exception) {
-			throw new IllegalStateException("Não foi possível validar a idempotência", exception);
-		}
+		return Sha256.hex(conteudo);
+	}
+
+	private IdempotenciaResultadoCodec<?> buscarCodec(Object resultado) {
+		return codecs.stream()
+				.filter(codec -> codec.suporta(resultado))
+				.findFirst()
+				.orElseThrow(() -> new IllegalStateException(
+						"Não foi possível persistir o resultado idempotente."));
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T> String serializar(IdempotenciaResultadoCodec<T> codec, Object resultado) {
+		return codec.serializar((T) resultado);
 	}
 
 	private record RegistroPersistido(String fingerprint, String resultadoTipo, String resultadoJson) {

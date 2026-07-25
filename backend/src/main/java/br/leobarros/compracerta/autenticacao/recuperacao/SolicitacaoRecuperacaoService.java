@@ -4,6 +4,7 @@ import java.time.Clock;
 import java.time.Duration;
 
 import br.leobarros.compracerta.autenticacao.comum.Email;
+import br.leobarros.compracerta.autenticacao.comum.Sha256;
 import br.leobarros.compracerta.autenticacao.sessao.GeradorIdentificadorService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,7 +41,7 @@ public class SolicitacaoRecuperacaoService {
 			tokenRepository.invalidarDaConta(conta.getId());
 			var token = gerador.gerarToken();
 			tokenRepository.salvar(new TokenRecuperacao(
-					HashSeguro.gerar(token),
+					Sha256.hex(token),
 					conta,
 					clock.instant().plus(VALIDADE_TOKEN)));
 			try {
