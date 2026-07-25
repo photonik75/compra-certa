@@ -47,6 +47,7 @@ public class SessaoService {
 		var agora = clock.instant();
 		sessao.atualizarExpiracaoPorInatividade(
 				menor(agora.plus(sessao.duracaoInatividade()), sessao.expiraEmDefinitivo()));
+		sessaoRepository.atualizar(sessao);
 		return rotacionarCsrf(token);
 	}
 
@@ -54,6 +55,7 @@ public class SessaoService {
 		var sessao = buscarValida(token);
 		var csrfToken = geradorIdentificadorService.gerarToken();
 		sessao.atualizarCsrfTokenHash(hash(csrfToken));
+		sessaoRepository.atualizar(sessao);
 		return resposta(sessao, csrfToken);
 	}
 
@@ -74,6 +76,7 @@ public class SessaoService {
 	public void revogar(String token) {
 		var sessao = buscarValida(token);
 		sessao.revogar();
+		sessaoRepository.atualizar(sessao);
 	}
 
 	public void revogarDaConta(Conta conta) {

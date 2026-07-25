@@ -1,12 +1,14 @@
 package br.leobarros.compracerta.autenticacao.recuperacao;
 
 import br.leobarros.compracerta.autenticacao.comum.idempotencia.IdempotenciaService;
+import br.leobarros.compracerta.autenticacao.comum.idempotencia.ChaveIdempotenciaInvalidaException;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.transaction.annotation.Transactional;
 
 @RestController
 public class RecuperacaoSenhaController {
@@ -29,6 +31,7 @@ public class RecuperacaoSenhaController {
 	}
 
 	@PostMapping(ENDPOINT_SOLICITACAO)
+	@Transactional
 	ResponseEntity<Void> solicitar(
 			@RequestHeader(name = HEADER_IDEMPOTENCIA, required = false) String chave,
 			@Valid @RequestBody SolicitacaoRecuperacaoRequest request) {
@@ -43,6 +46,7 @@ public class RecuperacaoSenhaController {
 	}
 
 	@PostMapping(ENDPOINT_REDEFINICAO)
+	@Transactional
 	ResponseEntity<Void> redefinir(
 			@RequestHeader(name = HEADER_IDEMPOTENCIA, required = false) String chave,
 			@Valid @RequestBody RedefinicaoSenhaRequest request) {
@@ -61,6 +65,12 @@ public class RecuperacaoSenhaController {
 	}
 
 	private String chaveComEscopo(String chave, String escopo) {
-		return chave == null ? null : escopo + chave;
+		if (chave == null || chave.isBlank()) {
+			return chave;
+		}
+		if (chave.length() > 255) {
+			throw new ChaveIdempotenciaInvalidaException();
+		}
+		return escopo + chave;
 	}
 }

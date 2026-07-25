@@ -5,6 +5,7 @@ import java.time.Clock;
 import br.leobarros.compracerta.autenticacao.sessao.SessaoService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class RedefinicaoSenhaService {
@@ -28,6 +29,7 @@ public class RedefinicaoSenhaService {
 		this.clock = clock;
 	}
 
+	@Transactional
 	public void redefinir(String token, String novaSenha, String confirmacao) {
 		validar(token, novaSenha, confirmacao);
 		var registro = tokenRepository.buscar(HashSeguro.gerar(token))
@@ -39,6 +41,7 @@ public class RedefinicaoSenhaService {
 			conta.alterarSenhaHash(passwordEncoder.encode(novaSenha));
 			contaRepository.salvar(conta);
 			registro.usar();
+			tokenRepository.atualizar(registro);
 			sessaoService.revogarDaConta(conta);
 		} catch (RuntimeException exception) {
 			conta.alterarSenhaHash(hashAnterior);

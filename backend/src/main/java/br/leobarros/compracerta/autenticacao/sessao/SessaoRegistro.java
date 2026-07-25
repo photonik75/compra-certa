@@ -33,6 +33,19 @@ class SessaoRegistro {
 		this.expiraEmDefinitivo = expiraEmDefinitivo;
 	}
 
+	SessaoRegistro(
+			String tokenHash,
+			String csrfTokenHash,
+			Conta conta,
+			Instant criadaEm,
+			Duration duracaoInatividade,
+			Instant expiraPorInatividade,
+			Instant expiraEmDefinitivo,
+			boolean revogada) {
+		this(tokenHash, csrfTokenHash, conta, criadaEm, duracaoInatividade, expiraPorInatividade, expiraEmDefinitivo);
+		this.revogada = revogada;
+	}
+
 	String tokenHash() {
 		return tokenHash;
 	}

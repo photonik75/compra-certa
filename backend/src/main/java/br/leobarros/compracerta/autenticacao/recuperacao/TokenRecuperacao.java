@@ -18,6 +18,17 @@ class TokenRecuperacao {
 		this.expiraEm = expiraEm;
 	}
 
+	TokenRecuperacao(
+			String hash,
+			Conta conta,
+			Instant expiraEm,
+			boolean usado,
+			boolean invalidado) {
+		this(hash, conta, expiraEm);
+		this.usado = usado;
+		this.invalidado = invalidado;
+	}
+
 	String hash() {
 		return hash;
 	}

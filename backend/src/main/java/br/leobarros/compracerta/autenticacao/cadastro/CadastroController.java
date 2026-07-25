@@ -1,6 +1,7 @@
 package br.leobarros.compracerta.autenticacao.cadastro;
 
 import br.leobarros.compracerta.autenticacao.comum.idempotencia.IdempotenciaService;
+import br.leobarros.compracerta.autenticacao.comum.idempotencia.ChaveIdempotenciaInvalidaException;
 import br.leobarros.compracerta.autenticacao.sessao.SessionResponse;
 import br.leobarros.compracerta.autenticacao.sessao.SessaoCriada;
 import br.leobarros.compracerta.autenticacao.sessao.SessaoHttpResponseService;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.transaction.annotation.Transactional;
 
 @RestController
 @RequestMapping(CadastroController.ENDPOINT_CADASTRO)
@@ -37,9 +39,11 @@ public class CadastroController {
 	}
 
 	@PostMapping
+	@Transactional
 	public ResponseEntity<SessionResponse> cadastrar(
 			@RequestHeader(name = "Idempotency-Key", required = false) String chaveIdempotencia,
 			@Valid @RequestBody CadastroRequest request) {
+		validarChave(chaveIdempotencia);
 		var sessao = idempotenciaService.executar(
 				chaveIdempotencia,
 				request.toString(),
@@ -50,5 +54,11 @@ public class CadastroController {
 	private SessaoCriada criarContaESessao(CadastroRequest request) {
 		var conta = cadastroService.cadastrar(request.toDadosCadastro());
 		return sessaoService.criarParaCadastro(conta);
+	}
+
+	private void validarChave(String chave) {
+		if (chave != null && chave.length() > 255) {
+			throw new ChaveIdempotenciaInvalidaException();
+		}
 	}
 }

@@ -9,6 +9,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import br.leobarros.compracerta.autenticacao.cadastro.Conta;
 import br.leobarros.compracerta.autenticacao.comum.Email;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -26,18 +29,35 @@ public class LoginService {
 	private final LoginContaRepository contaRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final Clock clock;
+	private final JdbcTemplate jdbc;
 	private final ConcurrentHashMap<String, HistoricoFalhas> historicos = new ConcurrentHashMap<>();
 
 	public LoginService(LoginContaRepository contaRepository, PasswordEncoder passwordEncoder, Clock clock) {
 		this.contaRepository = contaRepository;
 		this.passwordEncoder = passwordEncoder;
 		this.clock = clock;
+		this.jdbc = null;
+	}
+
+	@Autowired
+	public LoginService(
+			LoginContaRepository contaRepository,
+			PasswordEncoder passwordEncoder,
+			Clock clock,
+			ObjectProvider<JdbcTemplate> jdbcProvider) {
+		this.contaRepository = contaRepository;
+		this.passwordEncoder = passwordEncoder;
+		this.clock = clock;
+		this.jdbc = jdbcProvider.getIfAvailable();
 	}
 
 	public Conta autenticar(DadosLogin dadosLogin) {
 		validar(dadosLogin);
 		var email = Email.validarENormalizar(dadosLogin.email());
 		var agora = clock.instant();
+		if (jdbc != null) {
+			return autenticarPersistido(dadosLogin, email, agora);
+		}
 		var historico = historicos.computeIfAbsent(email, chave -> new HistoricoFalhas());
 		synchronized (historico) {
 			verificarBloqueio(historico, agora);
@@ -51,6 +71,42 @@ public class LoginService {
 			historicos.remove(email, historico);
 			return conta.orElseThrow();
 		}
+	}
+
+	private Conta autenticarPersistido(DadosLogin dadosLogin, String email, Instant agora) {
+		var inicioJanela = agora.minus(JANELA_FALHAS);
+		jdbc.update(
+				"DELETE FROM tentativas_login WHERE email = ? AND ocorrida_em <= ?",
+				email,
+				java.sql.Timestamp.from(inicioJanela));
+		var ultimaFalha = jdbc.query(
+				"SELECT ocorrida_em FROM tentativas_login WHERE email = ? ORDER BY ocorrida_em DESC LIMIT 1",
+				(resultado, linha) -> resultado.getTimestamp("ocorrida_em").toInstant(),
+				email).stream().findFirst();
+		var quantidade = jdbc.queryForObject(
+				"SELECT count(*) FROM tentativas_login WHERE email = ?",
+				Long.class,
+				email);
+		if (quantidade >= LIMITE_FALHAS && ultimaFalha.isPresent()) {
+			var bloqueadoAte = ultimaFalha.orElseThrow().plus(DURACAO_BLOQUEIO);
+			if (agora.isBefore(bloqueadoAte)) {
+				throw new LoginBloqueadoException(
+						Math.max(1, Duration.between(agora, bloqueadoAte).toSeconds()));
+			}
+			jdbc.update("DELETE FROM tentativas_login WHERE email = ?", email);
+		}
+		var conta = contaRepository.buscarPorEmail(email);
+		var hash = conta.map(Conta::getSenhaHash).orElse(HASH_FICTICIO);
+		var senhaCorreta = passwordEncoder.matches(dadosLogin.senha(), hash);
+		if (conta.isEmpty() || !senhaCorreta) {
+			jdbc.update(
+					"INSERT INTO tentativas_login (email, ocorrida_em) VALUES (?, ?)",
+					email,
+					java.sql.Timestamp.from(agora));
+			throw new CredenciaisInvalidasException();
+		}
+		jdbc.update("DELETE FROM tentativas_login WHERE email = ?", email);
+		return conta.orElseThrow();
 	}
 
 	private void validar(DadosLogin dadosLogin) {

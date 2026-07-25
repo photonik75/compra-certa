@@ -15,8 +15,11 @@ import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 
 @RestControllerAdvice(assignableTypes = RecuperacaoSenhaController.class)
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class RecuperacaoSenhaExceptionHandler {
 
 	private static final String DETALHE_VALIDACAO = "Verifique os campos informados e tente novamente.";

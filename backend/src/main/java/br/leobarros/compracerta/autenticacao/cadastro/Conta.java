@@ -17,7 +17,7 @@ public class Conta {
 		this.senhaHash = senhaHash;
 	}
 
-	Conta(UUID id, String nome, String email, String senhaHash, boolean ativa) {
+	public Conta(UUID id, String nome, String email, String senhaHash, boolean ativa) {
 		this.id = id;
 		this.nome = nome;
 		this.email = email;

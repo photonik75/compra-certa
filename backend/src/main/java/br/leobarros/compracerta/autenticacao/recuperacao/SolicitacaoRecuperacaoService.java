@@ -6,6 +6,7 @@ import java.time.Duration;
 import br.leobarros.compracerta.autenticacao.comum.Email;
 import br.leobarros.compracerta.autenticacao.sessao.GeradorIdentificadorService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class SolicitacaoRecuperacaoService {
@@ -32,6 +33,7 @@ public class SolicitacaoRecuperacaoService {
 		this.clock = clock;
 	}
 
+	@Transactional
 	public void solicitar(String emailInformado) {
 		var email = Email.validarENormalizar(emailInformado);
 		contaRepository.buscarPorEmail(email).ifPresent(conta -> {

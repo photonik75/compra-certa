@@ -13,8 +13,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 
 @RestControllerAdvice(assignableTypes = CadastroController.class)
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class CadastroExceptionHandler {
 
 	private static final String CODIGO_ERRO_VALIDACAO = "VALIDATION_ERROR";

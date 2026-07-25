@@ -6,8 +6,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 
 @RestControllerAdvice(assignableTypes = SessaoController.class)
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class SessaoExceptionHandler {
 
 	private static final String CODIGO_SESSAO_INVALIDA = "SESSION_INVALID";

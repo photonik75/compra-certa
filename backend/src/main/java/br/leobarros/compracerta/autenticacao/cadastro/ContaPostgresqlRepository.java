@@ -7,6 +7,7 @@ import java.util.Optional;
 import br.leobarros.compracerta.autenticacao.login.LoginContaRepository;
 import br.leobarros.compracerta.autenticacao.recuperacao.ContaRecuperacaoRepository;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -39,6 +40,10 @@ public class ContaPostgresqlRepository
 
 	@Override
 	public boolean existePorEmail(String email) {
+		jdbcTemplate.queryForObject(
+				"SELECT pg_advisory_xact_lock(hashtext(?))",
+				Object.class,
+				email);
 		return Boolean.TRUE.equals(jdbcTemplate.queryForObject(EXISTE_POR_EMAIL, Boolean.class, email));
 	}
 
@@ -53,13 +58,17 @@ public class ContaPostgresqlRepository
 
 	@Override
 	public void salvar(Conta conta) {
-		jdbcTemplate.update(
-				SALVAR,
-				conta.getId(),
-				conta.getNome(),
-				conta.getEmail(),
-				conta.getSenhaHash(),
-				conta.isAtiva());
+		try {
+			jdbcTemplate.update(
+					SALVAR,
+					conta.getId(),
+					conta.getNome(),
+					conta.getEmail(),
+					conta.getSenhaHash(),
+					conta.isAtiva());
+		} catch (DuplicateKeyException exception) {
+			throw new EmailJaCadastradoException();
+		}
 	}
 
 	@Override
