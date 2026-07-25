@@ -1,4 +1,4 @@
-package br.leobarros.compracerta.e2e;
+package br.leobarros.compracerta.e2e.autenticacao;
 
 import org.junit.jupiter.api.Test;
 

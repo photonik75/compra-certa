@@ -8,7 +8,7 @@ info:
     A autenticação utiliza o cookie seguro `cc_session`. Operações autenticadas que
     alteram estado também exigem o token CSRF retornado em `SessionResponse`.
 servers:
-  - url: http://localhost:4200
+  - url: http://localhost:8080
     description: Ambiente local
 tags:
   - name: Autenticação
