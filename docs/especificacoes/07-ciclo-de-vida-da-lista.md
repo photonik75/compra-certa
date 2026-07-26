@@ -1,182 +1,125 @@
 # EF-07 — Ciclo de vida da lista
 
-## Resultado esperado
+## Visão geral
 
-Controlar a passagem de uma lista entre ativa e concluída e permitir sua exclusão, preservando consulta histórica enquanto ela não for excluída.
+Permitir que o proprietário conclua, reabra e exclua uma lista, preservando sua consulta histórica enquanto
+ela não for excluída.
 
-## Máquina de estados
+## Imagens
 
-| Estado atual | Ação | Novo estado | Quem pode |
-|---|---|---|---|
-| `ACTIVE` | Concluir | `COMPLETED` | OWNER |
-| `COMPLETED` | Reabrir | `ACTIVE` | OWNER |
-| `ACTIVE` ou `COMPLETED` | Excluir | Excluída logicamente | OWNER |
+| <img src="images/ef-07-concluir-lista.png" width="300" alt="Diálogo Concluir lista"> | <img src="images/ef-07-lista-concluida.png" width="300" alt="Tela Lista concluída"> | <img src="images/ef-07-reabrir-lista.png" width="300" alt="Diálogo Reabrir lista"> |
+|---|---|---|
+| **Figura 1:** Diálogo “Concluir lista” | **Figura 2:** Tela “Lista concluída” | **Figura 3:** Diálogo “Reabrir lista” |
 
-Não existem outros estados na versão 1.
+| <img src="images/ef-07-excluir-lista.png" width="300" alt="Diálogo Excluir lista"> |
+|---|
+| **Figura 4:** Diálogo “Excluir lista” |
 
-## Permissões por estado
+## Requisitos
 
-| Operação | ACTIVE | COMPLETED |
-|---|---:|---:|
-| Consultar lista e itens | OWNER/EDITOR | OWNER/EDITOR |
-| Editar nome/descrição | OWNER | Não |
-| Adicionar, editar, remover ou marcar item | OWNER/EDITOR | Não |
-| Gerenciar convites/participantes | OWNER | Não |
-| Concluir/reabrir/excluir | Conforme tabela acima | Conforme tabela acima |
+- **Diálogo “Concluir lista” (Figura 1)**
+  - É acessível somente ao proprietário de uma lista ativa.
+  - Informa que a lista ficará somente para consulta e poderá ser reaberta.
+  - Exibe a quantidade de itens pendentes.
+  - Permite concluir listas vazias, parcialmente compradas ou totalmente compradas.
+  - **Botão “Concluir”**
+    - Altera o estado para concluída e registra a data atual.
+    - Preserva todos os itens, marcações, participantes e convites pendentes.
+    - Faz os clientes conectados entrarem em modo somente leitura.
+    - Em sucesso, abre a tela “Lista concluída” e exibe “Lista concluída com sucesso.”.
+    - Em conflito, não altera o estado e exibe
+      “Esta lista foi atualizada em outro lugar. Recarregue os dados para continuar.”.
+    - Em falha, exibe “Não foi possível concluir a lista. Tente novamente em alguns instantes.”.
+  - **Botão “Cancelar”**
+    - Fecha o diálogo sem alterar a lista.
 
-## Fluxos
+- **Tela “Lista concluída” (Figura 2)**
+  - Exibe nome, descrição, data da conclusão, participantes, itens, marcações e resumo final.
+  - Exibe a indicação “Concluída”.
+  - Permite consulta ao proprietário e aos participantes.
+  - Oculta ou desabilita edição de metadados, administração e marcação de itens, convites, remoção de
+    participantes, saída e aceite de convite.
+  - Tentativas diretas de mutação não alteram dados e exibem
+    “Esta lista está concluída e disponível somente para consulta.”.
+  - Convites pendentes continuam registrados, mas não podem ser aceitos até a reabertura.
+  - **Ação “Reabrir lista”**
+    - É exibida somente ao proprietário e abre o diálogo “Reabrir lista”.
+  - **Ação “Excluir lista”**
+    - É exibida somente ao proprietário e abre o diálogo “Excluir lista”.
 
-### 1. Concluir
+- **Diálogo “Reabrir lista” (Figura 3)**
+  - É acessível somente ao proprietário de uma lista concluída.
+  - Informa que a lista voltará a aceitar alterações.
+  - **Botão “Reabrir”**
+    - Altera o estado para ativa e remove a data de conclusão.
+    - Preserva itens, quantidades, observações, marcações, participantes e convites.
+    - Volta a permitir as operações de lista ativa e o aceite de convites válidos.
+    - Em sucesso, abre a lista ativa e exibe “Lista reaberta com sucesso.”.
+    - Em conflito, não altera o estado e exibe
+      “Esta lista foi atualizada em outro lugar. Recarregue os dados para continuar.”.
+    - Em falha, exibe “Não foi possível reabrir a lista. Tente novamente em alguns instantes.”.
+  - **Botão “Cancelar”**
+    - Fecha o diálogo sem alterar a lista.
 
-1. Disponível ao `OWNER` de lista ativa.
-2. Solicitar confirmação informando que a lista ficará somente para consulta e poderá ser reaberta.
-3. Não é obrigatório que todos os itens estejam marcados; a confirmação mostra quantos permanecem pendentes.
-4. Em sucesso, definir `status=COMPLETED`, `completedAt=agora`, incrementar versão e atualizar `updatedAt`.
-5. A operação é atômica e faz clientes conectados entrarem imediatamente em modo de consulta.
-6. Convites pendentes permanecem pendentes, mas não podem ser aceitos enquanto a lista estiver concluída; o link explica o estado.
+- **Diálogo “Excluir lista” (Figura 4)**
+  - É acessível somente ao proprietário de uma lista ativa ou concluída.
+  - Exibe “Excluir a lista ‘{nome}’?”.
+  - Informa que todos perderão o acesso e que a lista não poderá ser restaurada.
+  - **Botão “Excluir”**
+    - Exclui logicamente a lista e revoga participantes e convites na mesma operação.
+    - Remove a lista de todos os painéis e invalida seus endereços antigos.
+    - Redireciona clientes conectados ao painel.
+    - Preserva internamente os dados necessários à integridade histórica, sem permitir acesso normal.
+    - Repetir a mesma exclusão autenticada pela mesma operação produz sucesso sem nova alteração.
+    - Em sucesso, abre “Minhas listas” e exibe “Lista excluída com sucesso.”.
+    - Em conflito, preserva a lista e exibe
+      “Esta lista foi atualizada em outro lugar. Recarregue os dados para continuar.”.
+    - Em falha, exibe “Não foi possível excluir a lista. Tente novamente em alguns instantes.”.
+  - **Botão “Cancelar”**
+    - Fecha o diálogo sem excluir a lista.
 
-### 2. Consultar concluída
+## Contrato de API
 
-1. Mostrar nome, descrição, data de conclusão, participantes, itens, marcações e resumo final.
-2. Ocultar ações de mutação e mostrar indicação “Concluída”.
-3. Tentativas diretas de mutação retornam `LIST_COMPLETED`.
-
-### 3. Reabrir
-
-1. Disponível ao `OWNER`.
-2. Solicitar confirmação.
-3. Definir `status=ACTIVE`, limpar `completedAt`, incrementar versão e atualizar `updatedAt`.
-4. Preservar todos os itens e seus estados.
-5. Após sucesso, operações de lista ativa voltam a ser permitidas, inclusive aceite de convites pendentes válidos.
-
-### 4. Excluir
-
-1. Disponível ao `OWNER` em qualquer estado.
-2. Confirmação deve informar que todos os participantes perderão acesso e que não há restauração na versão 1.
-3. Definir `deletedAt` na lista e invalidar acesso de participantes e convites, atomicamente.
-4. Itens e vínculos podem permanecer para integridade interna, mas ficam inacessíveis por fluxos normais.
-5. Remover a lista das consultas de todos os participantes e redirecionar ao painel.
-6. Repetir a exclusão produz resultado idempotente para o proprietário que realizou a ação; demais clientes passam a receber `NOT_FOUND`.
-
-### 5. Concorrência de transição
-
-Cada transição exige a versão atual da lista. Se o estado mudou desde a leitura, retornar `CONFLICT` com o novo estado e não aplicar a ação solicitada.
-
-## Critérios de aceite
-
-1. Proprietário pode concluir lista com zero, alguns ou todos os itens marcados.
-2. Após conclusão, nenhuma mutação de metadados, itens, marcações ou participantes é aceita.
-3. Participante nunca conclui, reabre ou exclui uma lista.
-4. Reabrir preserva itens, quantidades, observações e marcações.
-5. Excluir remove a lista de todos os painéis e invalida convites e acessos imediatamente.
-6. Lista concluída continua acessível em consulta e aparece no filtro correspondente.
-7. Transições concorrentes não produzem estado intermediário nem sobrescrita silenciosa.
-8. Ações destrutivas exigem confirmação explícita e não são disparadas por mero fechamento de diálogo.
-
-## Contrato de API (futura OpenAPI)
+Os endpoints exigem sessão, CSRF, papel de proprietário, versão atual e chave idempotente. Datas são
+determinadas pelo servidor.
 
 ### Endpoints
 
-| Método e rota | Request | Sucesso |
-|---|---|---|
-| `PUT /api/v1/lists/{listId}/status` | `ChangeListStatusRequest` + `If-Match` + `Idempotency-Key` | `200 ListDetail` + novo `ETag` |
-| `DELETE /api/v1/lists/{listId}` | `If-Match` + `Idempotency-Key` | `204` |
+| Método e rota | Propósito | Entrada | Sucesso |
+|---|---|---|---|
+| `PUT /api/v1/lists/{listId}/status` | Concluir ou reabrir lista | `ChangeListStatusRequest`, `If-Match` e `Idempotency-Key` | `200 ListDetail` e novo `ETag` |
+| `DELETE /api/v1/lists/{listId}` | Excluir lista e revogar acessos | `If-Match` e `Idempotency-Key` | `204` |
 
-Ambos exigem sessão, CSRF e papel `OWNER`. O backend deriva datas e não aceita `completedAt`, `deletedAt` ou versão no corpo.
+### Schemas
 
-### Alterar estado
+| Schemas | Campos e Regras |
+|---|---|
+| `ChangeListStatusRequest` | `status: ACTIVE \| COMPLETED`, único campo aceito |
+| `ListSummary` | `total`, `checked`, `pending` e `percentage` |
+| `ListDetail` | Dados da lista, proprietário, papel, resumo, datas, estado e versão |
 
-#### `ChangeListStatusRequest`
+`COMPLETED` somente é aceito para lista ativa; `ACTIVE`, para lista concluída. O servidor calcula os
+pendentes, define `completedAt` ao concluir e o remove ao reabrir. Repetir a chave idempotente devolve o
+resultado original sem nova versão ou evento.
 
-```json
-{ "status": "COMPLETED" }
-```
+Estado desejado já atual retorna `409 INVALID_LIST_TRANSITION`; versão antiga, `409 CONFLICT`; participante,
+`403 FORBIDDEN`; lista inexistente, excluída ou inacessível, `404 NOT_FOUND`.
 
-`status` aceita `COMPLETED` para concluir lista `ACTIVE` e `ACTIVE` para reabrir lista `COMPLETED`. Não há `PATCH` genérico de status. O response referencia `ListDetail` da EF-02 e contém resumo inalterado dos itens.
+Excluir marca a lista, revoga acessos e convites e publica os eventos de exclusão e acesso na mesma operação.
+A repetição com a mesma chave retorna `204`; outra solicitação posterior retorna `404 NOT_FOUND`. Conflitos
+não publicam eventos.
 
-Regras contratuais:
+## Testes de validação
 
-- concluir não recebe nem valida contagem informada pelo cliente; o servidor calcula pendentes;
-- `completedAt` é definido pelo servidor ao concluir e volta a `null` ao reabrir;
-- mesma `Idempotency-Key` repete o resultado original sem nova versão/evento;
-- nova solicitação cujo estado desejado já é o atual retorna `409 INVALID_LIST_TRANSITION`;
-- versão antiga retorna `409 CONFLICT`; `EDITOR` retorna `403 FORBIDDEN`;
-- sucesso publica `list.status.changed` no stream da EF-06.
-
-### Excluir
-
-- A operação marca a lista excluída e revoga membros/convites na mesma transação.
-- Sucesso retorna `204` sem corpo e publica `list.deleted`/`list.access.changed` quando houver streams conectados.
-- Repetição com a mesma `Idempotency-Key` retorna `204`; outra solicitação após a exclusão retorna `404 NOT_FOUND`.
-- Lista inexistente, excluída ou inacessível retorna `404 NOT_FOUND`.
-- O frontend remove a lista localmente após `204`; não existe endpoint de restauração.
-
-### Headers de resposta
-
-`PUT /status` retorna `ETag` da nova versão e `Cache-Control: no-store`. `DELETE` não retorna `ETag`. Operações não concluídas por conflito não publicam evento.
-
-## Definições de testes funcionais (Playwright)
-
-### LIFE-001 — Concluir lista com itens pendentes (`P0`)
-
-- **Preparação:** lista ativa própria com itens comprados e pendentes.
-- **Ação:** abrir confirmação e concluir.
-- **Resultado:** diálogo informa a quantidade pendente; lista passa a `COMPLETED`, registra data, aparece no filtro Concluídas e entra em modo somente leitura.
-
-### LIFE-002 — Concluir lista vazia ou totalmente comprada (`P1`)
-
-- **Preparação:** uma lista vazia e outra com todos os itens marcados.
-- **Ação:** concluir cada uma.
-- **Resultado:** ambas são concluídas com sucesso e mantêm resumos corretos.
-
-### LIFE-003 — Cancelar transições não muda estado (`P1`)
-
-- **Preparação:** diálogos de concluir, reabrir e excluir disponíveis.
-- **Ação:** cancelar ou pressionar `Esc` em cada diálogo.
-- **Resultado:** estado e dados permanecem intactos e o foco retorna ao acionador.
-
-### LIFE-004 — Lista concluída bloqueia todas as mutações (`P0`)
-
-- **Preparação:** lista concluída com `owner`, `editor`, itens e convite pendente.
-- **Ação:** tentar editar metadados, administrar/marcar itens, convidar, remover participante e aceitar convite, pela UI e por chamadas diretas.
-- **Resultado:** consulta continua disponível, mutações retornam `LIST_COMPLETED`, convite permanece pendente e nada muda.
-
-### LIFE-005 — Reabrir preserva conteúdo (`P0`)
-
-- **Preparação:** lista concluída com dados e marcações conhecidas.
-- **Ação:** confirmar reabertura.
-- **Resultado:** status volta a `ACTIVE`, `completedAt` é limpo, conteúdo permanece idêntico e mutações voltam a funcionar.
-
-### LIFE-006 — Participante não controla ciclo de vida (`P0`)
-
-- **Preparação:** `editor` de lista ativa e concluída.
-- **Ação:** procurar e invocar concluir, reabrir e excluir, inclusive diretamente.
-- **Resultado:** ações não aparecem e chamadas são recusadas com `FORBIDDEN`, sem revelar controles exclusivos.
-
-### LIFE-007 — Excluir revoga todos os acessos (`P0`)
-
-- **Preparação:** lista com `owner`, `editor`, convite pendente e dois contextos abertos.
-- **Ação:** `owner` confirma exclusão.
-- **Resultado:** ambos saem para o painel, lista desaparece das consultas, convite deixa de funcionar e URLs antigas retornam `NOT_FOUND`.
-
-### LIFE-008 — Exclusão é idempotente (`P1`)
-
-- **Preparação:** capturar duas requisições equivalentes do proprietário para a mesma exclusão.
-- **Ação:** enviá-las em sequência controlada.
-- **Resultado:** existe uma única exclusão lógica, sem erro interno ou restauração; outros usuários recebem `NOT_FOUND`.
-
-### LIFE-009 — Transições concorrentes não se sobrescrevem (`P0`)
-
-- **Preparação:** mesma lista e versão abertas em dois contextos do proprietário.
-- **Ação:** concluir no primeiro e tentar excluir/editar com a versão antiga no segundo.
-- **Resultado:** a segunda transição recebe `CONFLICT`, adota o estado atual e não produz estado intermediário.
-
-### LIFE-010 — Consulta histórica exibe resumo final (`P1`)
-
-- **Preparação:** lista concluída com descrição, participantes e marcações conhecidas.
-- **Ação:** abrir pelo painel e recarregar.
-- **Resultado:** mostrar data de conclusão, participantes, itens e resumo final, sem qualquer controle mutável.
-
-## Fora do escopo específico
-
-Arquivamento separado, lixeira, restauração, conclusão automática e retenção configurável.
+| ID | Pri. | Preparação | Ação | Resultado |
+|---|---:|---|---|---|
+| `LIFE-001` | P0 | Lista ativa com itens pendentes | Confirmar conclusão | Quantidade informada, estado concluído, data registrada e modo somente leitura |
+| `LIFE-002` | P1 | Lista vazia e lista totalmente comprada | Concluir ambas | Sucesso e resumos preservados |
+| `LIFE-003` | P1 | Diálogos de transição abertos | Cancelar e pressionar `Esc` | Estado intacto e foco devolvido ao acionador |
+| `LIFE-004` | P0 | Lista concluída com participantes e convite | Tentar todas as mutações | Consulta disponível, mutações recusadas e convite preservado |
+| `LIFE-005` | P0 | Lista concluída conhecida | Reabrir | Lista ativa, data removida e conteúdo integralmente preservado |
+| `LIFE-006` | P0 | Participante de listas ativa e concluída | Invocar ações de ciclo de vida | Ações ausentes e chamadas recusadas |
+| `LIFE-007` | P0 | Lista com participante, convite e contextos abertos | Excluir | Todos perdem acesso, painéis são atualizados e endereços retornam `NOT_FOUND` |
+| `LIFE-008` | P1 | Duas requisições equivalentes de exclusão | Enviar em sequência | Uma exclusão lógica e repetição idempotente |
+| `LIFE-009` | P0 | Mesma versão em dois contextos | Fazer transições concorrentes | Segunda operação em conflito e nenhum estado intermediário |
+| `LIFE-010` | P1 | Lista concluída com histórico conhecido | Consultar e recarregar | Data, pessoas, itens e resumo final sem controles mutáveis |

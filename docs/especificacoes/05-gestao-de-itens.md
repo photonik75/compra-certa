@@ -1,269 +1,178 @@
 # EF-05 — Gestão de itens da lista
 
-## Resultado esperado
+## Visão geral
 
-Permitir que pessoas com acesso a uma lista ativa adicionem, editem e removam os produtos que precisam comprar.
+Acrescentar à tela de detalhe da lista a administração de itens, permitindo que proprietários e participantes
+adicionem, editem e removam itens de uma lista ativa, com preservação dos dados históricos dos produtos.
 
-## Dados funcionais
+## Imagens
 
-### Item da lista
+| <img src="images/ef-05-lista.png" width="300" alt="Tela Detalhe da lista com ações de gestão de itens"> | <img src="images/ef-05-adicionar-item.png" width="300" alt="Tela Adicionar item"> | <img src="images/ef-05-duplicidade.png" width="300" alt="Diálogo Produto já está na lista"> |
+|---|---|---|
+| **Figura 1:** Tela “Detalhe da lista” — gestão de itens | **Figura 2:** Tela “Adicionar item” | **Figura 3:** Diálogo “Produto já está na lista” |
 
-| Campo | Regra |
+| <img src="images/ef-05-editar-item.png" width="300" alt="Tela Editar item"> | <img src="images/ef-05-remover-item.png" width="300" alt="Diálogo Remover item"> |
 |---|---|
-| `id` | Identificador imutável |
-| `listId` | Lista à qual pertence |
-| `productId` | Produto de origem; pode apontar para produto posteriormente desativado |
-| `productName` | Snapshot obrigatório do nome, até 60 caracteres |
-| `categoryId` | Categoria escolhida na inclusão |
-| `categoryName` | Snapshot obrigatório do nome da categoria |
-| `categoryIcon` | Snapshot obrigatório do ícone |
-| `quantity` | Decimal obrigatório maior que 0 e menor ou igual a 999999,99 |
-| `unit` | Unidade permitida pela EF-04 |
-| `notes` | Opcional, até 240 caracteres |
-| `checked` | `false` ao criar |
-| `checkedAt`, `checkedBy` | Nulos ao criar; controlados pela EF-06 |
-| `version` | Incrementada a cada alteração |
-| `createdBy`, `updatedBy` | Usuários responsáveis |
-| `createdAt`, `updatedAt`, `deletedAt` | Conforme convenções globais |
+| **Figura 4:** Tela “Editar item” | **Figura 5:** Diálogo “Remover item” |
 
-Quantidade é persistida como decimal exato, nunca ponto flutuante binário. A apresentação usa vírgula decimal no locale `pt-BR` e omite zeros desnecessários.
+## Requisitos
 
-## Permissões e pré-condições
+- **Tela “Detalhe da lista” (Figura 1)**
+  - Neste incremento, abrange somente a apresentação, inclusão, edição e remoção de itens.
+  - Permite administrar itens somente quando a lista está ativa e o usuário é proprietário ou participante.
+  - Lista concluída permanece disponível somente para consulta.
+  - Agrupa itens pelo nome normalizado da categoria registrado no item.
+  - Ordena grupos por categoria e itens por produto conforme o idioma `pt-BR`.
+  - Categorias homônimas de catálogos diferentes formam um único grupo.
+  - **Grupo de categoria**
+    - Exibe o ícone, o nome da categoria e a quantidade de itens.
+    - **Item**
+      - Exibe nome, quantidade, unidade e observação, quando houver.
+      - Usa o nome, a categoria e o ícone registrados na inclusão ou na última edição.
+      - Mudanças posteriores no catálogo não alteram o item.
+      - **Ação “Editar”**
+        - Abre a tela “Editar item”.
+      - **Ação “Remover”**
+        - Abre o diálogo “Remover item”.
+  - **Ação “Adicionar item”**
+    - Abre a tela “Adicionar item”.
 
-- `OWNER` e `EDITOR` podem adicionar, editar e remover itens de lista `ACTIVE`.
-- Lista `COMPLETED` é somente leitura.
-- O produto selecionado deve estar ativo no catálogo pessoal de quem está adicionando. Após a inclusão, qualquer participante edita o item sem precisar possuir o produto em seu catálogo.
-- A categoria escolhida deve pertencer ao catálogo de quem adiciona e estar ativa.
+- **Tela “Adicionar item” (Figura 2)**
+  - Cria um item desmarcado na lista ativa.
+  - **Campo “Produto”**
+    - Obrigatório e exige a seleção de um produto válido.
+    - A partir do primeiro caractere, sugere até dez produtos ativos do catálogo do usuário.
+    - A pesquisa ignora caixa e acentos e ordena por correspondência exata, início do nome, ocorrência e nome.
+    - Não exibe produtos inativos ou pertencentes a outro usuário.
+    - Ao selecionar, preenche categoria e unidade com os padrões do produto.
+    - Quando há somente texto digitado, exibe “Selecione um produto válido na lista de sugestões.”.
+    - **Ação “Cadastrar novo produto”**
+      - Abre o cadastro de produto.
+      - Ao retornar de um cadastro bem-sucedido, preserva os demais campos e seleciona o novo produto.
+  - **Campo “Quantidade”**
+    - Obrigatório.
+    - Aceita decimal maior que zero e menor ou igual a `999999,99`.
+    - Exibe vírgula decimal e omite zeros desnecessários.
+    - Quando vazio ou inválido, exibe “Informe uma quantidade maior que zero.”.
+    - Quando excede o limite, exibe “A quantidade deve ser menor ou igual a 999999,99.”.
+  - **Campo “Unidade”**
+    - Obrigatório.
+    - Oferece `unidade`, `pacote`, `caixa`, `garrafa`, `frasco`, `lata`, `saco`, `bandeja`, `dúzia`,
+      `quilograma`, `grama`, `litro` e `mililitro`.
+    - Permite alterar o valor preenchido pelo produto.
+    - Quando inválido, exibe “Escolha uma unidade disponível.”.
+  - **Campo “Categoria”**
+    - Obrigatório.
+    - Exibe somente categorias não excluídas do usuário.
+    - Permite alterar o valor preenchido pelo produto.
+    - Quando indisponível, exibe “A categoria selecionada não está mais disponível. Escolha outra.”.
+  - **Campo “Observação”**
+    - Opcional e aceita até 240 caracteres.
+    - Quando excede o limite, exibe “A observação deve ter no máximo 240 caracteres.”.
+  - **Botão “Adicionar item”**
+    - Valida todos os campos antes de salvar.
+    - Enquanto processa, não permite novo envio.
+    - Registra nome, categoria e ícone como dados históricos do item.
+    - Em sucesso, volta ao detalhe e destaca temporariamente o novo item.
+    - Quando encontra produto homônimo na lista, abre o diálogo “Produto já está na lista”.
+    - Em falha inesperada, preserva o formulário e exibe
+      “Não foi possível adicionar o item. Tente novamente em alguns instantes.”.
+  - **Ação “Cancelar”**
+    - Volta ao detalhe sem criar item.
 
-## Fluxos
+- **Diálogo “Produto já está na lista” (Figura 3)**
+  - É exibido quando outro item não excluído possui o mesmo nome normalizado do produto selecionado.
+  - Identifica o produto, a quantidade e a unidade do item existente.
+  - **Botão “Cancelar”**
+    - Fecha o diálogo, mantém o formulário e não altera itens.
+  - **Botão “Editar existente”**
+    - Não cria item e abre o item existente na tela “Editar item”.
+  - **Botão “Somar quantidade”**
+    - É habilitado somente quando as unidades são iguais.
+    - Soma as quantidades atomicamente sem criar outro item.
+    - Preserva unidade, categoria e observação do item existente.
+    - Quando a soma excede o limite, exibe “A quantidade total deve ser menor ou igual a 999999,99.”.
+    - Para unidades diferentes, fica desabilitado e exibe
+      “As unidades são diferentes. Edite o item existente para continuar.”.
 
-### 1. Localizar produto
+- **Tela “Editar item” (Figura 4)**
+  - Exibe os valores atuais do item.
+  - Aplica aos campos as mesmas regras e mensagens da tela “Adicionar item”.
+  - Permite alterar produto, quantidade, unidade, categoria e observação.
+  - Preserva o estado comprado, o autor e o horário da marcação.
+  - **Botão “Salvar”**
+    - Salva somente quando há alteração.
+    - Quando a troca de produto causa duplicidade, abre o diálogo “Produto já está na lista”.
+    - Ao somar com outro item, atualiza o destino e remove logicamente o item editado na mesma operação.
+    - Quando outra alteração foi salva antes, não sobrescreve os dados e exibe
+      “Este item foi alterado por outra pessoa. Recarregue os dados para continuar.”.
+    - Em sucesso, volta ao detalhe e exibe “Item atualizado com sucesso.”.
+    - Em falha inesperada, preserva o formulário e exibe
+      “Não foi possível atualizar o item. Tente novamente em alguns instantes.”.
+  - **Ação “Cancelar”**
+    - Volta ao detalhe sem persistir alterações.
 
-1. Ao digitar pelo menos 1 caractere, buscar produtos ativos do usuário pelo nome, ignorando caixa e acentos.
-2. Ordenar correspondência exata, prefixo e depois ocorrência; dentro do grupo, por nome.
-3. Retornar no máximo 10 sugestões por consulta.
-4. Ao selecionar, preencher unidade e categoria com os padrões do produto; ambos podem ser alterados para o item.
-5. Texto sem seleção de um produto válido não pode ser salvo. A ação “Cadastrar novo produto” abre a EF-04 e, ao retornar com sucesso, mantém os demais dados e seleciona o novo produto.
+- **Diálogo “Remover item” (Figura 5)**
+  - Exibe “Remover ‘{produto}’ da lista?”.
+  - Informa que a remoção não poderá ser desfeita.
+  - **Botão “Remover”**
+    - Exclui logicamente o item, atualiza o resumo e fecha o diálogo.
+    - Repetir a mesma remoção produz sucesso sem nova alteração.
+    - Em falha, preserva o item e exibe
+      “Não foi possível remover o item. Tente novamente em alguns instantes.”.
+  - **Botão “Cancelar”**
+    - Fecha o diálogo sem remover o item.
 
-### 2. Adicionar item sem duplicidade
+## Contrato de API
 
-1. Receber produto, quantidade, unidade, categoria e observação.
-2. Copiar nome e dados da categoria para o snapshot.
-3. Criar item desmarcado e atualizar a lista.
-4. Em sucesso, voltar ao detalhe e destacar brevemente o novo item.
-
-### 3. Resolver produto duplicado
-
-Há duplicidade quando existe item não excluído na mesma lista cujo `productName` normalizado seja igual ao nome do produto selecionado, independentemente de quem cadastrou o produto, da categoria ou da unidade atual. Isso evita duplicatas quando participantes possuem catálogos pessoais diferentes.
-
-Antes de criar, apresentar três opções:
-
-- **Cancelar:** não altera dados e mantém o formulário.
-- **Editar existente:** não cria item e abre o item existente para edição.
-- **Somar quantidade:** soma a quantidade informada à existente, preserva unidade, categoria e observação do item existente e não cria outro registro.
-
-“Somar quantidade” só é permitido se as unidades forem iguais. Se diferirem, desabilitar essa opção e orientar “Editar existente”. A soma deve respeitar o limite máximo.
-
-### 4. Editar item
-
-1. Abrir formulário com valores atuais.
-2. Permitir alterar produto, quantidade, unidade, categoria e observação.
-3. Se a troca de produto causar duplicidade, aplicar o mesmo fluxo anterior; “Somar” incorpora a quantidade ao outro item e exclui logicamente o item editado, atomicamente.
-4. Alterar um item marcado preserva `checked`, `checkedAt` e `checkedBy`.
-5. Salvar com versão antiga retorna `CONFLICT`.
-
-### 5. Remover item
-
-1. Solicitar confirmação identificando o produto.
-2. Excluir logicamente e recalcular totais.
-3. A remoção é definitiva para o usuário na versão 1.
-4. Repetir a mesma remoção é idempotente.
-
-## Ordenação e agrupamento
-
-No detalhe, agrupar pelo `categoryName` normalizado e exibir o nome e o ícone do primeiro item do grupo na ordenação. Ordenar grupos por nome e itens por `productName`, ambos em `pt-BR`. Categorias de catálogos diferentes com o mesmo nome normalizado formam um único grupo. Categorias posteriormente renomeadas não alteram o item até que ele seja editado e salvo com outra categoria.
-
-## Critérios de aceite
-
-1. Selecionar produto preenche categoria e unidade padrão, que podem ser alteradas antes de salvar.
-2. Quantidade zero, negativa, não numérica ou acima do limite é recusada.
-3. Item guarda snapshots; mudanças ou desativação do produto não modificam a lista existente.
-4. Texto digitado sem produto selecionado não cria item.
-5. Produto repetido nunca cria silenciosamente uma segunda linha.
-6. Somar quantidades iguais atualiza um único item de forma atômica; unidades diferentes exigem edição.
-7. Remover item atualiza imediatamente total, pendentes e percentual.
-8. `EDITOR` pode administrar itens; usuário sem acesso e lista concluída não podem ser alterados.
-9. Conflito de versão não sobrescreve edição concorrente.
-10. Criar, editar ou remover persiste após recarregar e identifica autor e horário.
-
-## Contrato de API (futura OpenAPI)
+Todos os endpoints exigem sessão e acesso como proprietário ou participante. Mutações exigem CSRF e lista
+ativa.
 
 ### Endpoints
 
-| Método e rota | Request | Sucesso |
-|---|---|---|
-| `GET /api/v1/lists/{listId}/items` | Query `cursor`, `limit` | `200 ListItemCollection` |
-| `POST /api/v1/lists/{listId}/items` | `CreateItemRequest` + `Idempotency-Key` | `201` criado ou `200` mesclado, ambos `ItemMutationResult` |
-| `GET /api/v1/lists/{listId}/items/{itemId}` | Path UUIDs | `200 ListItem` + `ETag` |
-| `PATCH /api/v1/lists/{listId}/items/{itemId}` | `UpdateItemRequest` + `If-Match` + `Idempotency-Key` | `200 ItemMutationResult` + `ETag` |
-| `DELETE /api/v1/lists/{listId}/items/{itemId}` | `If-Match` + `Idempotency-Key` | `200 ItemDeletionResult` |
+| Método e rota | Propósito | Entrada | Sucesso |
+|---|---|---|---|
+| `GET /api/v1/lists/{listId}/items` | Listar itens | Query `cursor`, `limit` | `200 ListItemCollection` |
+| `POST /api/v1/lists/{listId}/items` | Criar ou somar item | `CreateItemRequest` e `Idempotency-Key` | `201` criado ou `200` somado, com `ItemMutationResult` |
+| `GET /api/v1/lists/{listId}/items/{itemId}` | Consultar item | Path `listId`, `itemId` | `200 ListItem` e `ETag` |
+| `PATCH /api/v1/lists/{listId}/items/{itemId}` | Editar ou mesclar item | `UpdateItemRequest`, `If-Match` e `Idempotency-Key` | `200 ItemMutationResult` e `ETag` |
+| `DELETE /api/v1/lists/{listId}/items/{itemId}` | Remover item | `If-Match` e `Idempotency-Key` | `200 ItemDeletionResult` |
 
-Todos exigem sessão e acesso `OWNER` ou `EDITOR`; mutações exigem CSRF e lista `ACTIVE`.
+### Schemas
 
-### Escrita de item
+| Schemas | Campos e Regras |
+|---|---|
+| `CreateItemRequest` | `productId: uuid`, `quantity: decimal string`, `unit: ProductUnit` e `categoryId: uuid` obrigatórios; `notes` opcional; resolução de duplicidade opcional |
+| `UpdateItemRequest` | Mesmos campos funcionais, opcionais; ao menos uma mudança; pode informar resolução e versão do item de destino |
+| `ProductSnapshot` | `id: uuid` e `name: string` registrados no item |
+| `CategorySnapshot` | `id: uuid`, `name: string` e `icon: string` registrados no item |
+| `ListItem` | Identificadores, snapshots, quantidade, unidade, observação, marcação, autoria, datas e versão |
+| `ListItemCollection` | `items: ListItem[]`, `page: PageInfo`, `listSummary: ListSummary` e `listVersion: integer` |
+| `ItemMutationResult` | `outcome: CREATED \| UPDATED \| MERGED`, `item`, `removedItemId`, `listSummary` e `listVersion` |
+| `ItemDeletionResult` | `deletedItemId`, `listSummary` e `listVersion` |
+| `ListSummary` | `total`, `checked`, `pending` e `percentage`, inteiros obrigatórios e não negativos |
 
-#### `CreateItemRequest`
+O servidor deriva os snapshots, a marcação, a autoria e as datas. O cliente não pode enviá-los. Toda mutação
+incrementa a versão da lista uma vez, inclusive a mesclagem atômica.
 
-```json
-{
-  "productId": "67ec605f-711d-420a-8f75-73999b4e609f",
-  "quantity": "1.50",
-  "unit": "KILOGRAM",
-  "categoryId": "226506e1-871c-428f-a8fb-6fae32a7dd42",
-  "notes": "Escolher bem fresca",
-  "duplicateResolution": null,
-  "duplicateItemVersion": null
-}
-```
+Sem resolução, duplicidade retorna `409 DUPLICATE_ITEM`, com item existente, quantidade, unidade, versão e
+`canMerge`. Unidades diferentes retornam `409 INCOMPATIBLE_UNITS`; soma acima do limite retorna
+`400 QUANTITY_LIMIT_EXCEEDED`. Lista concluída retorna `409 LIST_COMPLETED`; versão antiga,
+`409 CONFLICT`; recurso inacessível, `404 NOT_FOUND`.
 
-`productId`, `quantity`, `unit` e `categoryId` são obrigatórios. `notes` pode ser omitido/null. `duplicateResolution` é omitido na primeira tentativa ou vale `MERGE`. Para `MERGE`, `duplicateItemVersion` é obrigatório.
+## Testes de validação
 
-`UpdateItemRequest` aceita os mesmos campos funcionais, todos opcionais, exige ao menos uma mudança e pode incluir `duplicateResolution`/`duplicateItemVersion`. O `If-Match` refere-se ao item editado; `duplicateItemVersion` refere-se ao item de destino da mesclagem.
-
-O backend obtém nome/ícone/categoria pelos IDs e cria os snapshots. O frontend nunca envia `productName`, `categoryName`, `categoryIcon`, `checked`, autoria ou datas por esses endpoints.
-
-### Leitura de item
-
-#### `ListItem`
-
-```json
-{
-  "id": "49935830-0dc6-4925-a399-661b14476187",
-  "listId": "814466fa-1331-448c-a8dd-40a87771d330",
-  "product": { "id": "67ec605f-711d-420a-8f75-73999b4e609f", "name": "Banana prata" },
-  "category": { "id": "226506e1-871c-428f-a8fb-6fae32a7dd42", "name": "Hortifruti", "icon": "🥬" },
-  "quantity": "1.50",
-  "unit": "KILOGRAM",
-  "notes": "Escolher bem fresca",
-  "checked": false,
-  "checkedAt": null,
-  "checkedBy": null,
-  "createdBy": { "id": "...", "name": "Larissa Barros" },
-  "updatedBy": { "id": "...", "name": "Larissa Barros" },
-  "createdAt": "2026-07-18T14:30:00Z",
-  "updatedAt": "2026-07-18T14:30:00Z",
-  "version": 1
-}
-```
-
-`product.name` e todos os campos de `category` são snapshots do item. `product.id` pode referenciar produto depois desativado. `ListItemCollection` usa envelope comum, ordenado por categoria e produto conforme esta EF, e acrescenta `listSummary` e `listVersion` ao nível raiz.
-
-### Resultados de mutação e duplicidade
-
-`ItemMutationResult`:
-
-```json
-{
-  "outcome": "CREATED",
-  "item": { "id": "...", "version": 1 },
-  "removedItemId": null,
-  "listSummary": { "total": 8, "checked": 3, "pending": 5, "percentage": 38 },
-  "listVersion": 11
-}
-```
-
-`outcome` vale `CREATED`, `UPDATED` ou `MERGED`. Em mesclagem durante edição, `removedItemId` contém o item logicamente removido; em outros casos é `null`. O schema real de `item` é `ListItem` completo.
-
-Sem resolução, duplicidade retorna `409 DUPLICATE_ITEM`:
-
-```json
-{
-  "code": "DUPLICATE_ITEM",
-  "meta": {
-    "existingItem": { "id": "...", "productName": "Arroz", "quantity": "2", "unit": "PACKAGE", "version": 3 },
-    "canMerge": true
-  }
-}
-```
-
-Unidades diferentes produzem `canMerge=false`; tentar `MERGE` retorna `409 INCOMPATIBLE_UNITS`. Soma acima do limite retorna `400 QUANTITY_LIMIT_EXCEEDED`.
-
-`ItemDeletionResult` contém `{ deletedItemId, listSummary, listVersion }`. Toda mutação de item incrementa a versão da lista uma vez; mesclagem atômica também incrementa somente uma vez. Repetição com a mesma `Idempotency-Key` devolve o resultado original. Recurso inacessível retorna `404 NOT_FOUND`; lista concluída retorna `409 LIST_COMPLETED`.
-
-## Definições de testes funcionais (Playwright)
-
-### ITEM-001 — Selecionar produto e adicionar item (`P0`)
-
-- **Preparação:** lista ativa e produto ativo com categoria/unidade padrão.
-- **Ação:** pesquisar, selecionar a sugestão, alterar quantidade, preencher observação e salvar.
-- **Resultado:** categoria e unidade são preenchidas automaticamente; detalhe abre com o item desmarcado, valores formatados e destaque temporário; recarregar preserva tudo.
-
-### ITEM-002 — Exigir produto selecionado (`P0`)
-
-- **Preparação:** formulário de novo item.
-- **Ação:** digitar nome livre que não corresponde a seleção válida e enviar.
-- **Resultado:** mostrar erro no produto, não criar item e manter os demais campos.
-
-### ITEM-003 — Validar quantidade e enumerações (`P0`)
-
-- **Preparação:** produto válido selecionado.
-- **Ação:** testar quantidade vazia, zero, negativa, não numérica, acima de 999999,99 e, por requisição manipulada, unidade/categoria inválidas.
-- **Resultado:** cada entrada é recusada, sem item parcial ou alteração nas contagens.
-
-### ITEM-004 — Sugestões respeitam busca e catálogo ativo (`P1`)
-
-- **Preparação:** produtos ativos, inativos e de outro usuário com nomes semelhantes.
-- **Ação:** digitar termos com diferença de caixa/acento.
-- **Resultado:** mostrar no máximo dez sugestões do usuário atual, ordenadas por exata/prefixo/ocorrência, sem inativos ou produtos alheios.
-
-### ITEM-005 — Resolver duplicata nas três opções (`P0`)
-
-- **Preparação:** item “Arroz” existente; formulário com produto de nome normalizado equivalente e mesma unidade.
-- **Ação:** executar em testes independentes Cancelar, Editar existente e Somar quantidade.
-- **Resultado:** Cancelar mantém formulário sem mutação; Editar abre a linha existente; Somar atualiza uma única linha, preserva metadados existentes e recalcula totais sem criar duplicata.
-
-### ITEM-006 — Não somar unidades incompatíveis (`P0`)
-
-- **Preparação:** item existente em `pacote` e tentativa duplicada em `quilograma`.
-- **Ação:** abrir resolução de duplicidade.
-- **Resultado:** “Somar quantidade” fica indisponível, a interface orienta editar o existente e nenhuma soma ocorre por requisição direta.
-
-### ITEM-007 — Editar item e preservar marcação (`P0`)
-
-- **Preparação:** item marcado com `checkedAt` e `checkedBy` conhecidos.
-- **Ação:** alterar quantidade, unidade, categoria e observação.
-- **Resultado:** novos valores persistem, snapshots são atualizados conforme a seleção e os três campos de marcação permanecem inalterados.
-
-### ITEM-008 — Troca de produto que gera duplicidade é atômica (`P0`)
-
-- **Preparação:** dois itens diferentes na mesma lista.
-- **Ação:** editar o primeiro para o produto do segundo e escolher Somar.
-- **Resultado:** sobra uma única linha com quantidade somada, item editado fica excluído logicamente e não há estado intermediário após recarregar.
-
-### ITEM-009 — Remover item atualiza resumo (`P0`)
-
-- **Preparação:** lista com itens marcados e pendentes.
-- **Ação:** cancelar uma exclusão e depois confirmar outra; repetir a chamada confirmada.
-- **Resultado:** cancelamento preserva dados; confirmação remove uma vez e atualiza total, pendentes e percentual; repetição é idempotente.
-
-### ITEM-010 — Permissões e estado bloqueiam mutações (`P0`)
-
-- **Preparação:** lista ativa com `editor`, lista concluída e sessão `outsider`.
-- **Ação:** `editor` administra item ativo; `outsider` e ambos os papéis tentam mutar lista concluída por UI e chamada direta.
-- **Resultado:** `editor` tem sucesso na ativa; demais tentativas são ocultadas/recusadas com `NOT_FOUND` ou `LIST_COMPLETED` e não alteram dados.
-
-### ITEM-011 — Catálogos pessoais ainda detectam duplicata (`P0`)
-
-- **Preparação:** `owner` e `editor` possuem produtos distintos chamados “Café”; um deles já está na lista compartilhada.
-- **Ação:** o outro participante tenta incluir o produto do próprio catálogo.
-- **Resultado:** abrir resolução de duplicidade pelo nome normalizado e nunca criar silenciosamente duas linhas.
-
-### ITEM-012 — Conflito de versão preserva edição confirmada (`P0`)
-
-- **Preparação:** mesmo item aberto em dois contextos autorizados.
-- **Ação:** salvar alterações diferentes em sequência, mantendo a versão antiga no segundo.
-- **Resultado:** segundo recebe `CONFLICT`, recarrega estado atual quando solicitado e não sobrescreve o primeiro.
-
-## Fora do escopo específico
-
-Itens livres sem produto cadastrado, anexos, preço, marca estruturada, ordenação manual e restauração de item removido.
+| ID | Pri. | Preparação | Ação | Resultado |
+|---|---:|---|---|---|
+| `ITEM-001` | P0 | Lista ativa e produto válido | Selecionar produto, preencher e adicionar | Item desmarcado com padrões e snapshots corretos, persistente após recarga |
+| `ITEM-002` | P0 | Formulário aberto | Digitar produto sem selecionar | Mensagem normativa, demais campos preservados e nenhum item |
+| `ITEM-003` | P0 | Produto selecionado | Enviar quantidades e enumerações inválidas | Cada entrada recusada sem alteração parcial |
+| `ITEM-004` | P1 | Catálogos com produtos ativos, inativos e alheios | Pesquisar variações | Até dez sugestões próprias e ativas na ordem definida |
+| `ITEM-005` | P0 | Item homônimo existente | Cancelar, editar existente e somar em cenários separados | Cada opção produz somente o efeito especificado |
+| `ITEM-006` | P0 | Duplicata com unidades diferentes | Abrir resolução e tentar somar diretamente | Soma indisponível e recusada, com orientação polida |
+| `ITEM-007` | P0 | Item marcado | Editar campos | Dados alterados e marcação integralmente preservada |
+| `ITEM-008` | P0 | Dois itens distintos | Trocar produto e somar ao duplicado | Um item restante, soma atômica e nenhuma situação intermediária |
+| `ITEM-009` | P0 | Lista com itens | Cancelar remoção, confirmar e repetir | Uma remoção, resumo correto e repetição idempotente |
+| `ITEM-010` | P0 | Participante, lista concluída e usuário alheio | Tentar mutações | Participante altera lista ativa; demais casos recusados sem mudanças |
+| `ITEM-011` | P0 | Participantes com produtos homônimos distintos | Adicionar segundo produto | Duplicidade detectada pelo nome normalizado |
+| `ITEM-012` | P0 | Item aberto em dois contextos | Salvar alterações concorrentes | Segunda alteração recusada, primeira preservada e opção de recarga |

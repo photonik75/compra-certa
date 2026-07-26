@@ -1,329 +1,174 @@
 # EF-08 — Compartilhamento e colaboração
 
-## Resultado esperado
+## Visão geral
 
-Permitir que o proprietário compartilhe uma lista ativa por e-mail e que participantes ativos colaborem nos itens com controle de acesso consistente e atualização em tempo hábil.
+Permitir que o proprietário compartilhe uma lista ativa por e-mail e que participantes colaborem nos itens
+com acesso consistente e atualização em até cinco segundos.
 
-## Dados funcionais
+## Imagens
 
-### Participação
+| <img src="images/ef-08-compartilhar.png" width="300" alt="Tela Compartilhar lista"> | <img src="images/ef-08-convite.png" width="300" alt="Tela Aceitar convite"> | <img src="images/ef-08-remover-participante.png" width="300" alt="Diálogo Remover participante"> |
+|---|---|---|
+| **Figura 1:** Tela “Compartilhar lista” | **Figura 2:** Tela “Aceitar convite” | **Figura 3:** Diálogo “Remover participante” |
 
-| Campo | Regra |
-|---|---|
-| `listId`, `userId` | Par único |
-| `role` | `OWNER` ou `EDITOR` |
-| `joinedAt` | Data de ativação |
-| `version` | Incrementada a cada alteração do vínculo |
-| `createdAt`, `updatedAt` | Auditoria |
+| <img src="images/ef-08-sair-lista.png" width="300" alt="Diálogo Sair da lista"> |
+|---|
+| **Figura 4:** Diálogo “Sair da lista” |
 
-### Convite
+## Requisitos
 
-| Campo | Regra |
-|---|---|
-| `id` | Identificador imutável |
-| `listId` | Lista ativa |
-| `email` | E-mail normalizado do destinatário |
-| `invitedBy` | OWNER responsável |
-| `status` | `PENDING`, `ACCEPTED`, `CANCELLED` ou `EXPIRED` |
-| `deliveryStatus` | `QUEUED`, `SENT` ou `FAILED` |
-| `tokenHash` | Token de uso único armazenado de modo não reversível |
-| `expiresAt` | 7 dias após envio ou reenvio |
-| `acceptedBy`, `acceptedAt` | Preenchidos no aceite |
-| `version` | Incrementada a cada transição ou reenvio |
+- **Tela “Compartilhar lista” (Figura 1)**
+  - É acessível ao proprietário e aos participantes atuais.
+  - Exibe proprietário, participantes ativos e convites pendentes ou expirados administráveis.
+  - Ordena primeiro o proprietário, depois participantes por nome e convites por e-mail.
+  - Exibe nome e e-mail somente a usuários com acesso atual.
+  - Participante visualiza as pessoas, mas não os controles administrativos.
+  - Lista concluída permanece consultável, sem ações de administração ou saída.
+  - **Formulário “Convidar participante”**
+    - É exibido somente ao proprietário de lista ativa.
+    - **Campo “E-mail”**
+      - Obrigatório, válido e normalizado para minúsculas.
+      - Quando inválido, exibe “Por favor, informe um e-mail válido.”.
+      - Não aceita o proprietário e exibe “Você já é o proprietário desta lista.”.
+      - Não aceita participante ativo e exibe “Esta pessoa já participa da lista.”.
+      - Não aceita convite pendente e exibe “Já existe um convite pendente para este e-mail.”.
+    - **Botão “Convidar”**
+      - Enquanto processa, não permite novo envio.
+      - Para conta ativa, concede acesso de participante imediatamente e envia um aviso.
+      - Para e-mail sem conta, cria convite pendente válido por sete dias e envia link de uso único.
+      - Persiste o convite antes do envio.
+      - Em sucesso, exibe “Convite enviado com sucesso.” ou “Participante adicionado com sucesso.”.
+      - Em falha definitiva do envio, mantém o convite pendente, exibe “Falha no envio” e oferece “Reenviar”.
+      - Em falha inesperada, exibe “Não foi possível compartilhar a lista. Tente novamente mais tarde.”.
+  - **Relação “Pessoas com acesso”**
+    - **Proprietário**
+      - Exibe nome, e-mail e o papel “Proprietário”.
+      - Não oferece remoção ou saída.
+    - **Participante**
+      - Exibe nome, e-mail e o papel “Participante”.
+      - Para o proprietário, oferece “Remover”, que abre o diálogo “Remover participante”.
+    - **Convite pendente**
+      - Exibe e-mail, validade e estado de entrega.
+      - Para o proprietário, oferece “Reenviar” e “Cancelar”.
+      - Reenviar invalida o token anterior, gera outro e reinicia a validade de sete dias.
+      - Cancelar invalida o token e remove o convite da visão padrão.
+      - Convite expirado exibe “Convite expirado” e permite reenvio.
+  - **Aviso de permissões**
+    - Informa que participantes podem administrar e marcar itens.
+    - Informa que somente o proprietário administra metadados, pessoas e ciclo de vida.
 
-Só pode haver um convite `PENDING` por par lista/e-mail.
+- **Tela “Aceitar convite” (Figura 2)**
+  - Exibe nome da lista, nome do proprietário, e-mail convidado e validade para token válido.
+  - Não informa se o e-mail já possui conta.
+  - **Visitante**
+    - É direcionado ao cadastro ou login.
+    - No cadastro originado pelo convite, o e-mail convidado é preenchido e não pode ser alterado.
+    - Após autenticação, retorna ao aceite preservando o token.
+  - **Usuário autenticado**
+    - Deve possuir exatamente o e-mail convidado.
+    - Quando o e-mail diverge, exibe
+      “Este convite foi enviado para outro e-mail. Entre com a conta correta para continuar.”.
+  - **Botão “Aceitar convite”**
+    - Para token pendente, e-mail correspondente e lista ativa, cria uma única participação e abre a lista.
+    - Consome o token somente após o aceite bem-sucedido.
+    - Token usado ou cancelado exibe “Este convite não está mais disponível.”.
+    - Token expirado exibe “Este convite expirou. Solicite um novo convite ao proprietário.”.
+    - Lista concluída exibe “Esta lista está concluída. O convite poderá ser aceito após sua reabertura.”.
+  - Criar conta fora do link não aceita convites automaticamente.
 
-## Matriz de permissões
+- **Diálogo “Remover participante” (Figura 3)**
+  - É acessível somente ao proprietário de uma lista ativa.
+  - Identifica o nome e o e-mail do participante.
+  - Informa que o acesso será perdido imediatamente e que a autoria histórica será preservada.
+  - **Botão “Remover”**
+    - Remove o vínculo de acesso.
+    - Faz sessões abertas do participante voltarem ao painel em até cinco segundos.
+    - Preserva itens e autoria histórica.
+    - Em sucesso, exibe “Participante removido com sucesso.”.
+    - Em conflito, exibe “A relação de participantes foi atualizada. Recarregue os dados.”.
+    - Em falha, exibe “Não foi possível remover o participante. Tente novamente mais tarde.”.
+  - **Botão “Cancelar”**
+    - Fecha o diálogo sem alterar o acesso.
 
-| Ação | OWNER | EDITOR |
-|---|---:|---:|
-| Ver lista e participantes | Sim | Sim |
-| Adicionar, editar, remover e marcar itens em lista ativa | Sim | Sim |
-| Convidar, reenviar ou cancelar convite | Sim | Não |
-| Remover participante | Sim | Não |
-| Sair da lista | Não | Sim |
-| Editar metadados, concluir, reabrir ou excluir lista | Sim, conforme EF-07 | Não |
+- **Diálogo “Sair da lista” (Figura 4)**
+  - É acessível somente ao participante de uma lista ativa.
+  - Informa que a lista desaparecerá de seu painel e que o histórico será preservado.
+  - **Botão “Sair”**
+    - Remove o próprio vínculo e abre “Minhas listas”.
+    - Não remove itens nem autoria histórica.
+    - Em sucesso, exibe “Você saiu da lista.”.
+    - Em falha, exibe “Não foi possível sair da lista. Tente novamente mais tarde.”.
+  - **Botão “Cancelar”**
+    - Fecha o diálogo sem alterar o acesso.
 
-## Fluxos
+- **Colaboração na tela da lista**
+  - Proprietário e participantes podem adicionar, editar, remover e marcar itens em lista ativa.
+  - Somente o proprietário edita metadados, convida, remove pessoas, conclui, reabre e exclui.
+  - Alterações confirmadas de itens, estado e acesso chegam aos clientes conectados em até cinco segundos.
+  - Eventos contêm lista, tipo, versão e dados mínimos, sem tokens ou dados privados desnecessários.
+  - Reconexão atualiza a lista a partir do servidor.
+  - Usuário removido ou que saiu perde acesso imediatamente e novas operações retornam recurso indisponível.
 
-### 1. Consultar pessoas com acesso
+## Contrato de API
 
-1. OWNER e EDITOR veem proprietário, participantes ativos e convites pendentes.
-2. Mostrar nome e e-mail de usuários ativos; para convite sem conta, mostrar o e-mail e “Convite pendente”.
-3. OWNER vê ações permitidas; EDITOR vê a relação sem controles administrativos.
-4. A lista de pessoas é ordenada: proprietário, participantes por nome e convites por e-mail.
-
-### 2. Convidar
-
-1. Somente OWNER de lista `ACTIVE` informa um e-mail válido.
-2. Não permitir convidar o próprio proprietário, participante ativo ou e-mail com convite pendente; retornar erro específico.
-3. Se o e-mail pertence a uma conta ativa, criar participação `EDITOR` imediatamente e enviar aviso por e-mail. A lista passa a aparecer no painel dessa pessoa.
-4. Se não pertence a uma conta, criar convite `PENDING`, enviar link e exibi-lo na lista de pessoas.
-5. O link contém token aleatório, de uso único, e não expõe identificadores sensíveis suficientes para acesso sem token.
-6. Persistir o convite antes do envio. A entrega usa fila transacional ou mecanismo equivalente: começa como `QUEUED`, passa a `SENT` quando o provedor confirma ou `FAILED` quando as tentativas se esgotam.
-7. Falha definitiva não concede falsa confirmação de envio: o convite permanece `PENDING`, aparece ao OWNER como “Falha no envio” e oferece “Reenviar”.
-
-### 3. Aceitar convite pendente
-
-1. Visitante abre o link. Se não possui conta com o e-mail convidado, é direcionado ao cadastro com e-mail bloqueado para alteração nesse fluxo.
-2. Após cadastro/login, a conta autenticada deve possuir exatamente o e-mail convidado.
-3. Token válido e lista `ACTIVE` criam participação `EDITOR` e marcam convite `ACCEPTED` atomicamente.
-4. Token usado, cancelado ou expirado não concede acesso.
-5. Criar conta pelo fluxo comum com o mesmo e-mail não aceita convites automaticamente; a pessoa precisa abrir o link válido enviado a ela.
-
-### 4. Reenviar ou cancelar convite
-
-- Reenviar é permitido somente ao OWNER para convite `PENDING`; invalida token anterior, gera novo token e reinicia validade de 7 dias.
-- Cancelar marca `CANCELLED`, invalida token e remove o convite da visão padrão.
-- Convite vencido passa a `EXPIRED` na primeira leitura ou tentativa de uso e pode ser reenviado, gerando novo estado `PENDING`.
-
-### 5. Remover participante
-
-1. OWNER seleciona um `EDITOR` ativo e confirma a remoção identificando nome/e-mail.
-2. Remover o vínculo de acesso de forma atômica.
-3. O participante perde acesso imediatamente; sessões abertas recebem o evento e saem da lista para o painel.
-4. Não é permitido remover o proprietário.
-5. Dados criados pelo participante permanecem e conservam autoria histórica.
-
-### 6. Sair da lista
-
-1. EDITOR pode sair de lista `ACTIVE` após confirmação. Lista `COMPLETED` permanece congelada até ser reaberta pelo proprietário.
-2. O vínculo é removido e a lista desaparece de seu painel.
-3. OWNER não pode sair, pois transferência de propriedade está fora do escopo.
-4. Sair não remove itens nem autoria histórica.
-
-### 7. Colaboração em tempo hábil
-
-1. Eventos de criação, edição, remoção e marcação de itens, mudança de estado e acesso são propagados a clientes conectados em até 5 segundos.
-2. Cada evento inclui identificador da lista, tipo, versão e dados mínimos para atualizar ou sinalizar recarga; não inclui senha ou token.
-3. O servidor continua sendo a fonte de verdade. Reconexão exige ressincronização.
-4. Regras de conflito seguem as convenções globais e a EF-06.
-
-## Segurança
-
-- Tokens de convite nunca são registrados em texto puro nem retornados depois do envio inicial.
-- Endereços de e-mail só são exibidos a pessoas com acesso atual à lista.
-- Toda ação administrativa é revalidada no servidor.
-- Remoção, saída, cancelamento e exclusão revogam acesso sem depender da atualização da interface.
-
-## Critérios de aceite
-
-1. Convidar conta existente concede acesso `EDITOR` uma única vez e a lista aparece em seu painel.
-2. Convidar e-mail sem conta cria convite pendente e o aceite válido concede acesso à conta de mesmo e-mail.
-3. E-mail do proprietário, participante ou convite pendente não pode ser convidado novamente.
-4. Token expirado, usado ou cancelado nunca concede acesso.
-5. Reenvio invalida o token anterior.
-6. EDITOR administra itens, mas não administra lista, convites ou pessoas.
-7. Removido ou usuário que saiu perde acesso imediatamente, inclusive em sessão já aberta.
-8. Exclusão da lista invalida todos os acessos e convites.
-9. Alterações colaborativas chegam a outros clientes conectados em até 5 segundos e convergem após reconexão.
-10. Ações de um participante removido durante uma operação são recusadas no servidor.
-
-## Contrato de API (futura OpenAPI)
+Mutações autenticadas exigem CSRF e lista ativa. Ações administrativas revalidam o papel de proprietário.
+Tokens são de uso único, armazenados de forma não reversível e enviados no fragmento do link.
 
 ### Endpoints
 
-| Método e rota | Autenticação | Request | Sucesso |
+| Método e rota | Propósito | Entrada | Sucesso |
 |---|---|---|---|
-| `GET /api/v1/lists/{listId}/access` | OWNER/EDITOR | — | `200 ListAccess` |
-| `POST /api/v1/lists/{listId}/invitations` | OWNER | `CreateInvitationRequest` + `Idempotency-Key` | `201 ShareResult` |
-| `POST /api/v1/lists/{listId}/invitations/{invitationId}/resend` | OWNER | `If-Match` + `Idempotency-Key` | `202 Invitation` + novo `ETag` |
-| `DELETE /api/v1/lists/{listId}/invitations/{invitationId}` | OWNER | `If-Match` + `Idempotency-Key` | `204` |
-| `POST /api/v1/invitations/preview` | Pública | `InvitationTokenRequest` | `200 InvitationPreview` |
-| `POST /api/v1/invitations/accept` | Sessão | `InvitationTokenRequest` + `Idempotency-Key` | `201 AcceptInvitationResult` |
-| `DELETE /api/v1/lists/{listId}/members/{userId}` | OWNER | `If-Match` + `Idempotency-Key` | `204` |
-| `DELETE /api/v1/lists/{listId}/members/me` | EDITOR | `If-Match` + `Idempotency-Key` | `204` |
+| `GET /api/v1/lists/{listId}/access` | Consultar pessoas e convites | Path `listId` | `200 ListAccess` |
+| `POST /api/v1/lists/{listId}/invitations` | Convidar por e-mail | `CreateInvitationRequest` e `Idempotency-Key` | `201 ShareResult` |
+| `POST /api/v1/lists/{listId}/invitations/{invitationId}/resend` | Reenviar convite | `If-Match` e `Idempotency-Key` | `202 Invitation` e `ETag` |
+| `DELETE /api/v1/lists/{listId}/invitations/{invitationId}` | Cancelar convite | `If-Match` e `Idempotency-Key` | `204` |
+| `POST /api/v1/invitations/preview` | Pré-visualizar convite | `InvitationTokenRequest` | `200 InvitationPreview` |
+| `POST /api/v1/invitations/accept` | Aceitar convite | `InvitationTokenRequest` e `Idempotency-Key` | `201 AcceptInvitationResult` |
+| `DELETE /api/v1/lists/{listId}/members/{userId}` | Remover participante | `If-Match` e `Idempotency-Key` | `204` |
+| `DELETE /api/v1/lists/{listId}/members/me` | Sair da lista | `If-Match` e `Idempotency-Key` | `204` |
 
-Todas as mutações autenticadas exigem CSRF e lista `ACTIVE`. Endpoints administrativos revalidam `OWNER`; ocultar botões não substitui autorização.
+### Schemas
 
-### Consultar acesso
+| Schemas | Campos e Regras |
+|---|---|
+| `CreateInvitationRequest` | `email: string`, obrigatório e válido |
+| `InvitationTokenRequest` | `token: string`, obrigatório e opaco |
+| `UserContact` | `id: uuid`, `name: string` e `email: string` |
+| `Membership` | `user: UserContact`, `role: OWNER \| EDITOR`, `joinedAt` e `version` |
+| `Invitation` | `id`, `email`, `status`, `deliveryStatus`, `expiresAt`, datas e versão; nunca inclui token |
+| `ListAccess` | `listId`, `owner: Membership`, `members: Membership[]` e `invitations: Invitation[]` |
+| `ShareResult` | `outcome: MEMBER_ADDED \| INVITATION_CREATED` e o vínculo ou convite correspondente |
+| `InvitationPreview` | `listName`, `ownerName`, `invitedEmail`, `status`, `expiresAt` e `requiresAuthentication` |
+| `AcceptInvitationResult` | Resumo da lista e participação criada |
 
-#### `ListAccess`
+Conta existente gera `MEMBER_ADDED`; conta inexistente gera `INVITATION_CREATED`. Proprietário, membro e
+convite pendente retornam, respectivamente, `409 CANNOT_INVITE_OWNER`, `409 ALREADY_MEMBER` e
+`409 INVITATION_ALREADY_PENDING`.
 
-```json
-{
-  "listId": "814466fa-1331-448c-a8dd-40a87771d330",
-  "owner": {
-    "user": { "id": "...", "name": "Larissa Barros", "email": "larissa@example.com" },
-    "role": "OWNER",
-    "joinedAt": "2026-07-18T14:30:00Z",
-    "version": 1
-  },
-  "members": [
-    {
-      "user": { "id": "...", "name": "Marcos Silva", "email": "marcos@example.com" },
-      "role": "EDITOR",
-      "joinedAt": "2026-07-18T15:00:00Z",
-      "version": 1
-    }
-  ],
-  "invitations": [
-    {
-      "id": "...",
-      "email": "paula@example.com",
-      "status": "PENDING",
-      "deliveryStatus": "SENT",
-      "expiresAt": "2026-07-25T15:00:00Z",
-      "createdAt": "2026-07-18T15:00:00Z",
-      "updatedAt": "2026-07-18T15:00:02Z",
-      "version": 2
-    }
-  ]
-}
-```
+Preview inválido, usado ou cancelado retorna `404 NOT_FOUND`; expirado, `410 INVITATION_EXPIRED`. E-mail da
+sessão divergente retorna `403 INVITATION_EMAIL_MISMATCH` sem consumir o token. Lista concluída retorna
+`409 LIST_COMPLETED`.
 
-A coleção retorna somente convites `PENDING`/`EXPIRED` administráveis na tela. OWNER e EDITOR recebem os mesmos dados pessoais necessários à relação; ações são determinadas pelo papel. Ordenação segue a regra funcional.
+Reenvio cria token e validade novos. Cancelamento, remoção e saída retornam `204`, revogam o acesso e
+publicam mudança. Remover proprietário retorna `409 CANNOT_REMOVE_OWNER`; proprietário tentando sair,
+`409 OWNER_CANNOT_LEAVE`; recurso alheio, `404 NOT_FOUND`. Responses com acesso ou convite usam
+`Cache-Control: no-store`.
 
-### Criar convite ou vínculo
+## Testes de validação
 
-`CreateInvitationRequest`:
-
-```json
-{ "email": "pessoa@example.com" }
-```
-
-`ShareResult` é discriminado por `outcome`:
-
-- `MEMBER_ADDED`: conta já existente; inclui `membership` completo e `notificationDeliveryStatus` (`QUEUED`, `SENT` ou `FAILED`). O acesso existe mesmo se o aviso por e-mail falhar.
-- `INVITATION_CREATED`: conta inexistente; inclui `invitation`, inicialmente `PENDING` e `QUEUED`. Nunca inclui token.
-
-O header `Location` aponta para o membro ou convite criado. E-mail inválido retorna `400 VALIDATION_ERROR`; proprietário, membro ativo ou convite pendente retorna respectivamente `409 CANNOT_INVITE_OWNER`, `ALREADY_MEMBER` ou `INVITATION_ALREADY_PENDING`.
-
-### Pré-visualizar e aceitar convite
-
-`InvitationTokenRequest`:
-
-```json
-{ "token": "opaque-single-use-token" }
-```
-
-O link de e-mail coloca o token no fragmento da URL da aplicação, não na query enviada ao servidor. O frontend extrai o fragmento e envia o token somente no corpo HTTPS de `/preview` ou `/accept`.
-
-`InvitationPreview`:
-
-```json
-{
-  "listName": "Compras da semana",
-  "ownerName": "Larissa Barros",
-  "invitedEmail": "paula@example.com",
-  "status": "PENDING",
-  "expiresAt": "2026-07-25T15:00:00Z",
-  "requiresAuthentication": true
-}
-```
-
-Um token válido funciona como credencial temporária para essa pré-visualização; por isso o response pode retornar `invitedEmail` completo para preencher e bloquear o cadastro. A resposta não informa se já existe conta. Preview inválido, usado ou cancelado retorna `404 NOT_FOUND`; expirado retorna `410 INVITATION_EXPIRED` sem dados da lista.
-
-Para visitante sem conta, o frontend preserva o token durante o cadastro comum. Após a criação da sessão, envia o token para `/invitations/accept`. Para conta já autenticada, usa diretamente o mesmo endpoint. O cadastro da conta e o aceite do convite são operações independentes.
-
-`AcceptInvitationResult` contém `{ list: ListCard, membership: Membership }`. Aceite exige que o e-mail da sessão corresponda ao convite; divergência retorna `403 INVITATION_EMAIL_MISMATCH` sem consumir token. Token válido para lista concluída retorna `409 LIST_COMPLETED`; token inválido retorna `400 INVALID_TOKEN`.
-
-### Reenviar, cancelar, remover e sair
-
-- Reenvio retorna convite com `status=PENDING`, `deliveryStatus=QUEUED`, novo `expiresAt` e versão; token anterior é invalidado na mesma transação.
-- Cancelamento retorna `204`; repetição com mesma chave retorna `204`; token passa a ser inválido.
-- Remover membro exige `If-Match` da versão do vínculo. Tentar remover OWNER retorna `409 CANNOT_REMOVE_OWNER`.
-- `DELETE /members/me` só funciona para vínculo `EDITOR` em lista ativa. OWNER recebe `409 OWNER_CANNOT_LEAVE`.
-- Revogações retornam `204`, publicam `list.access.changed` e encerram o stream do usuário afetado.
-- Convite/membro inexistente ou pertencente a outra lista retorna `404 NOT_FOUND`.
-
-### Schema `Membership`
-
-| Campo | Tipo | Regra |
-|---|---|---|
-| `user` | `UserContact` | `{ id, name, email }` |
-| `role` | `ListRole` | `OWNER` ou `EDITOR` |
-| `joinedAt` | date-time | UTC |
-| `version` | integer | Usado em `If-Match` |
-
-Tokens nunca aparecem em `ListAccess`, logs, eventos SSE ou respostas após envio. `Cache-Control: no-store` é obrigatório em preview, aceite e consulta de acesso.
-
-## Definições de testes funcionais (Playwright)
-
-### SHARE-001 — Convidar conta existente (`P0`)
-
-- **Preparação:** lista ativa de `owner`; conta `editor` ainda sem vínculo.
-- **Ação:** convidar o e-mail de `editor`.
-- **Resultado:** criar um único vínculo `EDITOR`, enviar aviso capturado na caixa de teste e fazer a lista aparecer no painel de `editor` sem aceite adicional.
-
-### SHARE-002 — Convidar pessoa sem conta e aceitar (`P0`)
-
-- **Preparação:** e-mail inexistente e caixa de teste vazia.
-- **Ação:** convidar, abrir o link recebido, cadastrar conta com o e-mail bloqueado e concluir o fluxo.
-- **Resultado:** convite passa de `PENDING` para `ACCEPTED`, vínculo `EDITOR` é criado uma vez e a lista abre para o novo usuário.
-
-### SHARE-003 — Cadastro comum não aceita convite (`P0`)
-
-- **Preparação:** convite pendente para e-mail sem conta.
-- **Ação:** criar a conta pelo cadastro normal sem usar o link.
-- **Resultado:** lista não aparece; ao abrir posteriormente o link válido autenticado com o mesmo e-mail, o acesso é concedido.
-
-### SHARE-004 — Bloquear convites duplicados ou inválidos (`P0`)
-
-- **Preparação:** proprietário, participante ativo e convite pendente conhecidos.
-- **Ação:** tentar convidar e-mail inválido, o próprio proprietário, o participante e o pendente.
-- **Resultado:** cada tentativa apresenta erro específico e não cria vínculo, token ou e-mail adicional.
-
-### SHARE-005 — Falha e reenvio de e-mail (`P1`)
-
-- **Preparação:** provedor de teste configurado para falhar até esgotar tentativas.
-- **Ação:** convidar e aguardar `FAILED`; restaurar o provedor e acionar Reenviar.
-- **Resultado:** OWNER vê “Falha no envio”; reenvio gera novo token, muda entrega para `SENT` e o token anterior não funciona.
-
-### SHARE-006 — Token expirado, usado ou cancelado não concede acesso (`P0`)
-
-- **Preparação:** três convites, relógio controlado e caixa de teste.
-- **Ação:** expirar um, aceitar e reutilizar outro e cancelar o terceiro; abrir todos os links.
-- **Resultado:** nenhum link inválido concede acesso; o expirado permite solicitar reenvio e estados finais são coerentes.
-
-### SHARE-007 — E-mail autenticado deve corresponder ao convite (`P0`)
-
-- **Preparação:** convite para `convidado` e sessão autenticada como `outsider`.
-- **Ação:** `outsider` abre o link e tenta aceitar.
-- **Resultado:** acesso é recusado sem consumir o token; após autenticar como o e-mail correto, o mesmo link válido pode ser aceito.
-
-### SHARE-008 — Matriz de permissões do participante (`P0`)
-
-- **Preparação:** `editor` ativo em lista compartilhada.
-- **Ação:** adicionar, editar, remover e marcar item; tentar editar metadados, convidar, remover pessoa, concluir, reabrir e excluir.
-- **Resultado:** operações de item em lista ativa funcionam; ações administrativas não aparecem e chamadas diretas retornam `FORBIDDEN`.
-
-### SHARE-009 — Remover participante revoga sessão aberta (`P0`)
-
-- **Preparação:** `owner` e `editor` com a lista aberta em contextos separados.
-- **Ação:** `owner` confirma remoção enquanto `editor` tenta alterar um item.
-- **Resultado:** vínculo é removido uma vez, `editor` é redirecionado ao painel em até cinco segundos e qualquer escrita posterior retorna `NOT_FOUND`; autoria histórica permanece.
-
-### SHARE-010 — Participante sai da lista (`P0`)
-
-- **Preparação:** `editor` ativo.
-- **Ação:** cancelar uma saída e depois confirmá-la.
-- **Resultado:** cancelamento preserva vínculo; confirmação remove acesso e cartão do painel, sem apagar itens ou autoria. OWNER não recebe a ação Sair.
-
-### SHARE-011 — Relação de pessoas respeita ordem e privacidade (`P1`)
-
-- **Preparação:** proprietário, participantes com nomes variados e convites pendentes.
-- **Ação:** abrir Pessoas como OWNER, EDITOR e `outsider`.
-- **Resultado:** autorizados veem proprietário, participantes por nome e pendentes por e-mail; somente OWNER vê ações administrativas; `outsider` não vê nomes ou e-mails.
-
-### SHARE-012 — Colaboração propaga eventos e ressincroniza (`P0`)
-
-- **Preparação:** `owner` e `editor` em contextos independentes.
-- **Ação:** alternar criação, edição, remoção e marcação; desconectar e reconectar um contexto.
-- **Resultado:** eventos chegam em até cinco segundos, não expõem tokens, e após reconexão ambos convergem para itens, versões e resumo do servidor.
-
-### SHARE-013 — Exclusão invalida convites e participantes (`P0`)
-
-- **Preparação:** lista com participante, convite pendente e links capturados.
-- **Ação:** proprietário exclui a lista e os demais tentam acessar/aceitar.
-- **Resultado:** todos recebem `NOT_FOUND`, a lista some dos painéis e nenhum token concede acesso.
-
-### SHARE-014 — Lista concluída congela administração (`P0`)
-
-- **Preparação:** lista concluída com participante e convite pendente.
-- **Ação:** tentar convidar, reenviar, cancelar, remover, sair ou aceitar convite.
-- **Resultado:** operações de administração/aceite são bloqueadas por `LIST_COMPLETED`; relações existentes continuam visíveis em consulta conforme EF-07.
-
-## Fora do escopo específico
-
-Convite por link público, contatos, QR Code, transferência de propriedade, acesso somente leitura, comentários, chat e notificações push.
+| ID | Pri. | Preparação | Ação | Resultado |
+|---|---:|---|---|---|
+| `SHARE-001` | P0 | Conta existente sem vínculo | Convidar seu e-mail | Um vínculo criado, aviso enviado e lista visível no painel |
+| `SHARE-002` | P0 | E-mail sem conta | Convidar, abrir link, cadastrar e aceitar | Convite aceito e um vínculo criado |
+| `SHARE-003` | P0 | Convite pendente | Cadastrar normalmente sem link | Nenhum acesso até abrir e aceitar o link |
+| `SHARE-004` | P0 | Proprietário, membro e pendente conhecidos | Convidar e-mails inválido ou repetidos | Mensagens específicas e nenhum efeito adicional |
+| `SHARE-005` | P1 | Entrega configurada para falhar | Convidar, restaurar entrega e reenviar | Falha visível, novo token enviado e anterior inválido |
+| `SHARE-006` | P0 | Convites expirado, usado e cancelado | Abrir links | Nenhum acesso e mensagens correspondentes |
+| `SHARE-007` | P0 | Convite e sessão de outro e-mail | Tentar aceitar e depois usar conta correta | Primeira tentativa recusada sem consumir token; segunda aceita |
+| `SHARE-008` | P0 | Participante ativo | Administrar itens e tentar ações exclusivas | Itens permitidos; administração recusada |
+| `SHARE-009` | P0 | Proprietário e participante conectados | Remover participante durante tentativa de escrita | Redirecionamento em até cinco segundos e escrita recusada |
+| `SHARE-010` | P0 | Participante ativo | Cancelar saída e depois confirmar | Primeiro preserva vínculo; segundo remove acesso e cartão |
+| `SHARE-011` | P1 | Pessoas e convites variados | Abrir como proprietário, participante e alheio | Ordem, ações e privacidade corretas |
+| `SHARE-012` | P0 | Dois contextos autorizados | Alterar itens, desconectar e reconectar | Eventos em até cinco segundos e convergência ao servidor |
+| `SHARE-013` | P0 | Lista com participante e convite | Excluir lista e tentar acessos | Lista e tokens indisponíveis para todos |
+| `SHARE-014` | P0 | Lista concluída com relações existentes | Tentar administrar ou aceitar | Consulta disponível e todas as mutações recusadas |
