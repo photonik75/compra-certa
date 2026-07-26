@@ -8,17 +8,13 @@ Permitir que visitantes criem uma conta, autentiquem-se, encerrem a sessão e re
 
 ## Imagens
 
-### Login
-
-![Tela de login do CompraCerta](images/ef-01-login.png)
-
-### Cadastro
-
-![Tela de cadastro do CompraCerta](images/ef-01-cadastro.png)
+| <img src="images/ef-01-cadastro.png" width="300px"> | <img src="images//ef-01-login.png" width="300px"> |
+|:---:|:---:|
+| Figura 1: Crie sua conta | Figura 2: Entre na sua conta |
 
 ## Requisitos
 
-- **Tela “Crie sua conta” (imagem Cadastro)**
+- **Tela “Crie sua conta” (Figura 1)**
   - **Campo “Nome”**
     - Obrigatório.
     - Quando não informado ou composto somente por espaços, exibe “Por favor, informe seu nome”.
@@ -48,7 +44,7 @@ Permitir que visitantes criem uma conta, autentiquem-se, encerrem a sessão e re
   - **Link “Entrar”**
     - Abre a tela “Entre na sua conta”.
 
-- **Tela “Entre na sua conta” (imagem Login)**
+- **Tela “Entre na sua conta” (Figura 2)**
   - **Campo “E-mail”**
     - Obrigatório.
     - Aceita um endereço válido com até 254 caracteres.
