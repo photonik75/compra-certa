@@ -1,24 +1,24 @@
-<main class="feature-page">
-  <header class="feature-topbar">
-    <button class="icon-button" type="button" aria-label="Abrir menu">☰</button>
-    <button class="icon-button" type="button" aria-label="Voltar">←</button>
-    <h1>Nova lista</h1>
-    <span></span>
-  </header>
-  <div class="feature-content">
-    <section class="feature-intro">
-      <p class="eyebrow">Planejamento</p>
-      <h2>O que vamos comprar?</h2>
-      <p>Crie uma lista vazia e adicione os itens em seguida.</p>
-    </section>
-    <form class="form-card surface">
-      <label class="field">Nome da lista *<input placeholder="Ex.: Compras do mês"></label>
-      <label class="field">Descrição ou observação<textarea placeholder="Ex.: Priorizar produtos em promoção"></textarea></label>
-      <small>Opcional · até 240 caracteres</small>
-      <footer class="form-actions">
-        <button class="secondary-button" type="button">Cancelar</button>
-        <button class="primary-button" type="button">Salvar lista</button>
-      </footer>
-    </form>
-  </div>
+<main>
+  <h1>Nova lista</h1>
+  <form [formGroup]="form" (ngSubmit)="salvar()">
+    <label for="name">Nome da lista</label>
+    <input id="name" formControlName="name" aria-describedby="name-error">
+    <div id="name-error" role="alert">
+      @if (submitted && form.controls.name.hasError('required')) { Por favor, informe o nome da lista. }
+      @if (submitted && form.controls.name.hasError('maxlength')) {
+        O nome da lista deve ter no máximo 60 caracteres.
+      }
+      @if (duplicate) { Você já possui uma lista com este nome. }
+    </div>
+    <label for="description">Descrição ou observação</label>
+    <textarea id="description" formControlName="description" aria-describedby="description-error"></textarea>
+    <div id="description-error" role="alert">
+      @if (submitted && form.controls.description.hasError('maxlength')) {
+        A descrição deve ter no máximo 240 caracteres.
+      }
+    </div>
+    @if (error) { <p role="alert">{{ error }}</p> }
+    <button type="submit" [disabled]="sending">Salvar lista</button>
+    <a routerLink="/listas">Cancelar</a>
+  </form>
 </main>

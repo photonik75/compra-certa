@@ -1,38 +1,52 @@
 <main class="feature-page">
   <header class="feature-topbar">
-    <button class="icon-button menu-button" type="button" [disabled]="encerrandoSessao()" (click)="sair()"
-      aria-label="Sair">Sair</button>
-    <span></span>
-    <h1>Minhas Listas</h1>
-    <a class="floating-button" href="/listas/nova" aria-label="Nova lista">
-      <span aria-hidden="true">+</span><span class="sr-only">Nova lista</span>
-    </a>
+    <button type="button" [disabled]="signingOut" (click)="sair()">Sair</button>
+    <h1>Minhas listas</h1>
+    <a routerLink="/listas/nova" aria-label="Nova lista">Nova lista</a>
   </header>
   <div class="feature-content">
-    <section class="feature-intro">
-      <p class="eyebrow">Visão geral</p>
-      <h2>Olá, Larissa! <span aria-hidden="true">👋</span></h2>
-      <p>Você tem 0 itens pendentes em 0 listas ativas.</p>
-    </section>
-    <label class="search-field">
-      <span class="sr-only">Pesquisar listas</span>
-      <input type="search" placeholder="Pesquisar listas">
+    <p aria-live="polite">
+      {{ collection.summary.activeLists }} listas ativas ·
+      {{ collection.summary.pendingItems }} itens pendentes
+    </p>
+    <label>
+      <span>Pesquisar listas</span>
+      <input type="search" aria-label="Pesquisar listas" [value]="search" (input)="onSearch($event)">
     </label>
-    <nav class="filter-pills" aria-label="Filtros de listas">
-      <button class="active" type="button">Ativas</button>
-      <button type="button">Concluídas</button>
-      <button type="button">Todas</button>
+    <nav aria-label="Filtros de listas">
+      <button type="button" [attr.aria-pressed]="filter === 'ACTIVE'" (click)="selecionarFiltro('ACTIVE')">Ativas</button>
+      <button type="button" [attr.aria-pressed]="filter === 'COMPLETED'"
+        (click)="selecionarFiltro('COMPLETED')">Concluídas</button>
+      <button type="button" [attr.aria-pressed]="filter === 'ALL'" (click)="selecionarFiltro('ALL')">Todas</button>
     </nav>
-    <section class="list-card surface">
-      <span class="role-badge">↗ Compartilhada</span>
-      <h3>Compras da semana</h3>
-      <p>Alterada hoje</p>
-      <div class="list-stats">
-        <strong>12 <small>itens</small></strong>
-        <strong>8 <small>pendentes</small></strong>
+    @for (item of collection.items; track item.id) {
+      <article data-testid="list-card">
+        <h2>{{ item.name }}</h2>
+        <p>{{ item.role === 'OWNER' ? 'Proprietário' : 'Participante' }}</p>
+        <p>{{ item.summary.total }} itens · {{ item.summary.pending }} pendentes · {{ item.summary.percentage }}%</p>
+        <button type="button" (click)="abrir(item)">Abrir</button>
+        @if (item.role === 'OWNER' && item.status === 'ACTIVE') {
+          <a data-action="edit" [routerLink]="['/listas', item.id, 'editar']">Editar</a>
+        }
+      </article>
+    } @empty {
+      <div aria-live="polite">
+        @if (search) {
+          <p>Nenhuma lista encontrada para esta pesquisa.</p>
+          <button type="button" (click)="limparPesquisa()">Limpar pesquisa</button>
+        } @else if (collection.summary.activeLists === 0 && filter === 'ACTIVE') {
+          <p>Você ainda não possui listas. Crie sua primeira lista para começar.</p>
+          <a routerLink="/listas/nova">Criar lista</a>
+        } @else if (filter === 'COMPLETED') {
+          <p>Você não possui listas concluídas.</p>
+        } @else {
+          <p>Você não possui listas ativas.</p>
+          <a routerLink="/listas/nova">Criar lista</a>
+        }
       </div>
-      <div class="progress"><span></span></div>
-      <footer><span>Você é proprietária</span><a href="/listas/1">Abrir →</a></footer>
-    </section>
+    }
+    @if (collection.page.hasMore) {
+      <button type="button" (click)="carregarMais()">Carregar mais</button>
+    }
   </div>
 </main>

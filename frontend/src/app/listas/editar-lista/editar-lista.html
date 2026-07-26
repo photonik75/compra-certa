@@ -1,24 +1,14 @@
-<main class="feature-page">
-  <header class="feature-topbar">
-    <button class="icon-button" type="button" aria-label="Abrir menu">☰</button>
-    <button class="icon-button" type="button" aria-label="Voltar">←</button>
-    <h1>Editar lista</h1>
-    <span></span>
-  </header>
-  <div class="feature-content">
-    <section class="feature-intro">
-      <p class="eyebrow">Compras da semana</p>
-      <h2>Ajuste os detalhes</h2>
-      <p>Mantenha o nome e a observação da lista fáceis de reconhecer.</p>
-    </section>
-    <form class="form-card surface">
-      <label class="field">Nome da lista *<input value="Compras da semana"></label>
-      <label class="field">Descrição ou observação<textarea>Priorizar produtos em promoção</textarea></label>
-      <small>Opcional · até 240 caracteres</small>
-      <footer class="form-actions">
-        <button class="secondary-button" type="button">Cancelar</button>
-        <button class="primary-button" type="button">Salvar alterações</button>
-      </footer>
-    </form>
-  </div>
+<main>
+  <h1>Editar lista</h1>
+  @if (message) { <p role="alert">{{ message }}</p> }
+  @if (conflict) { <button type="button" (click)="recarregar()">Recarregar dados</button> }
+  <form [formGroup]="form" (ngSubmit)="salvar()">
+    <label for="edit-name">Nome da lista</label>
+    <input id="edit-name" formControlName="name" aria-describedby="edit-name-error">
+    <span id="edit-name-error" role="alert"></span>
+    <label for="edit-description">Descrição ou observação</label>
+    <textarea id="edit-description" formControlName="description"></textarea>
+    <button type="submit" [disabled]="form.disabled || form.pristine || sending">Salvar alterações</button>
+    <a [routerLink]="['/listas']">Cancelar</a>
+  </form>
 </main>
