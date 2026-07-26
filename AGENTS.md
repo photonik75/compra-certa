@@ -2,6 +2,14 @@
 Forneça respostas sucintas e objetivas. Somente quando solicitado, dê maiores detalhes.
 
 # Especificações funcionais
+
+As especificações devem ser tão sucintas e objetivas quanto possível, sem perda de informação.
+A primeira seção das especificações se chama "Visão geral". Ela deve explicar, com uma frase ou até no máximo um parágrafo, o objetivo da funcionalidade sendo especificada.
+A segunda seção se chama "Imagens". Ela deve conter capturas de tela do protótipo, relativas à funcionalidade sendo descrita. As imagens devem ser numeradas sequencialmente (Figura 1, Figura 2,...) e trazer uma legenda da tela sendo exibida.
+A terceira seção se chama "Requisitos". Ela deve estar organizada em formato de árvores de componentes, em que a raiz é o nome da tela (e deve referenciar a Figura da seção Imagens sendo descrita), e cada subcomponente é exibido como um subtópico indentado (bullet), listando suas regras de negócio, aparência e comportamento. Caso esse subcomponente também apresente outros subcomponentes, um novo subnível de tópicos deve ser incluído, listando as mesmas definições para cada subcomponente, até que todas as informações necessárias para que um desenvolvedor possa criar a tela estejam presentes. 
+A quarta seção ("Contrato de API") deve especificar a API (Endpoints e Schemas), a ser posteriormente implementada com OpenAPI; indique os endpoints e contratos, para que desenvolvedores frontend e backend possam trabalhar de forma independente.
+A quinta seção ("Testes de validação") traz definições de testes funcionais caixa-preta a serem implementados posteriormente com Playwright.
+As Especificações devem ser incrementais e auto-contidas, não ficarem referenciando outras. O texto os Requisitos deve especificar O QUE fazer, não COMO fazer.
 Garanta que todas as validações exibam mensagens de erro polidas ao usuário.
 
 # Arquitetura do frontend
@@ -14,7 +22,7 @@ Organize os pacotes por funcionalidade.
 # Codificação
 Evite pular linhas em métodos. Dê preferência a métodos compactos.
 Se a mesma string for necessária em mais de um lugar, use constantes para promover reuso. Isso também vale para testes.
-Sempre que necessário criar um componente, use o comando "ng generate component <nomedocomponente>" ou implementar um resultado equivalente (código dividido em html, css, ts e spec.ts).
+Sempre que necessário criar um componente, use o comando "ng generate component <nomedocomponente>" ou implemente um resultado equivalente (código dividido em html, css, ts e spec.ts).
 Evite passar de 120 caracteres por linha. Quebre e indente onde adequado.
 Evite duplicação de código. Quando perceber oportunidades de refactoring para promover reuso, me avise.
 
