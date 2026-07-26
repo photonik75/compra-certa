@@ -26,12 +26,12 @@ public class ProdutoController {
 	private static final String ROOT = "/api/v1/products";
 	private final ProdutoService service;
 	private final SessaoService sessions;
-	ProdutoController(ProdutoService service, SessaoService sessions) {
+	public ProdutoController(ProdutoService service, SessaoService sessions) {
 		this.service = service;
 		this.sessions = sessions;
 	}
 	@GetMapping(ROOT)
-	ResponseEntity<Collection> list(
+	public ResponseEntity<Collection> list(
 			@CookieValue(name = ApiSupport.COOKIE, required = false) String token,
 			@RequestParam(required = false) String search,
 			@RequestParam(required = false) UUID categoryId,
@@ -42,7 +42,7 @@ public class ProdutoController {
 				sessions.obterContaAutenticada(token), search, categoryId, status, cursor, limit));
 	}
 	@PostMapping(ROOT)
-	ResponseEntity<Product> create(
+	public ResponseEntity<Product> create(
 			@CookieValue(name = ApiSupport.COOKIE, required = false) String token,
 			@RequestHeader(name = ApiSupport.CSRF, required = false) String csrf,
 			@RequestHeader(name = ApiSupport.IDEMPOTENCY, required = false) String key,
@@ -53,14 +53,14 @@ public class ProdutoController {
 				.eTag(ApiSupport.etag(product.version())).body(product);
 	}
 	@GetMapping(ROOT + "/{id}")
-	ResponseEntity<Product> get(
+	public ResponseEntity<Product> get(
 			@CookieValue(name = ApiSupport.COOKIE, required = false) String token,
 			@PathVariable UUID id) {
 		var product = service.get(sessions.obterContaAutenticada(token), id);
 		return ResponseEntity.ok().eTag(ApiSupport.etag(product.version())).body(product);
 	}
 	@PatchMapping(ROOT + "/{id}")
-	ResponseEntity<Product> update(
+	public ResponseEntity<Product> update(
 			@CookieValue(name = ApiSupport.COOKIE, required = false) String token,
 			@RequestHeader(name = ApiSupport.CSRF, required = false) String csrf,
 			@RequestHeader(name = HttpHeaders.IF_MATCH, required = false) String etag,
@@ -72,7 +72,7 @@ public class ProdutoController {
 		return ResponseEntity.ok().eTag(ApiSupport.etag(product.version())).body(product);
 	}
 	@DeleteMapping(ROOT + "/{id}")
-	ResponseEntity<Void> deactivate(
+	public ResponseEntity<Void> deactivate(
 			@CookieValue(name = ApiSupport.COOKIE, required = false) String token,
 			@RequestHeader(name = ApiSupport.CSRF, required = false) String csrf,
 			@RequestHeader(name = HttpHeaders.IF_MATCH, required = false) String etag,

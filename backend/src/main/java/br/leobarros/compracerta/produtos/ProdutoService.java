@@ -26,12 +26,12 @@ public class ProdutoService {
 	private final Clock clock;
 	private final ProdutoRepository repository;
 	private final IdempotenciaRepository idempotency;
-	ProdutoService(Clock clock, ProdutoRepository repository, IdempotenciaRepository idempotency) {
+	public ProdutoService(Clock clock, ProdutoRepository repository, IdempotenciaRepository idempotency) {
 		this.clock = clock;
 		this.repository = repository;
 		this.idempotency = idempotency;
 	}
-	Collection list(
+	public Collection list(
 			Conta account, String search, UUID categoryId, String status, String cursor, Integer limit) {
 		var state = status == null ? "ACTIVE" : status.toUpperCase(Locale.ROOT);
 		if (!Set.of("ACTIVE", "INACTIVE", "ALL").contains(state)) {
@@ -54,7 +54,7 @@ public class ProdutoService {
 		return new Collection(items, new PageInfo(next, more));
 	}
 	@Transactional
-	Product create(Conta account, Input input, String key) {
+	public Product create(Conta account, Input input, String key) {
 		var valid = validate(account, input);
 		var content = valid.name() + "|" + valid.categoryId() + "|" + valid.defaultUnit();
 		var replay = idempotency.replay(account.getId(), "PRODUCT_CREATE", key, content);
@@ -67,24 +67,34 @@ public class ProdutoService {
 		idempotency.finish(account.getId(), "PRODUCT_CREATE", key, id, "CREATED");
 		return get(account, id);
 	}
-	Product get(Conta account, UUID id) {
+	public Product get(Conta account, UUID id) {
 		return repository.find(id, account.getId()).orElseThrow(ApiSupport::notFound);
 	}
 	@Transactional
-	Product update(Conta account, UUID id, Input input, long version) {
+	public Product update(Conta account, UUID id, Input input, long version) {
 		var current = get(account, id);
 		if (!current.active()) {
 			throw new ApiException(HttpStatus.CONFLICT, "PRODUCT_INACTIVE", "Este produto está inativo.");
 		}
 		if (current.version() != version) throw ApiSupport.conflict(current.version());
-		var valid = validate(account, input);
+		if (input == null || input.name() == null && input.categoryId() == null && input.defaultUnit() == null) {
+			throw ApiSupport.validation("body", "Informe ao menos uma alteração.");
+		}
+		var valid = validate(account, new Input(
+				input.name() == null ? current.name() : input.name(),
+				input.categoryId() == null ? current.category().id() : input.categoryId(),
+				input.defaultUnit() == null ? current.defaultUnit() : input.defaultUnit()));
+		if (valid.name().equals(current.name()) && valid.categoryId().equals(current.category().id())
+				&& valid.defaultUnit().equals(current.defaultUnit())) {
+			throw ApiSupport.validation("body", "Informe ao menos uma alteração.");
+		}
 		if (repository.nameExists(account.getId(), ApiSupport.normalize(valid.name()), id)) throw duplicate();
 		if (repository.update(id, account.getId(), valid, category(account, valid.categoryId()),
 				clock.instant(), version) == 0) throw ApiSupport.conflict(get(account, id).version());
 		return get(account, id);
 	}
 	@Transactional
-	void deactivate(Conta account, UUID id, long version) {
+	public void deactivate(Conta account, UUID id, long version) {
 		var current = get(account, id);
 		if (!current.active()) return;
 		if (current.version() != version) throw ApiSupport.conflict(current.version());

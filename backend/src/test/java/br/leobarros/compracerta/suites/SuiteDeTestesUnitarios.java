@@ -7,7 +7,9 @@ import org.junit.platform.suite.api.Suite;
 @SelectPackages({
 		"br.leobarros.compracerta.unit",
 		"br.leobarros.compracerta.listas",
-		"br.leobarros.compracerta.categorias"
+		"br.leobarros.compracerta.categorias",
+		"br.leobarros.compracerta.produtos",
+		"br.leobarros.compracerta.itens"
 })
 public class SuiteDeTestesUnitarios {
 }

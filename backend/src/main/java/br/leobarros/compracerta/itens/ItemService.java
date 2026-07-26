@@ -33,7 +33,7 @@ public class ItemService {
 	private final ItemRepository repository;
 	private final IdempotenciaRepository idempotency;
 	private final ListaEventService events;
-	ItemService(
+	public ItemService(
 			Clock clock, ItemRepository repository, IdempotenciaRepository idempotency,
 			ListaEventService events) {
 		this.clock = clock;
@@ -41,7 +41,7 @@ public class ItemService {
 		this.idempotency = idempotency;
 		this.events = events;
 	}
-	Collection list(Conta account, UUID listId, String cursor, Integer limit) {
+	public Collection list(Conta account, UUID listId, String cursor, Integer limit) {
 		var state = access(account, listId);
 		var size = limit == null ? 30 : limit;
 		if (size < 1 || size > 30) throw ApiSupport.validation("limit", "O limite deve estar entre 1 e 30.");
@@ -53,12 +53,12 @@ public class ItemService {
 				.encodeToString((listId + "|" + (offset + size)).getBytes()) : null;
 		return new Collection(items, new PageInfo(next, more), repository.summary(listId), state.version());
 	}
-	ListItem get(Conta account, UUID listId, UUID itemId) {
+	public ListItem get(Conta account, UUID listId, UUID itemId) {
 		access(account, listId);
 		return repository.find(listId, itemId).orElseThrow(ApiSupport::notFound);
 	}
 	@Transactional
-	Mutation create(Conta account, UUID listId, Input input, String key) {
+	public Mutation create(Conta account, UUID listId, Input input, String key) {
 		active(account, listId);
 		var data = validate(account, input);
 		var content = listId + "|" + data;
@@ -102,7 +102,7 @@ public class ItemService {
 		return mutation("CREATED", created, null, listId);
 	}
 	@Transactional
-	Mutation update(Conta account, UUID listId, UUID itemId, Input input, long version, String key) {
+	public Mutation update(Conta account, UUID listId, UUID itemId, Input input, long version, String key) {
 		active(account, listId);
 		var current = get(account, listId, itemId);
 		if (current.version() != version) throw ApiSupport.conflict(current.version());
@@ -154,7 +154,7 @@ public class ItemService {
 		return mutation("UPDATED", updated, null, listId);
 	}
 	@Transactional
-	Deletion delete(Conta account, UUID listId, UUID itemId, long version, String key) {
+	public Deletion delete(Conta account, UUID listId, UUID itemId, long version, String key) {
 		active(account, listId);
 		var content = listId + "|" + itemId + "|" + version;
 		var replay = idempotency.replay(account.getId(), "ITEM_DELETE_" + itemId, key, content);
@@ -169,7 +169,7 @@ public class ItemService {
 		return deletion(itemId, listId);
 	}
 	@Transactional
-	CheckResult check(Conta account, UUID listId, UUID itemId, Boolean checked, long version) {
+	public CheckResult check(Conta account, UUID listId, UUID itemId, Boolean checked, long version) {
 		active(account, listId);
 		if (checked == null) throw ApiSupport.validation("checked", "Informe o estado do item.");
 		var item = get(account, listId, itemId);
@@ -181,7 +181,7 @@ public class ItemService {
 		events.publish(listId, listVersion, itemId, "list.item.checked", updated);
 		return checkResult(updated, listId);
 	}
-	ItemRepository.ListState access(Conta account, UUID listId) {
+	public ItemRepository.ListState access(Conta account, UUID listId) {
 		return repository.list(listId, account.getId()).orElseThrow(ApiSupport::notFound);
 	}
 	private ItemRepository.ListState active(Conta account, UUID listId) {

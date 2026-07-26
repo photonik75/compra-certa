@@ -35,13 +35,13 @@ public class ItemController {
 	private final ItemService service;
 	private final SessaoService sessions;
 	private final ListaEventService events;
-	ItemController(ItemService service, SessaoService sessions, ListaEventService events) {
+	public ItemController(ItemService service, SessaoService sessions, ListaEventService events) {
 		this.service = service;
 		this.sessions = sessions;
 		this.events = events;
 	}
 	@GetMapping(ROOT)
-	ResponseEntity<Collection> list(
+	public ResponseEntity<Collection> list(
 			@CookieValue(name = ApiSupport.COOKIE, required = false) String token,
 			@PathVariable UUID listId,
 			@RequestParam(required = false) String cursor,
@@ -49,7 +49,7 @@ public class ItemController {
 		return ResponseEntity.ok(service.list(sessions.obterContaAutenticada(token), listId, cursor, limit));
 	}
 	@PostMapping(ROOT)
-	ResponseEntity<Mutation> create(
+	public ResponseEntity<Mutation> create(
 			@CookieValue(name = ApiSupport.COOKIE, required = false) String token,
 			@RequestHeader(name = ApiSupport.CSRF, required = false) String csrf,
 			@RequestHeader(name = ApiSupport.IDEMPOTENCY, required = false) String key,
@@ -63,7 +63,7 @@ public class ItemController {
 				.eTag(ApiSupport.etag(result.item().version())).body(result);
 	}
 	@GetMapping(ROOT + "/{itemId}")
-	ResponseEntity<ListItem> get(
+	public ResponseEntity<ListItem> get(
 			@CookieValue(name = ApiSupport.COOKIE, required = false) String token,
 			@PathVariable UUID listId,
 			@PathVariable UUID itemId) {
@@ -71,7 +71,7 @@ public class ItemController {
 		return ResponseEntity.ok().eTag(ApiSupport.etag(item.version())).body(item);
 	}
 	@PatchMapping(ROOT + "/{itemId}")
-	ResponseEntity<Mutation> update(
+	public ResponseEntity<Mutation> update(
 			@CookieValue(name = ApiSupport.COOKIE, required = false) String token,
 			@RequestHeader(name = ApiSupport.CSRF, required = false) String csrf,
 			@RequestHeader(name = ApiSupport.IDEMPOTENCY, required = false) String key,
@@ -85,7 +85,7 @@ public class ItemController {
 		return ResponseEntity.ok().eTag(ApiSupport.etag(result.item().version())).body(result);
 	}
 	@DeleteMapping(ROOT + "/{itemId}")
-	ResponseEntity<Deletion> delete(
+	public ResponseEntity<Deletion> delete(
 			@CookieValue(name = ApiSupport.COOKIE, required = false) String token,
 			@RequestHeader(name = ApiSupport.CSRF, required = false) String csrf,
 			@RequestHeader(name = ApiSupport.IDEMPOTENCY, required = false) String key,
@@ -97,7 +97,7 @@ public class ItemController {
 				sessions.obterContaAutenticada(token), listId, itemId, ApiSupport.version(etag), key));
 	}
 	@PutMapping(ROOT + "/{itemId}/checked")
-	ResponseEntity<CheckResult> check(
+	public ResponseEntity<CheckResult> check(
 			@CookieValue(name = ApiSupport.COOKIE, required = false) String token,
 			@RequestHeader(name = ApiSupport.CSRF, required = false) String csrf,
 			@RequestHeader(name = HttpHeaders.IF_MATCH, required = false) String etag,
@@ -111,7 +111,7 @@ public class ItemController {
 		return ResponseEntity.ok().eTag(ApiSupport.etag(result.item().version())).body(result);
 	}
 	@GetMapping(path = "/api/v1/lists/{listId}/events", produces = "text/event-stream")
-	ResponseEntity<SseEmitter> events(
+	public ResponseEntity<SseEmitter> events(
 			@CookieValue(name = ApiSupport.COOKIE, required = false) String token,
 			@PathVariable UUID listId) {
 		service.access(sessions.obterContaAutenticada(token), listId);

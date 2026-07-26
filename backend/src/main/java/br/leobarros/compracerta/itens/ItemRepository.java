@@ -18,15 +18,15 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 @Repository
-class ItemRepository {
+public class ItemRepository {
 	private static final String FIELDS = "SELECT i.*,criador.nome criador_nome,marcador.nome marcador_nome "
 			+ "FROM itens_lista i LEFT JOIN contas criador ON criador.id=i.criado_por "
 			+ "LEFT JOIN contas marcador ON marcador.id=i.marcado_por ";
 	private final JdbcTemplate jdbc;
-	ItemRepository(JdbcTemplate jdbc) {
+	public ItemRepository(JdbcTemplate jdbc) {
 		this.jdbc = jdbc;
 	}
-	Optional<ListState> list(UUID listId, UUID accountId) {
+	public Optional<ListState> list(UUID listId, UUID accountId) {
 		return jdbc.query(
 				"SELECT id,estado,versao FROM listas l WHERE id=? AND NOT excluida AND "
 						+ "(proprietario_id=? OR EXISTS(SELECT 1 FROM participantes_lista p "
@@ -35,17 +35,17 @@ class ItemRepository {
 						rs.getObject("id", UUID.class), rs.getString("estado"), rs.getLong("versao")),
 				listId, accountId, accountId).stream().findFirst();
 	}
-	List<ListItem> listItems(UUID listId, int limit, int offset) {
+	public List<ListItem> listItems(UUID listId, int limit, int offset) {
 		return jdbc.query(
 				FIELDS + "WHERE i.lista_id=? AND NOT i.excluido ORDER BY i.criado_em,i.id LIMIT ? OFFSET ?",
 				this::map, listId, limit + 1, offset);
 	}
-	Optional<ListItem> find(UUID listId, UUID itemId) {
+	public Optional<ListItem> find(UUID listId, UUID itemId) {
 		return jdbc.query(
 				FIELDS + "WHERE i.lista_id=? AND i.id=? AND NOT i.excluido",
 				this::map, listId, itemId).stream().findFirst();
 	}
-	Optional<ListItem> duplicate(UUID listId, String productName, UUID ignored) {
+	public Optional<ListItem> duplicate(UUID listId, String productName, UUID ignored) {
 		var sql = FIELDS + "WHERE i.lista_id=? AND NOT i.excluido AND "
 				+ "lower(translate(i.produto_nome,'áàâãäéèêëíìîïóòôõöúùûüç','aaaaaeeeeiiiiooooouuuuc'))=?"
 				+ (ignored == null ? "" : " AND i.id<>?") + " LIMIT 1";
@@ -53,7 +53,7 @@ class ItemRepository {
 				? jdbc.query(sql, this::map, listId, productName)
 				: jdbc.query(sql, this::map, listId, productName, ignored)).stream().findFirst();
 	}
-	Optional<ProductData> product(UUID productId, UUID categoryId, UUID accountId) {
+	public Optional<ProductData> product(UUID productId, UUID categoryId, UUID accountId) {
 		return jdbc.query(
 				"SELECT p.id,p.nome,p.unidade,c.id categoria_id,c.nome categoria_nome,c.icone "
 						+ "FROM produtos p JOIN categorias c ON c.id=? AND c.conta_id=? AND NOT c.excluida "
@@ -64,7 +64,7 @@ class ItemRepository {
 						rs.getString("icone")),
 				categoryId, accountId, productId, accountId).stream().findFirst();
 	}
-	void create(UUID id, UUID listId, UUID actorId, InputData input, Instant now) {
+	public void create(UUID id, UUID listId, UUID actorId, InputData input, Instant now) {
 		jdbc.update(
 				"INSERT INTO itens_lista(id,lista_id,produto_id,produto_nome,categoria_id,categoria_nome,"
 						+ "categoria_icone,quantidade,unidade,observacoes,criado_por,criado_em,atualizado_em) "
@@ -73,7 +73,7 @@ class ItemRepository {
 				input.product().categoryName(), input.product().categoryIcon(), input.quantity(), input.unit(),
 				input.notes(), actorId, Timestamp.from(now), Timestamp.from(now));
 	}
-	int update(UUID id, InputData input, Instant now, long version) {
+	public int update(UUID id, InputData input, Instant now, long version) {
 		return jdbc.update(
 				"UPDATE itens_lista SET produto_id=?,produto_nome=?,categoria_id=?,categoria_nome=?,"
 						+ "categoria_icone=?,quantidade=?,unidade=?,observacoes=?,atualizado_em=?,versao=versao+1 "
@@ -82,35 +82,35 @@ class ItemRepository {
 				input.product().categoryName(), input.product().categoryIcon(), input.quantity(), input.unit(),
 				input.notes(), Timestamp.from(now), id, version);
 	}
-	int merge(UUID target, BigDecimal quantity, Instant now, long version) {
+	public int merge(UUID target, BigDecimal quantity, Instant now, long version) {
 		return jdbc.update(
 				"UPDATE itens_lista SET quantidade=quantidade+?,atualizado_em=?,versao=versao+1 "
 						+ "WHERE id=? AND NOT excluido AND versao=?",
 				quantity, Timestamp.from(now), target, version);
 	}
-	int delete(UUID id, long version) {
+	public int delete(UUID id, long version) {
 		return jdbc.update(
 				"UPDATE itens_lista SET excluido=TRUE,atualizado_em=now(),versao=versao+1 "
 						+ "WHERE id=? AND NOT excluido AND versao=?",
 				id, version);
 	}
-	int check(UUID id, boolean checked, UUID actorId, Instant now, long version) {
+	public int check(UUID id, boolean checked, UUID actorId, Instant now, long version) {
 		return jdbc.update(
 				"UPDATE itens_lista SET marcado=?,marcado_em=?,marcado_por=?,atualizado_em=?,versao=versao+1 "
 						+ "WHERE id=? AND NOT excluido AND versao=?",
 				checked, checked ? Timestamp.from(now) : null, checked ? actorId : null,
 				Timestamp.from(now), id, version);
 	}
-	long touchList(UUID listId, Instant now) {
+	public long touchList(UUID listId, Instant now) {
 		jdbc.update(
 				"UPDATE listas SET atualizada_em=?,versao=versao+1 WHERE id=?",
 				Timestamp.from(now), listId);
 		return jdbc.queryForObject("SELECT versao FROM listas WHERE id=?", Long.class, listId);
 	}
-	long listVersion(UUID listId) {
+	public long listVersion(UUID listId) {
 		return jdbc.queryForObject("SELECT versao FROM listas WHERE id=?", Long.class, listId);
 	}
-	ListSummary summary(UUID listId) {
+	public ListSummary summary(UUID listId) {
 		return jdbc.queryForObject(
 				"SELECT count(*) total,count(*) FILTER(WHERE marcado) checked FROM itens_lista "
 						+ "WHERE lista_id=? AND NOT excluido",
@@ -141,10 +141,10 @@ class ItemRepository {
 		var value = rs.getTimestamp(field);
 		return value == null ? null : value.toInstant();
 	}
-	record ListState(UUID id, String status, long version) {
+	public record ListState(UUID id, String status, long version) {
 	}
-	record ProductData(UUID id, String name, UUID categoryId, String categoryName, String categoryIcon) {
+	public record ProductData(UUID id, String name, UUID categoryId, String categoryName, String categoryIcon) {
 	}
-	record InputData(ProductData product, BigDecimal quantity, String unit, String notes) {
+	public record InputData(ProductData product, BigDecimal quantity, String unit, String notes) {
 	}
 }

@@ -14,14 +14,14 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 @Repository
-class ProdutoRepository {
+public class ProdutoRepository {
 	private static final String FIELDS = "SELECT p.*,NOT c.excluida categoria_disponivel "
 			+ "FROM produtos p JOIN categorias c ON c.id=p.categoria_id ";
 	private final JdbcTemplate jdbc;
-	ProdutoRepository(JdbcTemplate jdbc) {
+	public ProdutoRepository(JdbcTemplate jdbc) {
 		this.jdbc = jdbc;
 	}
-	List<Product> list(UUID accountId, String search, UUID categoryId, String status, int limit, int offset) {
+	public List<Product> list(UUID accountId, String search, UUID categoryId, String status, int limit, int offset) {
 		var sql = new StringBuilder(FIELDS).append("WHERE p.conta_id=? ");
 		var args = new java.util.ArrayList<>();
 		args.add(accountId);
@@ -43,11 +43,11 @@ class ProdutoRepository {
 		args.add(offset);
 		return jdbc.query(sql.toString(), this::map, args.toArray());
 	}
-	Optional<Product> find(UUID id, UUID accountId) {
+	public Optional<Product> find(UUID id, UUID accountId) {
 		return jdbc.query(FIELDS + "WHERE p.id=? AND p.conta_id=?", this::map, id, accountId)
 				.stream().findFirst();
 	}
-	Optional<CategoryReference> category(UUID id, UUID accountId) {
+	public Optional<CategoryReference> category(UUID id, UUID accountId) {
 		return jdbc.query(
 				"SELECT id,nome,icone,NOT excluida disponivel FROM categorias WHERE id=? AND conta_id=?",
 				(rs, row) -> new CategoryReference(
@@ -55,7 +55,7 @@ class ProdutoRepository {
 						rs.getBoolean("disponivel")),
 				id, accountId).stream().findFirst();
 	}
-	boolean nameExists(UUID accountId, String name, UUID ignored) {
+	public boolean nameExists(UUID accountId, String name, UUID ignored) {
 		var sql = "SELECT count(*) FROM produtos WHERE conta_id=? AND ativo AND "
 				+ "lower(translate(nome,'áàâãäéèêëíìîïóòôõöúùûüç','aaaaaeeeeiiiiooooouuuuc'))=?"
 				+ (ignored == null ? "" : " AND id<>?");
@@ -64,21 +64,22 @@ class ProdutoRepository {
 				: jdbc.queryForObject(sql, Integer.class, accountId, name, ignored);
 		return count != null && count > 0;
 	}
-	void create(UUID id, UUID accountId, ProdutoDtos.Input input, CategoryReference category, Instant now) {
+	public void create(UUID id, UUID accountId, ProdutoDtos.Input input, CategoryReference category, Instant now) {
 		jdbc.update(
 				"INSERT INTO produtos(id,conta_id,categoria_id,nome,unidade,categoria_nome,categoria_icone,"
 						+ "criado_em,atualizado_em) VALUES (?,?,?,?,?,?,?,?,?)",
 				id, accountId, input.categoryId(), input.name(), input.defaultUnit(), category.name(),
 				category.icon(), Timestamp.from(now), Timestamp.from(now));
 	}
-	int update(UUID id, UUID accountId, ProdutoDtos.Input input, CategoryReference category, Instant now, long version) {
+	public int update(
+			UUID id, UUID accountId, ProdutoDtos.Input input, CategoryReference category, Instant now, long version) {
 		return jdbc.update(
 				"UPDATE produtos SET nome=?,categoria_id=?,unidade=?,categoria_nome=?,categoria_icone=?,"
 						+ "atualizado_em=?,versao=versao+1 WHERE id=? AND conta_id=? AND ativo AND versao=?",
 				input.name(), input.categoryId(), input.defaultUnit(), category.name(), category.icon(),
 				Timestamp.from(now), id, accountId, version);
 	}
-	int deactivate(UUID id, UUID accountId, long version) {
+	public int deactivate(UUID id, UUID accountId, long version) {
 		return jdbc.update(
 				"UPDATE produtos SET ativo=FALSE,atualizado_em=now(),versao=versao+1 "
 						+ "WHERE id=? AND conta_id=? AND ativo AND versao=?",
