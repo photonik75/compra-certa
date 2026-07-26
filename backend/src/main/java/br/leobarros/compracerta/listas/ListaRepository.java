@@ -8,7 +8,7 @@ import br.leobarros.compracerta.listas.ListaDtos.CollectionSummary;
 import br.leobarros.compracerta.listas.ListaDtos.ListCollection;
 import br.leobarros.compracerta.listas.ListaDtos.ListDetail;
 
-interface ListaRepository {
+public interface ListaRepository {
 
 	ListCollection listar(UUID contaId, String status, String search, Instant cursorData, UUID cursorId, int limit);
 

@@ -40,8 +40,12 @@ class ListaPostgresqlRepository implements ListaRepository {
 	private final NamedParameterJdbcTemplate namedJdbc;
 
 	ListaPostgresqlRepository(JdbcTemplate jdbc) {
+		this(jdbc, new NamedParameterJdbcTemplate(jdbc));
+	}
+
+	ListaPostgresqlRepository(JdbcTemplate jdbc, NamedParameterJdbcTemplate namedJdbc) {
 		this.jdbc = jdbc;
-		this.namedJdbc = new NamedParameterJdbcTemplate(jdbc);
+		this.namedJdbc = namedJdbc;
 	}
 
 	@Override

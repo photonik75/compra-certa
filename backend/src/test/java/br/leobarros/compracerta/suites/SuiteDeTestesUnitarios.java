@@ -4,6 +4,9 @@ import org.junit.platform.suite.api.SelectPackages;
 import org.junit.platform.suite.api.Suite;
 
 @Suite
-@SelectPackages("br.leobarros.compracerta.unit")
+@SelectPackages({
+		"br.leobarros.compracerta.unit",
+		"br.leobarros.compracerta.listas"
+})
 public class SuiteDeTestesUnitarios {
 }

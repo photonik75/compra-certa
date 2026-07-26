@@ -40,7 +40,7 @@ public class ListaController {
 	}
 
 	@GetMapping(ENDPOINT_LISTAS)
-	ResponseEntity<ListCollection> listar(
+	public ResponseEntity<ListCollection> listar(
 			@CookieValue(name = COOKIE_SESSAO, required = false) String token,
 			@RequestParam(required = false) String status,
 			@RequestParam(required = false) String search,
@@ -51,7 +51,7 @@ public class ListaController {
 	}
 
 	@PostMapping(ENDPOINT_LISTAS)
-	ResponseEntity<ListDetail> criar(
+	public ResponseEntity<ListDetail> criar(
 			@CookieValue(name = COOKIE_SESSAO, required = false) String token,
 			@RequestHeader(name = HEADER_CSRF, required = false) String csrf,
 			@RequestHeader(name = HEADER_IDEMPOTENCIA, required = false) String chave,
@@ -65,7 +65,7 @@ public class ListaController {
 	}
 
 	@GetMapping(ENDPOINT_LISTA)
-	ResponseEntity<ListDetail> buscar(
+	public ResponseEntity<ListDetail> buscar(
 			@CookieValue(name = COOKIE_SESSAO, required = false) String token,
 			@PathVariable UUID listId) {
 		var detalhe = listaService.buscar(sessaoService.obterContaAutenticada(token), listId);
@@ -73,7 +73,7 @@ public class ListaController {
 	}
 
 	@PatchMapping(ENDPOINT_LISTA)
-	ResponseEntity<ListDetail> atualizar(
+	public ResponseEntity<ListDetail> atualizar(
 			@CookieValue(name = COOKIE_SESSAO, required = false) String token,
 			@RequestHeader(name = HEADER_CSRF, required = false) String csrf,
 			@RequestHeader(name = HttpHeaders.IF_MATCH, required = false) String ifMatch,
@@ -93,7 +93,7 @@ public class ListaController {
 	}
 
 	private void validarCorpo(JsonNode body) {
-		if (body == null || !body.isObject()) {
+		if (body == null || !body.isObject() || body.isEmpty()) {
 			throw new ListaExceptions.Validacao("body", "Informe ao menos uma alteração.");
 		}
 		body.propertyNames().forEach(campo -> {
