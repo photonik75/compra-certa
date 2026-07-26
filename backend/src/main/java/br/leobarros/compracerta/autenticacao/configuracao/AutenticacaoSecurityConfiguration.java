@@ -27,6 +27,8 @@ public class AutenticacaoSecurityConfiguration {
 								SessaoController.ENDPOINT_CONSULTA,
 								SessaoController.ENDPOINT_LOGOUT).permitAll()
 						.requestMatchers("/api/v1/lists/**", ListaController.ENDPOINT_LISTAS).permitAll()
+						.requestMatchers("/api/v1/categories/**", "/api/v1/products/**").permitAll()
+						.requestMatchers("/api/v1/invitations/**").permitAll()
 						.anyRequest().authenticated())
 				.csrf(csrf -> csrf.ignoringRequestMatchers(
 						CadastroController.ENDPOINT_CADASTRO,
@@ -36,7 +38,10 @@ public class AutenticacaoSecurityConfiguration {
 						SessaoController.ENDPOINT_CONSULTA,
 						SessaoController.ENDPOINT_LOGOUT,
 						"/api/v1/lists/**",
-						ListaController.ENDPOINT_LISTAS));
+						ListaController.ENDPOINT_LISTAS,
+						"/api/v1/categories/**",
+						"/api/v1/products/**",
+						"/api/v1/invitations/**"));
 		return http.build();
 	}
 }

@@ -1,0 +1,3 @@
+ALTER TABLE participantes_lista
+    ADD COLUMN entrou_em TIMESTAMPTZ NOT NULL DEFAULT now(),
+    ADD COLUMN versao BIGINT NOT NULL DEFAULT 1;
