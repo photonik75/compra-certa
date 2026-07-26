@@ -4,6 +4,7 @@ import br.leobarros.compracerta.autenticacao.cadastro.CadastroController;
 import br.leobarros.compracerta.autenticacao.login.LoginController;
 import br.leobarros.compracerta.autenticacao.sessao.SessaoController;
 import br.leobarros.compracerta.autenticacao.recuperacao.RecuperacaoSenhaController;
+import br.leobarros.compracerta.listas.ListaController;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -25,6 +26,7 @@ public class AutenticacaoSecurityConfiguration {
 						.requestMatchers(
 								SessaoController.ENDPOINT_CONSULTA,
 								SessaoController.ENDPOINT_LOGOUT).permitAll()
+						.requestMatchers("/api/v1/lists/**", ListaController.ENDPOINT_LISTAS).permitAll()
 						.anyRequest().authenticated())
 				.csrf(csrf -> csrf.ignoringRequestMatchers(
 						CadastroController.ENDPOINT_CADASTRO,
@@ -32,7 +34,9 @@ public class AutenticacaoSecurityConfiguration {
 						RecuperacaoSenhaController.ENDPOINT_SOLICITACAO,
 						RecuperacaoSenhaController.ENDPOINT_REDEFINICAO,
 						SessaoController.ENDPOINT_CONSULTA,
-						SessaoController.ENDPOINT_LOGOUT));
+						SessaoController.ENDPOINT_LOGOUT,
+						"/api/v1/lists/**",
+						ListaController.ENDPOINT_LISTAS));
 		return http.build();
 	}
 }

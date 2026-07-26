@@ -144,4 +144,8 @@ public class SessaoService {
 		return Sha256.base64(valor);
 	}
 
+	public Conta obterContaAutenticada(String token) {
+		return buscarValida(token).conta();
+	}
+
 }

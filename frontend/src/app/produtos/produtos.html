@@ -1,14 +1,15 @@
 <main class="feature-page">
   <header class="feature-topbar">
+    <span></span>
     <h1>Produtos</h1>
     <button data-action="create" type="button" (click)="openCreate($event)">Novo produto</button>
   </header>
   <div class="feature-content">
-    <label>
+    <label class="search-field">
       <span>Pesquisar produtos</span>
       <input type="search" aria-label="Pesquisar produtos" [value]="query" (input)="onSearch($event)">
     </label>
-    <label>
+    <label class="field category-filter">
       <span>Categoria</span>
       <select [value]="categoryId" (change)="onCategory($event)">
         <option value="">Todas as categorias</option>
@@ -17,7 +18,7 @@
         }
       </select>
     </label>
-    <section aria-label="Produtos cadastrados">
+    <section class="product-list surface" aria-label="Produtos cadastrados">
       @for (product of products; track product.id) {
         <article data-testid="product">
           <span aria-hidden="true">{{ product.category.icon }}</span>
@@ -44,7 +45,7 @@
         }
       }
     </section>
-    <aside><strong>Histórico preservado:</strong> produtos usados anteriormente são desativados para novos
+    <aside class="notice"><strong>Histórico preservado:</strong> produtos usados anteriormente são desativados para novos
       usos sem alterar listas existentes.</aside>
     @if (notice) { <p role="status" aria-live="polite">{{ notice }}</p> }
   </div>
