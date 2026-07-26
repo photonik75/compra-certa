@@ -1,29 +1,47 @@
-<main class="feature-page">
-  <header class="feature-topbar">
-    <button class="icon-button" type="button" aria-label="Abrir menu">☰</button>
-    <button class="icon-button" type="button" aria-label="Voltar">←</button>
-    <h1>Compartilhar lista</h1>
-    <span></span>
-  </header>
-  <div class="feature-content">
-    <section class="feature-intro">
-      <p class="eyebrow">Compras da semana</p>
-      <h2>Comprem juntos</h2>
-      <p>Convide pessoas e acompanhe as mudanças na mesma lista.</p>
-    </section>
-    <section class="invite-card surface">
-      <h2>Convidar participante</h2>
-      <p>A pessoa receberá acesso de edição. Se ainda não tiver conta, o convite ficará pendente.</p>
-      <label class="field">E-mail<input type="email" placeholder="pessoa@email.com"></label>
-      <button class="primary-button" type="button">Convidar</button>
-      <aside class="notice"><strong>Permissão desta versão:</strong> todos os participantes podem adicionar,
-        editar e marcar itens. Somente a proprietária administra pessoas.</aside>
-    </section>
-    <section class="people-card surface">
+<main>
+  <h1>Compartilhar lista</h1>
+  @if (access) {
+    @if (access.list.role === 'OWNER' && access.list.status === 'ACTIVE') {
+      <form (ngSubmit)="invite()">
+        <label for="invite-email">Convidar participante</label>
+        <input id="invite-email" type="email" [formControl]="email" aria-describedby="email-error">
+        <div id="email-error" role="alert">
+          @if (submitted && email.invalid) { Informe um e-mail válido. }
+        </div>
+        <button type="submit" [disabled]="sending">Convidar</button>
+      </form>
+    }
+    <section aria-label="Pessoas com acesso">
       <h2>Pessoas com acesso</h2>
-      <article class="owner"><span class="avatar">LB</span><div><h3>Larissa Barros</h3><p>larissa@email.com</p></div><strong>Proprietário</strong></article>
-      <article><span class="avatar">AR</span><div><h3>Ana Rodrigues</h3><p>ana@email.com</p></div><strong>Participante</strong></article>
-      <article><span class="avatar">PN</span><div><h3>Paula Nunes</h3><p>paula@email.com</p></div><strong>Convites pendentes</strong></article>
+      <article><strong>{{ access.owner.name }}</strong> {{ access.owner.email }} · Proprietário</article>
+      @for (member of access.members; track member.id) {
+        <article><strong>{{ member.name }}</strong> {{ member.email }} · Participante
+          @if (access.list.role === 'OWNER' && access.list.status === 'ACTIVE') {
+            <button type="button" (click)="requestRemove(member)">Remover</button>
+          }
+        </article>
+      }
     </section>
-  </div>
+    <section aria-label="Convites pendentes">
+      <h2>Convites pendentes</h2>
+      @for (invitation of access.invitations; track invitation.id) {
+        <article>{{ invitation.email }} · válido até {{ invitation.expiresAt }} · {{ invitation.deliveryStatus }}
+          <button type="button" (click)="resend(invitation)">Reenviar</button>
+          <button type="button" (click)="cancelInvitation(invitation)">Cancelar convite</button>
+        </article>
+      }
+    </section>
+    @if (access.list.role !== 'OWNER' && access.list.status === 'ACTIVE') {
+      <button type="button" (click)="leave()">Sair da lista</button>
+    }
+  }
+  @if (notice) { <p role="status" aria-live="polite">{{ notice }}</p> }
 </main>
+@if (selectedMember) {
+  <section role="dialog" aria-modal="true">
+    <h2>Remover {{ selectedMember.name }}?</h2>
+    <p>A pessoa perderá o acesso à lista.</p>
+    <button type="button" (click)="confirmRemove()">Remover</button>
+    <button type="button" (click)="cancelRemove()">Cancelar</button>
+  </section>
+}

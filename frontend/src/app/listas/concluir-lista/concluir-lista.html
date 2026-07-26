@@ -1,12 +1,28 @@
-<main class="dialog-preview">
-  <div class="dialog-backdrop"></div>
-  <section class="confirmation surface" role="dialog" aria-labelledby="titulo-concluir-lista">
-    <h1 id="titulo-concluir-lista">Concluir lista</h1>
-    <p>A lista ficará somente para consulta e poderá ser reaberta depois.</p>
-    <strong>5 itens pendentes ainda estão pendentes.</strong>
-    <footer>
-      <button class="secondary-button" type="button">Cancelar</button>
-      <button class="primary-button" type="button">Concluir</button>
-    </footer>
+<section aria-label="Ciclo de vida da lista">
+  @if (lista.role === 'OWNER' && lista.status === 'ACTIVE') {
+    <button data-action="complete" type="button" (click)="open('complete', $event)">Concluir lista</button>
+  }
+  @if (lista.role === 'OWNER' && lista.status === 'COMPLETED') {
+    <p role="status">Lista concluída: somente para consulta.</p>
+    <button type="button" (click)="open('reopen', $event)">Reabrir</button>
+    <button type="button" (click)="open('delete', $event)">Excluir</button>
+  }
+  @if (notice) { <p role="alert" aria-live="polite">{{ notice }}</p> }
+</section>
+@if (action) {
+  <section role="dialog" aria-modal="true">
+    @if (action === 'complete') {
+      <h2>Concluir lista</h2>
+      <p>A lista possui {{ lista.summary.pending }} itens pendentes e ficará somente para consulta.</p>
+    } @else if (action === 'reopen') {
+      <h2>Reabrir lista</h2><p>As ações de edição e compra voltarão a ficar disponíveis.</p>
+    } @else {
+      <h2>Excluir a lista ‘{{ lista.name }}’?</h2><p>Todos perderão o acesso à lista.</p>
+    }
+    @if (conflict) { <button type="button" (click)="reload()">Recarregar dados</button> }
+    <button type="button" [disabled]="sending" (click)="confirm()">
+      {{ action === 'delete' ? 'Excluir' : action === 'reopen' ? 'Reabrir' : 'Concluir' }}
+    </button>
+    <button type="button" (click)="close()">Cancelar</button>
   </section>
-</main>
+}
