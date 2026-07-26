@@ -20,7 +20,7 @@
       <button type="button" [attr.aria-pressed]="filter === 'ALL'" (click)="selecionarFiltro('ALL')">Todas</button>
     </nav>
     @for (item of collection.items; track item.id) {
-      <article data-testid="list-card">
+      <article class="list-card surface" data-testid="list-card">
         <h2>{{ item.name }}</h2>
         <p>{{ item.role === 'OWNER' ? 'Proprietário' : 'Participante' }}</p>
         <p>{{ item.summary.total }} itens · {{ item.summary.pending }} pendentes · {{ item.summary.percentage }}%</p>

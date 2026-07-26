@@ -1,8 +1,8 @@
-<main>
+<main class="feature-page">
   <h1>Editar lista</h1>
   @if (message) { <p role="alert">{{ message }}</p> }
   @if (conflict) { <button type="button" (click)="recarregar()">Recarregar dados</button> }
-  <form [formGroup]="form" (ngSubmit)="salvar()">
+  <form class="form-card surface" [formGroup]="form" (ngSubmit)="salvar()">
     <label for="edit-name">Nome da lista</label>
     <input id="edit-name" formControlName="name" aria-describedby="edit-name-error">
     <span id="edit-name-error" role="alert">

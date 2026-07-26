@@ -1,14 +1,15 @@
 <main class="feature-page">
   <header class="feature-topbar">
+    <span></span>
     <h1>Categorias</h1>
     <button data-action="create" type="button" (click)="openCreate($event)">Nova categoria</button>
   </header>
   <div class="feature-content">
-    <label>
+    <label class="search-field">
       <span>Pesquisar categorias</span>
       <input type="search" aria-label="Pesquisar categorias" [value]="search" (input)="onSearch($event)">
     </label>
-    <section aria-label="Categorias cadastradas">
+    <section class="category-list surface" aria-label="Categorias cadastradas">
       <span class="sr-only">Nome</span>
       @for (category of categories; track category.id) {
         <article data-testid="category">
@@ -30,7 +31,7 @@
         }
       }
     </section>
-    <aside>Sobre a exclusão: categorias com produtos ativos associados precisam ter seus produtos movidos
+    <aside class="notice">Sobre a exclusão: categorias com produtos ativos associados precisam ter seus produtos movidos
       ou desativados antes de serem excluídas.</aside>
     @if (notice) { <p role="status" aria-live="polite">{{ notice }}</p> }
   </div>

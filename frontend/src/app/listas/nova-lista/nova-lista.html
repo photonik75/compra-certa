@@ -1,6 +1,6 @@
-<main>
+<main class="feature-page">
   <h1>Nova lista</h1>
-  <form [formGroup]="form" (ngSubmit)="salvar()">
+  <form class="form-card surface" [formGroup]="form" (ngSubmit)="salvar()">
     <label for="name">Nome da lista</label>
     <input id="name" formControlName="name" aria-describedby="name-error">
     <div id="name-error" role="alert">

@@ -1,6 +1,6 @@
-<main>
+<main class="feature-page">
   <h1>Adicionar item</h1>
-  <form [formGroup]="form" (ngSubmit)="save()">
+  <form class="form-card surface" [formGroup]="form" (ngSubmit)="save()">
     <label for="product-search">Produto</label>
     <input id="product-search" type="search" (input)="onProductSearch($event)"
       aria-describedby="product-error">

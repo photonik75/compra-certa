@@ -1,6 +1,6 @@
-<main>
+<main class="feature-page">
   <h1>Editar item</h1>
-  <form [formGroup]="form" (ngSubmit)="save()">
+  <form class="form-card surface" [formGroup]="form" (ngSubmit)="save()">
     <label>Produto <input formControlName="productId"></label>
     <label>Quantidade <input formControlName="quantity" inputmode="decimal"></label>
     <label>Unidade <input formControlName="unit"></label>
