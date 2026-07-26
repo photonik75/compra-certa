@@ -1,33 +1,98 @@
 <main class="feature-page">
   <header class="feature-topbar">
-    <button class="icon-button" type="button" aria-label="Abrir menu">☰</button>
-    <span></span>
     <h1>Produtos</h1>
-    <button class="floating-button" type="button" aria-label="Novo produto">
-      <span aria-hidden="true">+</span><span class="sr-only">Novo produto</span>
-    </button>
+    <button data-action="create" type="button" (click)="openCreate($event)">Novo produto</button>
   </header>
   <div class="feature-content">
-    <section class="feature-intro">
-      <p class="eyebrow">Catálogo pessoal</p>
-      <h2>Produtos e tipos de item</h2>
-      <p>Defina categoria e unidade padrão para adicionar itens mais rapidamente.</p>
-    </section>
-    <label class="search-field">
-      <span class="sr-only">Pesquisar produtos</span>
-      <input type="search" placeholder="Pesquisar produtos" aria-label="Pesquisar produtos">
+    <label>
+      <span>Pesquisar produtos</span>
+      <input type="search" aria-label="Pesquisar produtos" [value]="query" (input)="onSearch($event)">
     </label>
-    <label class="field category-filter">
-      <span class="sr-only">Categoria</span>
-      <select><option>Todas as categorias</option></select>
+    <label>
+      <span>Categoria</span>
+      <select [value]="categoryId" (change)="onCategory($event)">
+        <option value="">Todas as categorias</option>
+        @for (category of categories; track category.id) {
+          <option [value]="category.id">{{ category.name }}</option>
+        }
+      </select>
     </label>
-    <section class="product-list surface">
-      <article><div><h3>Arroz integral</h3><p>Mercearia · unidade padrão: pacote</p></div><span>✎　×</span></article>
-      <article><div><h3>Banana prata</h3><p>Hortifruti · unidade padrão: unidade</p></div><span>✎　×</span></article>
-      <article><div><h3>Leite sem lactose</h3><p>Bebidas · unidade padrão: litro</p></div><span>✎　×</span></article>
-      <article><div><h3>Detergente neutro</h3><p>Limpeza · unidade padrão: frasco</p></div><span>✎　×</span></article>
+    <section aria-label="Produtos cadastrados">
+      @for (product of products; track product.id) {
+        <article data-testid="product">
+          <span aria-hidden="true">{{ product.category.icon }}</span>
+          <div>
+            <h2>{{ product.name }}</h2>
+            <p>{{ product.category.name }} · unidade padrão: {{ unitLabel(product.defaultUnit) }}</p>
+          </div>
+          @if (product.active) {
+            <button data-action="edit" type="button" (click)="openEdit(product, $event)">Editar</button>
+            <button data-action="deactivate" type="button"
+              (click)="openDeactivate(product, $event)">Desativar</button>
+          }
+        </article>
+      } @empty {
+        @if (query) {
+          <p>Nenhum produto encontrado para esta pesquisa.</p>
+          <button type="button" (click)="clearSearch()">Limpar pesquisa</button>
+        } @else if (categoryId) {
+          <p>Nenhum produto corresponde aos filtros selecionados.</p>
+          <button type="button" (click)="clearFilters()">Limpar filtros</button>
+        } @else {
+          <p>Você ainda não possui produtos. Cadastre seu primeiro produto para começar.</p>
+          <button type="button" (click)="openCreate($event)">Novo produto</button>
+        }
+      }
     </section>
-    <aside class="notice"><strong>Histórico preservado:</strong> produtos usados anteriormente são apenas
-      desativados para novos usos; listas antigas não mudam.</aside>
+    <aside><strong>Histórico preservado:</strong> produtos usados anteriormente são desativados para novos
+      usos sem alterar listas existentes.</aside>
+    @if (notice) { <p role="status" aria-live="polite">{{ notice }}</p> }
   </div>
 </main>
+
+@if (dialog === 'create' || dialog === 'edit') {
+  <section role="dialog" aria-modal="true" aria-labelledby="product-dialog-title">
+    <h2 id="product-dialog-title">{{ dialog === 'create' ? 'Novo produto' : 'Editar produto' }}</h2>
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <label for="product-name">Nome</label>
+      <input id="product-name" formControlName="name" aria-describedby="product-name-error">
+      <div id="product-name-error" role="alert">
+        @if (submitted && form.controls.name.hasError('required')) { {{ messages.nameRequired }} }
+        @if (submitted && form.controls.name.hasError('maxlength')) { {{ messages.nameMaxLength }} }
+        @if (duplicate) { {{ messages.nameDuplicate }} }
+      </div>
+      <label for="product-category">Categoria padrão</label>
+      <select id="product-category" formControlName="categoryId" aria-describedby="product-category-error">
+        <option value="">Escolha uma categoria</option>
+        @for (category of categories; track category.id) {
+          <option data-testid="category-option" [value]="category.id">{{ category.icon }} {{ category.name }}</option>
+        }
+      </select>
+      <div id="product-category-error" role="alert">
+        @if (submitted && form.controls.categoryId.invalid) { {{ messages.categoryRequired }} }
+      </div>
+      <label for="product-unit">Unidade padrão</label>
+      <select id="product-unit" formControlName="defaultUnit" aria-describedby="product-unit-error">
+        <option value="">Escolha uma unidade</option>
+        @for (unit of units; track unit[0]) {
+          <option data-testid="unit-option" [value]="unit[0]">{{ unit[1] }}</option>
+        }
+      </select>
+      <div id="product-unit-error" role="alert">
+        @if (submitted && form.controls.defaultUnit.invalid) { {{ messages.unitRequired }} }
+      </div>
+      @if (conflict) { <button type="button" (click)="reload()">Recarregar dados</button> }
+      <button type="submit" [disabled]="sending || (dialog === 'edit' && form.pristine)">Salvar</button>
+      <button type="button" (click)="close()">Cancelar</button>
+    </form>
+  </section>
+}
+
+@if (dialog === 'deactivate' && selected) {
+  <section role="dialog" aria-modal="true" aria-labelledby="deactivate-title">
+    <h2 id="deactivate-title">Desativar o produto ‘{{ selected.name }}’?</h2>
+    <p>O produto não estará disponível para novas inclusões, mas listas existentes não serão alteradas.</p>
+    <button type="button" [disabled]="sending" (click)="confirmDeactivate()">Desativar</button>
+    <button type="button" (click)="close()">Cancelar</button>
+  </section>
+}
