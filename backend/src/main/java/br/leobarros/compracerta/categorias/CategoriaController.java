@@ -28,13 +28,13 @@ public class CategoriaController {
 	private final CategoriaService service;
 	private final SessaoService sessions;
 
-	CategoriaController(CategoriaService service, SessaoService sessions) {
+	public CategoriaController(CategoriaService service, SessaoService sessions) {
 		this.service = service;
 		this.sessions = sessions;
 	}
 
 	@GetMapping(ROOT)
-	ResponseEntity<Collection> list(
+	public ResponseEntity<Collection> list(
 			@CookieValue(name = ApiSupport.COOKIE, required = false) String token,
 			@RequestParam(required = false) String search,
 			@RequestParam(required = false) String cursor,
@@ -43,7 +43,7 @@ public class CategoriaController {
 	}
 
 	@PostMapping(ROOT)
-	ResponseEntity<Category> create(
+	public ResponseEntity<Category> create(
 			@CookieValue(name = ApiSupport.COOKIE, required = false) String token,
 			@RequestHeader(name = ApiSupport.CSRF, required = false) String csrf,
 			@RequestHeader(name = ApiSupport.IDEMPOTENCY, required = false) String key,
@@ -55,7 +55,7 @@ public class CategoriaController {
 	}
 
 	@GetMapping(ROOT + "/{id}")
-	ResponseEntity<Category> get(
+	public ResponseEntity<Category> get(
 			@CookieValue(name = ApiSupport.COOKIE, required = false) String token,
 			@PathVariable UUID id) {
 		var category = service.get(sessions.obterContaAutenticada(token), id);
@@ -63,7 +63,7 @@ public class CategoriaController {
 	}
 
 	@PatchMapping(ROOT + "/{id}")
-	ResponseEntity<Category> update(
+	public ResponseEntity<Category> update(
 			@CookieValue(name = ApiSupport.COOKIE, required = false) String token,
 			@RequestHeader(name = ApiSupport.CSRF, required = false) String csrf,
 			@RequestHeader(name = HttpHeaders.IF_MATCH, required = false) String etag,
@@ -76,7 +76,7 @@ public class CategoriaController {
 	}
 
 	@DeleteMapping(ROOT + "/{id}")
-	ResponseEntity<Void> delete(
+	public ResponseEntity<Void> delete(
 			@CookieValue(name = ApiSupport.COOKIE, required = false) String token,
 			@RequestHeader(name = ApiSupport.CSRF, required = false) String csrf,
 			@RequestHeader(name = HttpHeaders.IF_MATCH, required = false) String etag,

@@ -26,13 +26,13 @@ public class CategoriaService {
 	private final CategoriaRepository repository;
 	private final IdempotenciaRepository idempotency;
 
-	CategoriaService(Clock clock, CategoriaRepository repository, IdempotenciaRepository idempotency) {
+	public CategoriaService(Clock clock, CategoriaRepository repository, IdempotenciaRepository idempotency) {
 		this.clock = clock;
 		this.repository = repository;
 		this.idempotency = idempotency;
 	}
 
-	Collection list(Conta account, String search, String cursor, Integer limit) {
+	public Collection list(Conta account, String search, String cursor, Integer limit) {
 		var normalizedSearch = search == null ? null : ApiSupport.normalize(search);
 		if (normalizedSearch != null && ApiSupport.normalizeSpaces(search).length() > 40) {
 			throw ApiSupport.validation("search", "A pesquisa deve ter no máximo 40 caracteres.");
@@ -48,7 +48,7 @@ public class CategoriaService {
 	}
 
 	@Transactional
-	Category create(Conta account, Input input, String key) {
+	public Category create(Conta account, Input input, String key) {
 		var values = validate(input);
 		var content = values.name() + "|" + values.icon();
 		var replay = idempotency.replay(account.getId(), "CATEGORY_CREATE", key, content);
@@ -61,15 +61,20 @@ public class CategoriaService {
 		return get(account, id);
 	}
 
-	Category get(Conta account, UUID id) {
+	public Category get(Conta account, UUID id) {
 		return repository.find(id, account.getId()).orElseThrow(ApiSupport::notFound);
 	}
 
 	@Transactional
-	Category update(Conta account, UUID id, Input input, long version) {
+	public Category update(Conta account, UUID id, Input input, long version) {
 		var current = get(account, id);
 		if (current.version() != version) throw ApiSupport.conflict(current.version());
-		var values = validate(input);
+		if (input == null || input.name() == null && input.icon() == null) {
+			throw ApiSupport.validation("body", "Informe ao menos uma alteração.");
+		}
+		var values = validate(new Input(
+				input.name() == null ? current.name() : input.name(),
+				input.icon() == null ? current.icon() : input.icon()));
 		if (values.name().equals(current.name()) && values.icon().equals(current.icon())) {
 			throw ApiSupport.validation("body", "Informe ao menos uma alteração.");
 		}
@@ -81,7 +86,7 @@ public class CategoriaService {
 	}
 
 	@Transactional
-	void delete(Conta account, UUID id, long version) {
+	public void delete(Conta account, UUID id, long version) {
 		var current = get(account, id);
 		if (current.activeProductCount() > 0) {
 			throw new ApiException(

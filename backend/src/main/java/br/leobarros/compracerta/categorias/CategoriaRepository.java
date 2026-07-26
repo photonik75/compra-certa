@@ -13,17 +13,17 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 @Repository
-class CategoriaRepository {
+public class CategoriaRepository {
 
 	private static final String FIELDS = "SELECT c.*, (SELECT count(*) FROM produtos p "
 			+ "WHERE p.categoria_id=c.id AND p.ativo) produtos_ativos FROM categorias c ";
 	private final JdbcTemplate jdbc;
 
-	CategoriaRepository(JdbcTemplate jdbc) {
+	public CategoriaRepository(JdbcTemplate jdbc) {
 		this.jdbc = jdbc;
 	}
 
-	List<Category> list(UUID accountId, String search, String afterName, UUID afterId, int limit) {
+	public List<Category> list(UUID accountId, String search, String afterName, UUID afterId, int limit) {
 		var sql = new StringBuilder(FIELDS)
 				.append("WHERE c.conta_id=? AND NOT c.excluida ");
 		var args = new java.util.ArrayList<>();
@@ -44,13 +44,13 @@ class CategoriaRepository {
 		return jdbc.query(sql.toString(), this::map, args.toArray());
 	}
 
-	Optional<Category> find(UUID id, UUID accountId) {
+	public Optional<Category> find(UUID id, UUID accountId) {
 		return jdbc.query(
 				FIELDS + "WHERE c.id=? AND c.conta_id=? AND NOT c.excluida",
 				this::map, id, accountId).stream().findFirst();
 	}
 
-	boolean nameExists(UUID accountId, String normalizedName, UUID ignored) {
+	public boolean nameExists(UUID accountId, String normalizedName, UUID ignored) {
 		var sql = "SELECT count(*) FROM categorias WHERE conta_id=? AND NOT excluida "
 				+ "AND lower(translate(nome,'áàâãäéèêëíìîïóòôõöúùûüç','aaaaaeeeeiiiiooooouuuuc'))=?"
 				+ (ignored == null ? "" : " AND id<>?");
@@ -60,13 +60,13 @@ class CategoriaRepository {
 		return count != null && count > 0;
 	}
 
-	void create(UUID id, UUID accountId, String name, String icon, Instant now) {
+	public void create(UUID id, UUID accountId, String name, String icon, Instant now) {
 		jdbc.update(
 				"INSERT INTO categorias(id,conta_id,nome,icone,criada_em,atualizada_em) VALUES (?,?,?,?,?,?)",
 				id, accountId, name, icon, Timestamp.from(now), Timestamp.from(now));
 	}
 
-	int update(UUID id, UUID accountId, String name, String icon, Instant now, long version) {
+	public int update(UUID id, UUID accountId, String name, String icon, Instant now, long version) {
 		var changed = jdbc.update(
 				"UPDATE categorias SET nome=?,icone=?,atualizada_em=?,versao=versao+1 "
 						+ "WHERE id=? AND conta_id=? AND NOT excluida AND versao=?",
@@ -80,7 +80,7 @@ class CategoriaRepository {
 		return changed;
 	}
 
-	int delete(UUID id, UUID accountId, long version) {
+	public int delete(UUID id, UUID accountId, long version) {
 		return jdbc.update(
 				"UPDATE categorias SET excluida=TRUE,atualizada_em=now(),versao=versao+1 "
 						+ "WHERE id=? AND conta_id=? AND NOT excluida AND versao=?",
