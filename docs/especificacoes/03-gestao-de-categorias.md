@@ -121,6 +121,7 @@ pesquisar, criar, editar e excluir categorias sem produtos ativos associados.
 - O backend deve separar Controllers, Services e Repositories em pacotes da funcionalidade de categorias.
 - Criações devem ser idempotentes e alterações concorrentes devem usar controle otimista por versão.
 - A alteração de categoria e a atualização dos produtos ativos associados devem ocorrer atomicamente.
+- A tela “Categorias” deve usar a rota `/categorias`, protegida por sessão.
 - Controles, diálogos, mensagens e foco devem ser operáveis por teclado e tecnologias assistivas.
 
 ## Contrato de API

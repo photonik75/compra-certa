@@ -12,6 +12,11 @@ A quinta seção ("Testes de validação") traz definições de testes funcionai
 As Especificações devem ser incrementais e auto-contidas, não ficarem referenciando outras. O texto os Requisitos deve especificar O QUE fazer, não COMO fazer.
 Garanta que todas as validações exibam mensagens de erro polidas ao usuário.
 
+# Definições de testes a serem implementados
+As listas de testes automatizados devem ser criadas Na pasta docs > testes. Os testes devem ser definidos visando TDD (toda linha de produção deve ser motivada por um teste) para cada especificação, em arquivos separados por frontend e backend. Em cada um deles, deve ser relacionada em uma tabela a descrição dos testes ao trecho da especificação que está sendo testado; nos casos em que houver um aspecto técnico não explícito na especificação, inclua na especificação em uma seção "Requisitos não funcionais" para poder usar na tabela.
+Inclua também testes de rotas para as telas.
+Identifique para cada teste se ele é unitário ou de integração. Não confunda "integração" com End to End (e2e): os unitários usarão stubs para qualquer componente a ser acessado que não o imediatamente testado; os de integração verificarão as interações entre componentes (por exemplo, com serviços), mas também usarão stubs para elementos externos ao servidor, como APIs ou banco de dados.
+
 # Arquitetura do frontend
 Componentes, diretivas e pipes não devem fazer acesso direto ao servidor. Toda comunicação com o servidor deve ser encapsulada em serviços.
 
@@ -23,6 +28,7 @@ Organize os pacotes por funcionalidade.
 Evite pular linhas em métodos. Dê preferência a métodos compactos.
 Se a mesma string for necessária em mais de um lugar, use constantes para promover reuso. Isso também vale para testes.
 Sempre que necessário criar um componente, use o comando "ng generate component <nomedocomponente>" ou implemente um resultado equivalente (código dividido em html, css, ts e spec.ts).
+Ao criar telas e componentes, procure deixá-los com a aparência mais próxima possível às telas da especificação.
 Evite passar de 120 caracteres por linha. Quebre e indente onde adequado.
 Evite duplicação de código. Quando perceber oportunidades de refactoring para promover reuso, me avise.
 

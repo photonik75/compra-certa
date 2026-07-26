@@ -114,6 +114,9 @@ os dados básicos das listas ativas das quais é proprietário.
 - O backend deve separar Controllers, Services e Repositories em pacotes da funcionalidade de listas.
 - Criações devem ser idempotentes e alterações concorrentes devem usar controle otimista por versão.
 - Consultas paginadas devem manter ordenação determinística e não repetir nem omitir listas.
+- As telas devem usar as rotas `/listas`, `/listas/nova`, `/listas/{listId}` e
+  `/listas/{listId}/editar`, protegidas por sessão; identificadores inválidos ou inacessíveis devem usar o
+  mesmo tratamento polido de indisponibilidade.
 - Controles, mensagens, carregamento e erros devem ser perceptíveis e operáveis por teclado e tecnologias
   assistivas.
 

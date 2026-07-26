@@ -10,7 +10,8 @@ Cada item representa um comportamento observável e deve ser implementado em um 
 - Começar pelo teste indicado e escrever somente a produção necessária para fazê-lo passar.
 - Usar relógio, gerador de identificadores, repositórios, hash de senha e envio de e-mail substituíveis nos testes
   unitários.
-- Usar banco isolado nos testes de integração e limpar os dados entre casos.
+- Nos testes de integração, exercitar as camadas reais envolvidas e substituir banco, APIs, e-mail e demais
+  sistemas externos por stubs ou fakes.
 - Não usar serviços externos reais; substituir o envio de e-mail por fake ou spy.
 - Validar o contrato HTTP em testes de integração, incluindo status, corpo, cabeçalhos e cookies.
 - Garantir que mensagens de erro sejam polidas e não revelem dados sensíveis.

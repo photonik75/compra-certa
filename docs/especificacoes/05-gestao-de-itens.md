@@ -131,6 +131,8 @@ adicionem, editem e removam itens de uma lista ativa, com preservação dos dado
 - Criações, mesclagens e remoções devem ser idempotentes e alterações concorrentes devem usar controle
   otimista por versão.
 - Inclusão, mesclagem, edição ou remoção e a atualização do resumo da lista devem ocorrer atomicamente.
+- As telas devem usar as rotas `/listas/{listId}`, `/listas/{listId}/itens/novo` e
+  `/listas/{listId}/itens/{itemId}/editar`, protegidas por sessão e acesso à lista.
 - Controles, diálogos, mensagens e foco devem ser operáveis por teclado e tecnologias assistivas.
 
 ## Contrato de API

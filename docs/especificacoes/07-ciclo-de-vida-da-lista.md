@@ -86,6 +86,8 @@ ela não for excluída.
 - Transições e exclusões devem ser idempotentes, usar controle otimista e atualizar dados e eventos
   atomicamente.
 - Mudanças de estado ou acesso devem alcançar clientes conectados em até cinco segundos.
+- A lista ativa ou concluída deve usar a rota `/listas/{listId}`, protegida por sessão e acesso à lista; os
+  diálogos de ciclo de vida não criam rotas próprias.
 - Controles, diálogos, mensagens e foco devem ser operáveis por teclado e tecnologias assistivas.
 
 ## Contrato de API

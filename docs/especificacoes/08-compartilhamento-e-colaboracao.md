@@ -120,6 +120,8 @@ com acesso consistente e atualização em até cinco segundos.
   eventos, URLs do servidor ou respostas de acesso.
 - Dados de acesso não devem ser armazenados em cache, e mudanças confirmadas devem alcançar clientes
   conectados em até cinco segundos.
+- As telas devem usar as rotas `/listas/{listId}/compartilhar` e `/convites/aceitar`; a primeira exige sessão
+  e acesso à lista, e a segunda recebe o token somente no fragmento da URL.
 - Controles, diálogos, mensagens e foco devem ser operáveis por teclado e tecnologias assistivas.
 
 ## Contrato de API

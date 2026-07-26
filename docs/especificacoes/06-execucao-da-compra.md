@@ -72,6 +72,7 @@ acompanhar o progresso sincronizado entre proprietários e participantes.
 - Marcações devem usar controle otimista, ser idempotentes e atualizar item e resumo atomicamente.
 - Alterações confirmadas devem alcançar clientes conectados em até cinco segundos; a reconexão deve
   ressincronizar o estado antes de aceitar nova escrita.
+- A tela de execução da compra deve usar a rota `/listas/{listId}`, protegida por sessão e acesso à lista.
 - Estado de conexão, processamento, conflitos e erros devem ser perceptíveis e operáveis por teclado e
   tecnologias assistivas.
 

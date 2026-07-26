@@ -151,6 +151,7 @@ inclusão rápida em listas de compras.
 - O backend deve separar Controllers, Services e Repositories em pacotes da funcionalidade de produtos.
 - Criações devem ser idempotentes e alterações concorrentes devem usar controle otimista por versão.
 - Criação, edição e desativação devem preservar atomicamente a integridade do catálogo e dos itens históricos.
+- A tela “Produtos” deve usar a rota `/produtos`, protegida por sessão.
 - Controles, diálogos, mensagens e foco devem ser operáveis por teclado e tecnologias assistivas.
 
 ## Contrato de API
