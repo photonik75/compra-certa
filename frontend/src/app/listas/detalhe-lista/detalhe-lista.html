@@ -1,35 +1,39 @@
-<main class="feature-page">
-  <span class="sr-only">Detalhe da lista · Adicionar item · Categoria · Progresso da compra</span>
-  <header class="feature-topbar detail-topbar">
-    <button class="icon-button" type="button" aria-label="Abrir menu">☰</button>
-    <button class="icon-button" type="button" aria-label="Voltar">←</button>
-    <h1>Compras da semana</h1>
-    <button class="icon-button" type="button" aria-label="Mais opções">•••</button>
-  </header>
-  <div class="feature-content">
-    <section class="feature-intro">
-      <p class="eyebrow">Lista compartilhada</p>
-      <h2>Quase lá!</h2>
-      <p>Marque os produtos conforme eles forem para o carrinho.</p>
+<main>
+  <h1>Detalhe da lista</h1>
+  <p role="status" aria-live="polite">{{ connected ? 'Sincronizada' : 'Sem conexão' }}</p>
+  <section aria-label="Resumo da compra">
+    <span>Total {{ summary.total }}</span>
+    <span>Comprados {{ summary.checked }}</span>
+    <span>Pendentes {{ summary.pending }}</span>
+    <span>Progresso da compra {{ summary.percentage }}%</span>
+  </section>
+  @for (group of groups; track group.category.id) {
+    <section [attr.aria-label]="'Categoria ' + group.category.name">
+      <h2>{{ group.category.icon }} {{ group.category.name }} · {{ group.items.length }} itens</h2>
+      @for (item of group.items; track item.id) {
+        <article [id]="'item-' + item.id">
+          <input type="checkbox" [checked]="item.checked" [disabled]="!connected || processing.has(item.id)"
+            [attr.aria-label]="'Marcar ' + item.product.name" (change)="toggle(item)">
+          <div>
+            <h3>{{ item.product.name }}</h3>
+            <p>{{ quantity(item.quantity) }} {{ unit(item.unit) }} @if (item.notes) { · {{ item.notes }} }</p>
+            @if (item.checkedBy) { <small>Marcado por {{ item.checkedBy.name }} {{ item.checkedAt }}</small> }
+          </div>
+          <a [routerLink]="['/listas', listId, 'itens', item.id, 'editar']">Editar</a>
+          <button type="button" (click)="requestRemove(item)">Remover</button>
+        </article>
+      }
     </section>
-    <p class="sync-status">Sincronizada agora</p>
-    <section class="summary surface" aria-label="Resumo da compra">
-      <div><strong>8</strong><span>Total de itens</span></div>
-      <div><strong>3</strong><span>Comprados</span></div>
-      <div><strong>5</strong><span>Pendentes</span></div>
-    </section>
-    <div class="progress"><span></span></div>
-    <section class="item-group surface" aria-label="Categoria Hortifruti">
-      <header><h2>🥬 Hortifruti <small>· 3 itens</small></h2><span>⌃</span></header>
-      <article><span class="check"></span><div><h3>Banana prata</h3><p>Quantidade: 1,5 · Unidade: kg · Observação: escolher bem fresca</p></div><button>×</button></article>
-      <article class="checked"><span class="check">✓</span><div><h3>Tomate italiano</h3><p>1 kg</p></div><button>×</button></article>
-      <article><span class="check"></span><div><h3>Alface crespa</h3><p>2 unidades</p></div><button>×</button></article>
-    </section>
-    <section class="item-group surface" aria-label="Categoria Mercearia">
-      <header><h2>🛍️ Mercearia <small>· 3 itens</small></h2><span>⌃</span></header>
-      <article class="checked"><span class="check">✓</span><div><h3>Arroz integral</h3><p>2 pacotes</p></div><button>×</button></article>
-      <article><span class="check"></span><div><h3>Feijão carioca</h3><p>1 pacote</p></div><button>×</button></article>
-    </section>
-    <a class="floating-button add-item" href="/listas/1/itens/novo" aria-label="Adicionar item">+</a>
-  </div>
+  } @empty {
+    <p>Nenhum item na lista.</p>
+  }
+  <a [routerLink]="['/listas', listId, 'itens', 'novo']">Adicionar item</a>
+  @if (notice) { <p role="alert" aria-live="polite">{{ notice }}</p> }
 </main>
+@if (selected) {
+  <section role="dialog" aria-modal="true">
+    <h2>Remover ‘{{ selected.product.name }}’?</h2>
+    <button type="button" (click)="confirmRemove()">Remover</button>
+    <button type="button" (click)="cancelRemove()">Cancelar</button>
+  </section>
+}

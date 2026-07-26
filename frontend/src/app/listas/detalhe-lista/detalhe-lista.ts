@@ -1,8 +1,114 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { Subscription, finalize } from 'rxjs';
+import { formatQuantity, unitLabel } from '../item-form';
+import { ListItem, ListSummary, ListaItensService } from '../lista-itens.service';
+import { SincronizacaoListaService } from '../sincronizacao-lista.service';
 
 @Component({
   selector: 'app-detalhe-lista',
+  imports: [RouterLink],
   templateUrl: './detalhe-lista.html',
   styleUrl: './detalhe-lista.css',
 })
-export class DetalheLista {}
+export class DetalheLista implements OnInit, OnDestroy {
+  private readonly service = inject(ListaItensService);
+  private readonly sync = inject(SincronizacaoListaService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly changeDetector = inject(ChangeDetectorRef);
+  private readonly subscriptions = new Subscription();
+  readonly listId = this.route.snapshot.paramMap.get('listId')!;
+  items: ListItem[] = [];
+  summary: ListSummary = { total: 0, checked: 0, pending: 0, percentage: 0 };
+  connected = true;
+  processing = new Set<string>();
+  selected?: ListItem;
+  notice = '';
+  private initializedConnection = false;
+
+  ngOnInit(): void {
+    this.load();
+    this.sync.connect(this.listId);
+    this.subscriptions.add(this.sync.connection$.subscribe((connected) => {
+      const reconnecting = this.initializedConnection && !this.connected && connected;
+      this.connected = connected;
+      this.initializedConnection = true;
+      if (reconnecting) this.load();
+      this.changeDetector.markForCheck();
+    }));
+    this.subscriptions.add(this.sync.events$.subscribe((event) => {
+      if (event.listId !== this.listId || !event.payload?.item) return;
+      this.apply(event.payload.item, event.payload.listSummary);
+    }));
+  }
+
+  ngOnDestroy(): void { this.subscriptions.unsubscribe(); this.sync.disconnect(); }
+
+  get groups() {
+    const grouped = new Map<string, { category: ListItem['category']; items: ListItem[] }>();
+    for (const item of this.items) {
+      const key = item.category.name.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+      const group = grouped.get(key) ?? { category: item.category, items: [] };
+      group.items.push(item);
+      grouped.set(key, group);
+    }
+    return [...grouped.values()].sort((a, b) => a.category.name.localeCompare(b.category.name, 'pt-BR'));
+  }
+
+  toggle(item: ListItem): void {
+    if (!this.connected || this.processing.has(item.id)) return;
+    this.processing.add(item.id);
+    this.service.marcar(this.listId, item.id, !item.checked, item.version)
+      .pipe(finalize(() => this.processing.delete(item.id))).subscribe({
+        next: (result) => this.apply(result.item, result.listSummary),
+        error: (response) => {
+          if (response?.error?.code === 'CONFLICT') {
+            this.notice = 'A lista foi atualizada em outro lugar.';
+            this.apply(response.error.meta.item, response.error.meta.listSummary);
+          } else this.notice = 'Não foi possível atualizar o item. Tente novamente em alguns instantes.';
+          this.changeDetector.markForCheck();
+        },
+      });
+  }
+
+  requestRemove(item: ListItem): void { this.selected = item; this.changeDetector.markForCheck(); }
+  cancelRemove(): void { this.selected = undefined; this.changeDetector.markForCheck(); }
+
+  confirmRemove(): void {
+    if (!this.selected) return;
+    const item = this.selected;
+    this.service.remover(this.listId, item.id, item.version).subscribe({
+      next: (result) => {
+        this.items = this.items.filter((current) => current.id !== result.deletedItemId);
+        this.summary = result.listSummary;
+        this.selected = undefined;
+        this.notice = 'Item removido com sucesso.';
+        this.changeDetector.markForCheck();
+      },
+      error: () => {
+        this.notice = 'Não foi possível remover o item. Tente novamente em alguns instantes.';
+        this.changeDetector.markForCheck();
+      },
+    });
+  }
+
+  quantity(value: string): string { return formatQuantity(value); }
+  unit(value: string): string { return unitLabel(value); }
+
+  private load(): void {
+    this.service.listar(this.listId).subscribe({
+      next: (result) => {
+        this.items = result.items;
+        this.summary = result.listSummary;
+        this.changeDetector.markForCheck();
+      },
+      error: () => undefined,
+    });
+  }
+
+  private apply(item: ListItem, summary?: ListSummary): void {
+    this.items = this.items.map((current) => current.id === item.id ? item : current);
+    if (summary) this.summary = summary;
+    this.changeDetector.markForCheck();
+  }
+}

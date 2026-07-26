@@ -1,27 +1,39 @@
-<main class="feature-page">
-  <header class="feature-topbar">
-    <button class="icon-button" type="button" aria-label="Voltar">←</button>
-    <span></span>
-    <h1>Adicionar item</h1>
-    <span></span>
-  </header>
-  <div class="feature-content">
-    <section class="feature-intro">
-      <p class="eyebrow">Compras da semana</p>
-      <h2>Qual produto está faltando?</h2>
-      <p>Busque um produto já cadastrado ou crie um novo sem sair deste fluxo.</p>
-    </section>
-    <form class="form-card surface">
-      <label class="field">Produto *<input type="search" placeholder="Pesquisar produto"></label>
-      <button class="new-product" type="button">＋ Cadastrar novo produto</button>
-      <label class="field">Quantidade *<input inputmode="decimal" value="1,5"></label>
-      <label class="field">Unidade *<select><option>quilograma</option></select></label>
-      <label class="field">Categoria *<select><option>Hortifruti</option></select></label>
-      <label class="field">Observação<textarea>Escolher bem fresca</textarea></label>
-      <footer class="form-actions">
-        <button class="cancel-item" type="button">Cancelar</button>
-        <button class="primary-button" type="button">Adicionar item</button>
-      </footer>
-    </form>
-  </div>
+<main>
+  <h1>Adicionar item</h1>
+  <form [formGroup]="form" (ngSubmit)="save()">
+    <label for="product-search">Produto</label>
+    <input id="product-search" type="search" (input)="onProductSearch($event)"
+      aria-describedby="product-error">
+    <div id="product-error" role="alert">
+      @if (submitted && !selected) { {{ messages.product }} }
+    </div>
+    <ul role="listbox">
+      @for (product of suggestions; track product.id) {
+        <li><button type="button" (click)="selectProduct(product)">
+          {{ product.category.icon }} {{ product.name }} · {{ product.category.name }}
+        </button></li>
+      }
+    </ul>
+    <button type="button">Cadastrar novo produto</button>
+    <label for="quantity">Quantidade</label>
+    <input id="quantity" formControlName="quantity" inputmode="decimal" aria-describedby="quantity-error">
+    <div id="quantity-error" role="alert">
+      @if (submitted && (form.controls.quantity.invalid || +form.controls.quantity.value.replace(',', '.') <= 0)) {
+        {{ messages.quantity }}
+      }
+      @if (quantityLimit) { {{ messages.quantityMax }} }
+    </div>
+    <label for="unit">Unidade</label>
+    <input id="unit" formControlName="unit">
+    <label for="category">Categoria</label>
+    <input id="category" formControlName="categoryId">
+    <label for="notes">Observação</label>
+    <textarea id="notes" formControlName="notes" aria-describedby="notes-error"></textarea>
+    <div id="notes-error" role="alert">
+      @if (submitted && form.controls.notes.hasError('maxlength')) { {{ messages.notesMax }} }
+    </div>
+    @if (notice) { <p role="alert">{{ notice }}</p> }
+    <button type="button" (click)="cancel()">Cancelar</button>
+    <button type="submit" [disabled]="sending">Adicionar item</button>
+  </form>
 </main>

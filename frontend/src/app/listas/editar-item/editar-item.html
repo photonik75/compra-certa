@@ -1,26 +1,14 @@
-<main class="feature-page">
-  <header class="feature-topbar">
-    <button class="icon-button" type="button" aria-label="Voltar">←</button>
-    <span></span>
-    <h1>Editar item</h1>
-    <span></span>
-  </header>
-  <div class="feature-content">
-    <section class="feature-intro">
-      <p class="eyebrow">Compras da semana</p>
-      <h2>Ajuste este produto</h2>
-      <p>Altere os dados registrados neste item da lista.</p>
-    </section>
-    <form class="form-card surface">
-      <label class="field">Produto *<input value="Banana prata"></label>
-      <label class="field">Quantidade *<input inputmode="decimal" value="1,5"></label>
-      <label class="field">Unidade *<select><option>quilograma</option></select></label>
-      <label class="field">Categoria *<select><option>Hortifruti</option></select></label>
-      <label class="field">Observação<textarea>Escolher bem fresca</textarea></label>
-      <footer class="form-actions">
-        <button class="cancel-item" type="button">Cancelar</button>
-        <button class="primary-button" type="button">Salvar</button>
-      </footer>
-    </form>
-  </div>
+<main>
+  <h1>Editar item</h1>
+  <form [formGroup]="form" (ngSubmit)="save()">
+    <label>Produto <input formControlName="productId"></label>
+    <label>Quantidade <input formControlName="quantity" inputmode="decimal"></label>
+    <label>Unidade <input formControlName="unit"></label>
+    <label>Categoria <input formControlName="categoryId"></label>
+    <label>Observação <textarea formControlName="notes"></textarea></label>
+    @if (notice) { <p role="alert">{{ notice }}</p> }
+    @if (conflict) { <button type="button" (click)="reload()">Recarregar dados</button> }
+    <button type="button" (click)="cancel()">Cancelar</button>
+    <button type="submit" [disabled]="form.pristine">Salvar</button>
+  </form>
 </main>
