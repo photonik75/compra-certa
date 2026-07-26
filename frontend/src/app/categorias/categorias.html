@@ -1,30 +1,77 @@
 <main class="feature-page">
   <header class="feature-topbar">
-    <button class="icon-button" type="button" aria-label="Abrir menu">☰</button>
-    <span></span>
     <h1>Categorias</h1>
-    <button class="floating-button" type="button" aria-label="Nova categoria">
-      <span aria-hidden="true">+</span><span class="sr-only">Nova categoria</span>
-    </button>
+    <button data-action="create" type="button" (click)="openCreate($event)">Nova categoria</button>
   </header>
   <div class="feature-content">
-    <section class="feature-intro">
-      <p class="eyebrow">Organização</p>
-      <h2>Suas categorias</h2>
-      <p>Organize os produtos em grupos fáceis de localizar durante a compra.</p>
-    </section>
-    <label class="search-field">
-      <span class="sr-only">Pesquisar categorias</span>
-      <input type="search" placeholder="Pesquisar categorias" aria-label="Pesquisar categorias">
+    <label>
+      <span>Pesquisar categorias</span>
+      <input type="search" aria-label="Pesquisar categorias" [value]="search" (input)="onSearch($event)">
     </label>
-    <section class="category-list surface" aria-label="Categorias cadastradas">
+    <section aria-label="Categorias cadastradas">
       <span class="sr-only">Nome</span>
-      <article><span class="category-icon">🥬</span><div><h3>Hortifruti</h3><p>8 Produtos ativos</p></div><span>✎ ×</span></article>
-      <article><span class="category-icon">🛍️</span><div><h3>Mercearia</h3><p>14 Produtos ativos</p></div><span>✎ ×</span></article>
-      <article><span class="category-icon">🧃</span><div><h3>Bebidas</h3><p>7 Produtos ativos</p></div><span>✎ ×</span></article>
-      <article><span class="category-icon">🧴</span><div><h3>Limpeza</h3><p>5 Produtos ativos</p></div><span>✎ ×</span></article>
+      @for (category of categories; track category.id) {
+        <article data-testid="category">
+          <span class="category-icon" aria-hidden="true">{{ category.icon }}</span>
+          <div>
+            <h2>{{ category.name }}</h2>
+            <p>{{ category.activeProductCount }} produtos ativos</p>
+          </div>
+          <button type="button" (click)="openEdit(category, $event)">Editar</button>
+          <button type="button" (click)="requestDelete(category, $event)">Excluir</button>
+        </article>
+      } @empty {
+        @if (search) {
+          <p>Nenhuma categoria encontrada para esta pesquisa.</p>
+          <button type="button" (click)="clearSearch()">Limpar pesquisa</button>
+        } @else {
+          <p>Você ainda não possui categorias.</p>
+          <button type="button" (click)="openCreate($event)">Nova categoria</button>
+        }
+      }
     </section>
-    <aside class="notice"><strong>Sobre a exclusão:</strong> categorias com produtos associados precisam ter
-      seus produtos movidos antes de serem excluídas.</aside>
+    <aside>Sobre a exclusão: categorias com produtos ativos associados precisam ter seus produtos movidos
+      ou desativados antes de serem excluídas.</aside>
+    @if (notice) { <p role="status" aria-live="polite">{{ notice }}</p> }
   </div>
 </main>
+
+@if (dialog === 'create' || dialog === 'edit') {
+  <section role="dialog" aria-modal="true" aria-labelledby="category-dialog-title">
+    <h2 id="category-dialog-title">{{ dialog === 'create' ? 'Nova categoria' : 'Editar categoria' }}</h2>
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <label for="category-name">Nome</label>
+      <input id="category-name" formControlName="name" aria-describedby="category-name-error">
+      <div id="category-name-error" role="alert">
+        @if (submitted && form.controls.name.hasError('required')) { {{ messages.nameRequired }} }
+        @if (submitted && form.controls.name.hasError('maxlength')) { {{ messages.nameMaxLength }} }
+        @if (duplicate) { {{ messages.nameDuplicate }} }
+      </div>
+      <fieldset>
+        <legend>Ícone</legend>
+        @for (icon of icons; track icon) {
+          <label data-testid="icon-option">
+            <input type="radio" formControlName="icon" [value]="icon">
+            <span aria-hidden="true">{{ icon }}</span>
+          </label>
+        }
+      </fieldset>
+      <div role="alert">
+        @if (submitted && form.controls.icon.invalid) { {{ messages.iconInvalid }} }
+      </div>
+      @if (conflict) { <button type="button" (click)="reload()">Recarregar dados</button> }
+      <button type="submit"
+        [disabled]="sending || (dialog === 'edit' && form.pristine)">Salvar</button>
+      <button type="button" (click)="close()">Cancelar</button>
+    </form>
+  </section>
+}
+
+@if (dialog === 'delete' && selected) {
+  <section role="dialog" aria-modal="true" aria-labelledby="delete-dialog-title">
+    <h2 id="delete-dialog-title">Excluir a categoria ‘{{ selected.name }}’?</h2>
+    <p>Ela deixará de aparecer no catálogo e nas seleções.</p>
+    <button type="button" [disabled]="sending" (click)="confirmDelete()">Excluir</button>
+    <button type="button" (click)="close()">Cancelar</button>
+  </section>
+}
