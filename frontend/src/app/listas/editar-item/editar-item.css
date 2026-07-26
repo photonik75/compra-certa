@@ -1,0 +1,2 @@
+:host { display: block; }
+.cancel-item { min-height: 54px; padding: 0 24px; border: 1px solid var(--cc-coral); border-radius: 16px; background: white; color: var(--cc-coral); font-weight: 800; }

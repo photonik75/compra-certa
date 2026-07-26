@@ -1,0 +1,8 @@
+:host { display: block; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
+.category-filter { margin: 16px 0 24px; }
+.product-list { overflow: hidden; margin-bottom: 26px; }
+.product-list article { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 20px 24px; border-bottom: 1px solid var(--cc-line); }
+.product-list article:last-child { border-bottom: 0; }
+.product-list h3 { margin: 0; font-size: 1.22rem; }
+.product-list p { margin: 5px 0 0; color: var(--cc-muted); }

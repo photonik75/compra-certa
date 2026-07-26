@@ -34,6 +34,17 @@ describe('MinhasListas', () => {
     expect(fixture.nativeElement.querySelector('h1')?.textContent).toBe(MINHAS_LISTAS);
   });
 
+  it('FE-LIS-01 - Renderiza os controles principais da tela.', () => {
+    const texto = fixture.nativeElement.textContent;
+    expect(texto).toContain('Nova lista');
+    expect(texto).toContain('Pesquisar listas');
+    expect(texto).toContain('Ativas');
+    expect(texto).toContain('Concluídas');
+    expect(texto).toContain('Todas');
+    expect(texto).toContain('listas ativas');
+    expect(texto).toContain('itens pendentes');
+  });
+
   it('LIS-2 - Apresenta o estado vazio e mantém disponível a ação “Sair”.', () => {
     expect(fixture.nativeElement.querySelector('ul, ol, [role="list"], [role="listitem"]')).toBeNull();
     expect(obterBotaoSair().disabled).toBe(false);

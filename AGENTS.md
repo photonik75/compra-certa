@@ -28,9 +28,11 @@ Organize os pacotes por funcionalidade.
 Evite pular linhas em métodos. Dê preferência a métodos compactos.
 Se a mesma string for necessária em mais de um lugar, use constantes para promover reuso. Isso também vale para testes.
 Sempre que necessário criar um componente, use o comando "ng generate component <nomedocomponente>" ou implemente um resultado equivalente (código dividido em html, css, ts e spec.ts).
-Ao criar telas e componentes, procure deixá-los com a aparência mais próxima possível às telas da especificação.
 Evite passar de 120 caracteres por linha. Quebre e indente onde adequado.
 Evite duplicação de código. Quando perceber oportunidades de refactoring para promover reuso, me avise.
+
+# Layout
+Ao criar telas e componentes, procure deixá-los com a aparência mais próxima possível às telas da especificação, com html e css. Centralize as características comuns em um arquivo css unificado, para evitar duplicações.
 
 # Testes automatizados
 Implemente somente o teste pedido e garanta que falhe (vermelho). Só implemente o necessário para ficar verde quando solicitado.

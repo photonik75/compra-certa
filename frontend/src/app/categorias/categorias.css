@@ -1,0 +1,15 @@
+:host { display: block; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
+.category-list { overflow: hidden; margin: 26px 0; }
+.category-list article {
+  display: grid;
+  grid-template-columns: 58px 1fr auto;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--cc-line);
+}
+.category-list article:last-child { border-bottom: 0; }
+.category-icon { display: grid; place-items: center; width: 54px; height: 54px; border-radius: 16px; background: #dceddf; font-size: 1.7rem; }
+.category-list h3 { margin: 0; font-size: 1.25rem; }
+.category-list p { margin: 3px 0 0; color: var(--cc-muted); }

@@ -1,0 +1,7 @@
+:host { display: block; }
+.dialog-preview { display: grid; place-items: center; min-height: 100vh; padding: 20px; background: linear-gradient(rgb(23 55 45 / 52%), rgb(23 55 45 / 52%)), var(--cc-bg); }
+.confirmation { z-index: 1; width: min(100%, 450px); padding: 34px; text-align: center; }
+.confirmation h1 { margin: 0 0 16px; font-size: 1.7rem; }
+.confirmation p { color: var(--cc-muted); line-height: 1.55; }
+.confirmation strong { display: block; margin: 18px 0 28px; }
+.confirmation footer { display: flex; justify-content: flex-end; gap: 10px; }

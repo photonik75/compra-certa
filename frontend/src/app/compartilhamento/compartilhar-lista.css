@@ -1,0 +1,19 @@
+:host { display: block; }
+.invite-card, .people-card { padding: clamp(24px, 5vw, 34px); }
+.invite-card > h2, .people-card > h2 { margin: 0 0 18px; font-size: 1.65rem; }
+.invite-card > p { color: var(--cc-muted); font-size: 1.1rem; line-height: 1.55; }
+.invite-card .field { margin: 24px 0 14px; }
+.invite-card .primary-button { width: 100%; }
+.invite-card .notice { margin-top: 24px; }
+.people-card { margin-top: 26px; }
+.people-card article { display: grid; grid-template-columns: 56px 1fr auto; align-items: center; gap: 16px; padding: 20px 0; border-bottom: 1px solid var(--cc-line); }
+.people-card article:last-child { border-bottom: 0; }
+.people-card .owner { padding-inline: 18px; border: 0; border-radius: 999px; background: var(--cc-green-soft); }
+.avatar { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; background: var(--cc-coral); color: white; font-weight: 800; }
+.people-card h3, .people-card p { margin: 0; }
+.people-card p { margin-top: 4px; color: var(--cc-muted); }
+.people-card strong { color: var(--cc-green-dark); font-size: .88rem; }
+@media (max-width: 560px) {
+  .people-card article { grid-template-columns: 48px 1fr; }
+  .people-card article > strong { grid-column: 2; }
+}

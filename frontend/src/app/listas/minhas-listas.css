@@ -1,0 +1,33 @@
+:host { display: block; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
+.menu-button { overflow: hidden; font-size: 0; }
+.menu-button::before { content: "☰"; font-size: 1.6rem; }
+.filter-pills { display: flex; flex-wrap: wrap; gap: 12px; margin: 18px 0 28px; }
+.filter-pills button {
+  min-height: 46px;
+  padding: 0 24px;
+  border: 1px solid var(--cc-line);
+  border-radius: 999px;
+  background: white;
+  color: var(--cc-muted);
+  font-weight: 750;
+}
+.filter-pills .active { border-color: var(--cc-green); background: var(--cc-green-soft); color: var(--cc-green-dark); }
+.list-card { position: relative; overflow: hidden; padding: 28px 26px; }
+.list-card::before { position: absolute; inset: 0 auto 0 0; width: 7px; content: ""; background: var(--cc-green); }
+.role-badge {
+  display: inline-block;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: var(--cc-green-soft);
+  color: var(--cc-green-dark);
+  font-weight: 750;
+}
+.list-card h3 { margin: 18px 0 6px; font-size: 1.55rem; }
+.list-card > p, .list-card footer { color: var(--cc-muted); }
+.list-stats { display: flex; gap: 32px; margin: 24px 0; font-size: 1.75rem; }
+.list-stats small { display: block; color: var(--cc-muted); font-size: .9rem; font-weight: 500; }
+.progress { height: 10px; overflow: hidden; border-radius: 99px; background: #dcece3; }
+.progress span { display: block; width: 34%; height: 100%; background: var(--cc-coral); }
+.list-card footer { display: flex; justify-content: space-between; margin-top: 26px; }
+.list-card a { color: var(--cc-green-dark); font-weight: 800; text-decoration: none; }

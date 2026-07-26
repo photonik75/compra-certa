@@ -10,7 +10,16 @@ import { RecuperacaoSenhaService } from './auth/recuperacao-senha/recuperacao-se
 import { RedefinicaoSenha } from './auth/redefinicao-senha/redefinicao-senha';
 import { RedefinicaoSenhaService } from './auth/redefinicao-senha/redefinicao-senha.service';
 import { SessaoService } from './auth/sessao.service';
+import { AceitarConvite } from './compartilhamento/aceitar-convite';
+import { CompartilharLista } from './compartilhamento/compartilhar-lista';
+import { Categorias } from './categorias/categorias';
+import { DetalheLista } from './listas/detalhe-lista/detalhe-lista';
+import { EditarItem } from './listas/editar-item/editar-item';
+import { EditarLista } from './listas/editar-lista/editar-lista';
 import { MinhasListas } from './listas/minhas-listas';
+import { NovaLista } from './listas/nova-lista/nova-lista';
+import { NovoItem } from './listas/novo-item/novo-item';
+import { Produtos } from './produtos/produtos';
 import { routes } from './app.routes';
 
 describe('Testes das rotas da aplicação', () => {
@@ -58,4 +67,34 @@ describe('Testes das rotas da aplicação', () => {
     const componente = await harness.navigateByUrl('/redefinir-senha#token=token-recuperacao', RedefinicaoSenha);
     expect(componente).toBeInstanceOf(RedefinicaoSenha);
   });
+
+  it('FE-LIS-17/FE-ITEM-17/FE-SHOP-14/FE-LIFE-14 - Exibe as telas das rotas de listas e itens.', async () => {
+    const harness = await criarHarnessAutenticado();
+    expect(await harness.navigateByUrl('/listas/nova', NovaLista)).toBeInstanceOf(NovaLista);
+    expect(await harness.navigateByUrl('/listas/1', DetalheLista)).toBeInstanceOf(DetalheLista);
+    expect(await harness.navigateByUrl('/listas/1/editar', EditarLista)).toBeInstanceOf(EditarLista);
+    expect(await harness.navigateByUrl('/listas/1/itens/novo', NovoItem)).toBeInstanceOf(NovoItem);
+    expect(await harness.navigateByUrl('/listas/1/itens/2/editar', EditarItem)).toBeInstanceOf(EditarItem);
+  });
+
+  it('FE-CAT-16/FE-PROD-17 - Exibe as telas das rotas de catálogo.', async () => {
+    const harness = await criarHarnessAutenticado();
+    expect(await harness.navigateByUrl('/categorias', Categorias)).toBeInstanceOf(Categorias);
+    expect(await harness.navigateByUrl('/produtos', Produtos)).toBeInstanceOf(Produtos);
+  });
+
+  it('FE-SHARE-16 - Exibe compartilhamento e aceite de convite.', async () => {
+    const harness = await criarHarnessAutenticado();
+    expect(await harness.navigateByUrl('/listas/1/compartilhar', CompartilharLista))
+      .toBeInstanceOf(CompartilharLista);
+    expect(await harness.navigateByUrl('/convites/aceitar#token=convite', AceitarConvite))
+      .toBeInstanceOf(AceitarConvite);
+  });
+
+  async function criarHarnessAutenticado(): Promise<RouterTestingHarness> {
+    TestBed.overrideProvider(SessaoService, {
+      useValue: { consultar: () => of({}), sair: () => of(undefined) },
+    });
+    return RouterTestingHarness.create();
+  }
 });
