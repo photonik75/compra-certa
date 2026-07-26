@@ -5,9 +5,22 @@
   <form [formGroup]="form" (ngSubmit)="salvar()">
     <label for="edit-name">Nome da lista</label>
     <input id="edit-name" formControlName="name" aria-describedby="edit-name-error">
-    <span id="edit-name-error" role="alert"></span>
+    <span id="edit-name-error" role="alert">
+      @if (form.controls.name.dirty && form.controls.name.hasError('required')) {
+        {{ messages.nameRequired }}
+      }
+      @if (form.controls.name.dirty && form.controls.name.hasError('maxlength')) {
+        {{ messages.nameMaxLength }}
+      }
+    </span>
     <label for="edit-description">Descrição ou observação</label>
-    <textarea id="edit-description" formControlName="description"></textarea>
+    <textarea id="edit-description" formControlName="description"
+      aria-describedby="edit-description-error"></textarea>
+    <span id="edit-description-error" role="alert">
+      @if (form.controls.description.dirty && form.controls.description.hasError('maxlength')) {
+        {{ messages.descriptionMaxLength }}
+      }
+    </span>
     <button type="submit" [disabled]="form.disabled || form.pristine || sending">Salvar alterações</button>
     <a [routerLink]="['/listas']">Cancelar</a>
   </form>

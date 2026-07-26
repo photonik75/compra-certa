@@ -1,8 +1,17 @@
 import { ChangeDetectorRef, Component, inject } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { ListasService } from '../listas.service';
+import {
+  LIST_DESCRIPTION_MAX_LENGTH,
+  LIST_NAME_DUPLICATE,
+  LIST_NAME_MAX_LENGTH,
+  LIST_NAME_REQUIRED,
+  createListForm,
+  normalizeListDescription,
+  normalizeListName,
+} from '../lista-form';
 
 @Component({
   selector: 'app-nova-lista',
@@ -14,10 +23,13 @@ export class NovaLista {
   private readonly service = inject(ListasService);
   private readonly router = inject(Router);
   private readonly changeDetector = inject(ChangeDetectorRef);
-  readonly form = new FormGroup({
-    name: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.maxLength(60)] }),
-    description: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(240)] }),
-  });
+  readonly form = createListForm();
+  readonly messages = {
+    nameRequired: LIST_NAME_REQUIRED,
+    nameMaxLength: LIST_NAME_MAX_LENGTH,
+    descriptionMaxLength: LIST_DESCRIPTION_MAX_LENGTH,
+    nameDuplicate: LIST_NAME_DUPLICATE,
+  };
   sending = false;
   submitted = false;
   duplicate = false;
@@ -28,12 +40,12 @@ export class NovaLista {
     this.submitted = true;
     this.changeDetector.markForCheck();
     this.duplicate = false;
-    const name = this.form.controls.name.value.trim().replace(/\s+/g, ' ');
+    const name = normalizeListName(this.form.controls.name.value);
     this.form.controls.name.setValue(name);
     if (this.form.invalid) return;
     this.sending = true;
-    const description = this.form.controls.description.value.trim();
-    this.service.criar({ name, description: description || null }).pipe(finalize(() => this.sending = false)).subscribe({
+    const description = normalizeListDescription(this.form.controls.description.value);
+    this.service.criar({ name, description }).pipe(finalize(() => this.sending = false)).subscribe({
       next: (list) => this.router.navigate(['/listas', list.id]),
       error: (response) => {
         if (response?.error?.code === 'LIST_NAME_ALREADY_IN_USE') this.duplicate = true;

@@ -1,8 +1,16 @@
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { ListDetail, ListasService } from '../listas.service';
+import {
+  LIST_DESCRIPTION_MAX_LENGTH,
+  LIST_NAME_MAX_LENGTH,
+  LIST_NAME_REQUIRED,
+  createListForm,
+  normalizeListDescription,
+  normalizeListName,
+} from '../lista-form';
 
 @Component({
   selector: 'app-editar-lista',
@@ -15,10 +23,12 @@ export class EditarLista implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly changeDetector = inject(ChangeDetectorRef);
-  readonly form = new FormGroup({
-    name: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.maxLength(60)] }),
-    description: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(240)] }),
-  });
+  readonly form = createListForm();
+  readonly messages = {
+    nameRequired: LIST_NAME_REQUIRED,
+    nameMaxLength: LIST_NAME_MAX_LENGTH,
+    descriptionMaxLength: LIST_DESCRIPTION_MAX_LENGTH,
+  };
   private list?: ListDetail;
   sending = false;
   message = '';
@@ -29,8 +39,10 @@ export class EditarLista implements OnInit {
   salvar(): void {
     if (!this.list || this.sending || this.form.invalid || !this.form.dirty) return;
     const changes: Partial<Pick<ListDetail, 'name' | 'description'>> = {};
-    if (this.form.controls.name.dirty) changes.name = this.form.controls.name.value.trim().replace(/\s+/g, ' ');
-    if (this.form.controls.description.dirty) changes.description = this.form.controls.description.value.trim() || null;
+    if (this.form.controls.name.dirty) changes.name = normalizeListName(this.form.controls.name.value);
+    if (this.form.controls.description.dirty) {
+      changes.description = normalizeListDescription(this.form.controls.description.value);
+    }
     this.sending = true;
     this.service.atualizar(this.list.id, changes, this.list.version).pipe(finalize(() => this.sending = false)).subscribe({
       next: () => this.router.navigate(['/listas', this.list!.id]),
