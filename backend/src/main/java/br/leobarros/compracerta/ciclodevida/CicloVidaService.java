@@ -22,7 +22,7 @@ public class CicloVidaService {
 	private final IdempotenciaRepository idempotency;
 	private final ListaService lists;
 	private final ListaEventService events;
-	CicloVidaService(
+	public CicloVidaService(
 			Clock clock, CicloVidaRepository repository, IdempotenciaRepository idempotency,
 			ListaService lists, ListaEventService events) {
 		this.clock = clock;
@@ -32,7 +32,7 @@ public class CicloVidaService {
 		this.events = events;
 	}
 	@Transactional
-	ListDetail change(Conta account, UUID listId, String status, long version, String key) {
+	public ListDetail change(Conta account, UUID listId, String status, long version, String key) {
 		if (!Set.of("ACTIVE", "COMPLETED").contains(status)) {
 			throw ApiSupport.validation("status", "Informe um estado válido.");
 		}
@@ -56,7 +56,7 @@ public class CicloVidaService {
 		return result;
 	}
 	@Transactional
-	void delete(Conta account, UUID listId, long version, String key) {
+	public void delete(Conta account, UUID listId, long version, String key) {
 		var content = listId + "|" + version;
 		var replay = idempotency.replay(account.getId(), "LIST_DELETE_" + listId, key, content);
 		if (replay.isPresent()) return;

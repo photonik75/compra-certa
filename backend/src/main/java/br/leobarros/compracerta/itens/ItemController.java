@@ -100,6 +100,7 @@ public class ItemController {
 	public ResponseEntity<CheckResult> check(
 			@CookieValue(name = ApiSupport.COOKIE, required = false) String token,
 			@RequestHeader(name = ApiSupport.CSRF, required = false) String csrf,
+			@RequestHeader(name = ApiSupport.IDEMPOTENCY, required = false) String key,
 			@RequestHeader(name = HttpHeaders.IF_MATCH, required = false) String etag,
 			@PathVariable UUID listId,
 			@PathVariable UUID itemId,
@@ -107,7 +108,7 @@ public class ItemController {
 		sessions.validarCsrf(token, csrf);
 		var result = service.check(
 				sessions.obterContaAutenticada(token), listId, itemId,
-				input == null ? null : input.checked(), ApiSupport.version(etag));
+				input == null ? null : input.checked(), ApiSupport.version(etag), key);
 		return ResponseEntity.ok().eTag(ApiSupport.etag(result.item().version())).body(result);
 	}
 	@GetMapping(path = "/api/v1/lists/{listId}/events", produces = "text/event-stream")

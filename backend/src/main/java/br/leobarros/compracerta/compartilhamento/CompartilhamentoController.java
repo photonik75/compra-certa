@@ -28,19 +28,19 @@ public class CompartilhamentoController {
 	private static final String LIST = "/api/v1/lists/{listId}";
 	private final CompartilhamentoService service;
 	private final SessaoService sessions;
-	CompartilhamentoController(CompartilhamentoService service, SessaoService sessions) {
+	public CompartilhamentoController(CompartilhamentoService service, SessaoService sessions) {
 		this.service = service;
 		this.sessions = sessions;
 	}
 	@GetMapping(LIST + "/access")
-	ResponseEntity<ListAccess> access(
+	public ResponseEntity<ListAccess> access(
 			@CookieValue(name = ApiSupport.COOKIE, required = false) String token,
 			@PathVariable UUID listId) {
 		return ResponseEntity.ok().cacheControl(CacheControl.noStore())
 				.body(service.access(sessions.obterContaAutenticada(token), listId));
 	}
 	@PostMapping(LIST + "/invitations")
-	ResponseEntity<ShareResult> invite(
+	public ResponseEntity<ShareResult> invite(
 			@CookieValue(name = ApiSupport.COOKIE, required = false) String token,
 			@RequestHeader(name = ApiSupport.CSRF, required = false) String csrf,
 			@RequestHeader(name = ApiSupport.IDEMPOTENCY, required = false) String key,
@@ -51,7 +51,7 @@ public class CompartilhamentoController {
 				sessions.obterContaAutenticada(token), listId, input == null ? null : input.email(), key));
 	}
 	@PostMapping(LIST + "/invitations/{invitationId}/resend")
-	ResponseEntity<Invitation> resend(
+	public ResponseEntity<Invitation> resend(
 			@CookieValue(name = ApiSupport.COOKIE, required = false) String token,
 			@RequestHeader(name = ApiSupport.CSRF, required = false) String csrf,
 			@RequestHeader(name = ApiSupport.IDEMPOTENCY, required = false) String key,
@@ -66,7 +66,7 @@ public class CompartilhamentoController {
 				.eTag(ApiSupport.etag(invitation.version())).body(invitation);
 	}
 	@DeleteMapping(LIST + "/invitations/{invitationId}")
-	ResponseEntity<Void> cancel(
+	public ResponseEntity<Void> cancel(
 			@CookieValue(name = ApiSupport.COOKIE, required = false) String token,
 			@RequestHeader(name = ApiSupport.CSRF, required = false) String csrf,
 			@RequestHeader(name = ApiSupport.IDEMPOTENCY, required = false) String key,
@@ -80,12 +80,12 @@ public class CompartilhamentoController {
 		return ResponseEntity.noContent().cacheControl(CacheControl.noStore()).build();
 	}
 	@PostMapping("/api/v1/invitations/preview")
-	ResponseEntity<Preview> preview(@RequestBody(required = false) TokenInput input) {
+	public ResponseEntity<Preview> preview(@RequestBody(required = false) TokenInput input) {
 		return ResponseEntity.ok().cacheControl(CacheControl.noStore())
 				.body(service.preview(input == null ? null : input.token()));
 	}
 	@PostMapping("/api/v1/invitations/accept")
-	ResponseEntity<AcceptResult> accept(
+	public ResponseEntity<AcceptResult> accept(
 			@CookieValue(name = ApiSupport.COOKIE, required = false) String token,
 			@RequestHeader(name = ApiSupport.CSRF, required = false) String csrf,
 			@RequestHeader(name = ApiSupport.IDEMPOTENCY, required = false) String key,
@@ -95,7 +95,7 @@ public class CompartilhamentoController {
 				sessions.obterContaAutenticada(token), input == null ? null : input.token(), key));
 	}
 	@DeleteMapping(LIST + "/members/{userId}")
-	ResponseEntity<Void> remove(
+	public ResponseEntity<Void> remove(
 			@CookieValue(name = ApiSupport.COOKIE, required = false) String token,
 			@RequestHeader(name = ApiSupport.CSRF, required = false) String csrf,
 			@RequestHeader(name = ApiSupport.IDEMPOTENCY, required = false) String key,
@@ -109,7 +109,7 @@ public class CompartilhamentoController {
 		return ResponseEntity.noContent().cacheControl(CacheControl.noStore()).build();
 	}
 	@DeleteMapping(LIST + "/members/me")
-	ResponseEntity<Void> leave(
+	public ResponseEntity<Void> leave(
 			@CookieValue(name = ApiSupport.COOKIE, required = false) String token,
 			@RequestHeader(name = ApiSupport.CSRF, required = false) String csrf,
 			@RequestHeader(name = ApiSupport.IDEMPOTENCY, required = false) String key,

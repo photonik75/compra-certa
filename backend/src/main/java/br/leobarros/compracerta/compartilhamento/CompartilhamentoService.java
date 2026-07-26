@@ -34,7 +34,7 @@ public class CompartilhamentoService {
 	private final GeradorIdentificadorService tokens;
 	private final EntregaConvite delivery;
 	private final ListaEventService events;
-	CompartilhamentoService(
+	public CompartilhamentoService(
 			Clock clock, CompartilhamentoRepository repository, IdempotenciaRepository idempotency,
 			GeradorIdentificadorService tokens, EntregaConvite delivery, ListaEventService events) {
 		this.clock = clock;
@@ -44,7 +44,7 @@ public class CompartilhamentoService {
 		this.delivery = delivery;
 		this.events = events;
 	}
-	ListAccess access(Conta account, UUID listId) {
+	public ListAccess access(Conta account, UUID listId) {
 		var list = repository.list(listId, account.getId()).orElseThrow(ApiSupport::notFound);
 		var owner = new Membership(
 				new UserContact(list.ownerId(), list.ownerName(), list.ownerEmail()),
@@ -52,7 +52,7 @@ public class CompartilhamentoService {
 		return new ListAccess(listId, owner, repository.members(listId), repository.invitations(listId));
 	}
 	@Transactional
-	ShareResult invite(Conta account, UUID listId, String rawEmail, String key) {
+	public ShareResult invite(Conta account, UUID listId, String rawEmail, String key) {
 		var list = ownerActive(account, listId);
 		var email = validateEmail(rawEmail);
 		var replay = idempotency.replay(account.getId(), "INVITE_" + listId, key, email);
@@ -112,7 +112,7 @@ public class CompartilhamentoService {
 		return new ShareResult("INVITATION_CREATED", null, invitation);
 	}
 	@Transactional
-	Invitation resend(
+	public Invitation resend(
 			Conta account, UUID listId, UUID invitationId, long version, String key) {
 		ownerActive(account, listId);
 		var content = invitationId + "|" + version;
@@ -136,7 +136,7 @@ public class CompartilhamentoService {
 		return repository.invitation(listId, invitationId).orElseThrow().invitation();
 	}
 	@Transactional
-	void cancel(Conta account, UUID listId, UUID invitationId, long version, String key) {
+	public void cancel(Conta account, UUID listId, UUID invitationId, long version, String key) {
 		ownerActive(account, listId);
 		var content = invitationId + "|" + version;
 		if (idempotency.replay(
@@ -149,7 +149,7 @@ public class CompartilhamentoService {
 		idempotency.finish(
 				account.getId(), "INVITE_CANCEL_" + invitationId, key, invitationId, "CANCELLED");
 	}
-	Preview preview(String token) {
+	public Preview preview(String token) {
 		var data = tokenData(token);
 		validateInvitation(data, false);
 		return new Preview(
@@ -157,7 +157,7 @@ public class CompartilhamentoService {
 				data.invitation().status(), data.invitation().expiresAt(), true);
 	}
 	@Transactional
-	AcceptResult accept(Conta account, String token, String key) {
+	public AcceptResult accept(Conta account, String token, String key) {
 		var data = tokenData(token);
 		var content = Sha256.hex(token);
 		var replay = idempotency.replay(account.getId(), "INVITE_ACCEPT", key, content);
@@ -183,7 +183,7 @@ public class CompartilhamentoService {
 		return new AcceptResult(data.listId(), data.listName(), membership);
 	}
 	@Transactional
-	void remove(
+	public void remove(
 			Conta account, UUID listId, UUID userId, long version, String key, boolean self) {
 		var list = repository.list(listId, account.getId()).orElseThrow(ApiSupport::notFound);
 		if (!"ACTIVE".equals(list.status())) completed();

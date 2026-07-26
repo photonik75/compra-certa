@@ -20,12 +20,12 @@ public class CicloVidaController {
 	private static final String ROOT = "/api/v1/lists/{listId}";
 	private final CicloVidaService service;
 	private final SessaoService sessions;
-	CicloVidaController(CicloVidaService service, SessaoService sessions) {
+	public CicloVidaController(CicloVidaService service, SessaoService sessions) {
 		this.service = service;
 		this.sessions = sessions;
 	}
 	@PutMapping(ROOT + "/status")
-	ResponseEntity<ListDetail> change(
+	public ResponseEntity<ListDetail> change(
 			@CookieValue(name = ApiSupport.COOKIE, required = false) String token,
 			@RequestHeader(name = ApiSupport.CSRF, required = false) String csrf,
 			@RequestHeader(name = ApiSupport.IDEMPOTENCY, required = false) String key,
@@ -39,7 +39,7 @@ public class CicloVidaController {
 		return ResponseEntity.ok().eTag(ApiSupport.etag(result.version())).body(result);
 	}
 	@DeleteMapping(ROOT)
-	ResponseEntity<Void> delete(
+	public ResponseEntity<Void> delete(
 			@CookieValue(name = ApiSupport.COOKIE, required = false) String token,
 			@RequestHeader(name = ApiSupport.CSRF, required = false) String csrf,
 			@RequestHeader(name = ApiSupport.IDEMPOTENCY, required = false) String key,
@@ -50,6 +50,6 @@ public class CicloVidaController {
 				sessions.obterContaAutenticada(token), listId, ApiSupport.version(etag), key);
 		return ResponseEntity.noContent().build();
 	}
-	record ChangeStatus(String status) {
+	public record ChangeStatus(String status) {
 	}
 }

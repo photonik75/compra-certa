@@ -9,12 +9,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 @Repository
-class CicloVidaRepository {
+public class CicloVidaRepository {
 	private final JdbcTemplate jdbc;
-	CicloVidaRepository(JdbcTemplate jdbc) {
+	public CicloVidaRepository(JdbcTemplate jdbc) {
 		this.jdbc = jdbc;
 	}
-	Optional<State> find(UUID listId, UUID accountId) {
+	public Optional<State> find(UUID listId, UUID accountId) {
 		return jdbc.query(
 				"SELECT id,proprietario_id,estado,versao FROM listas l WHERE id=? AND NOT excluida AND "
 						+ "(proprietario_id=? OR EXISTS(SELECT 1 FROM participantes_lista p "
@@ -24,14 +24,14 @@ class CicloVidaRepository {
 						rs.getString("estado"), rs.getLong("versao")),
 				listId, accountId, accountId).stream().findFirst();
 	}
-	int change(UUID listId, String status, Instant now, long version) {
+	public int change(UUID listId, String status, Instant now, long version) {
 		return jdbc.update(
 				"UPDATE listas SET estado=?,concluida_em=?,atualizada_em=?,versao=versao+1 "
 						+ "WHERE id=? AND NOT excluida AND versao=?",
 				status, "COMPLETED".equals(status) ? Timestamp.from(now) : null,
 				Timestamp.from(now), listId, version);
 	}
-	int delete(UUID listId, Instant now, long version) {
+	public int delete(UUID listId, Instant now, long version) {
 		var changed = jdbc.update(
 				"UPDATE listas SET excluida=TRUE,atualizada_em=?,versao=versao+1 "
 						+ "WHERE id=? AND NOT excluida AND versao=?",
@@ -45,6 +45,6 @@ class CicloVidaRepository {
 		}
 		return changed;
 	}
-	record State(UUID id, UUID ownerId, String status, long version) {
+	public record State(UUID id, UUID ownerId, String status, long version) {
 	}
 }

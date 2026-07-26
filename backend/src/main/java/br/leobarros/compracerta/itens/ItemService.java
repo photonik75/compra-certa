@@ -169,14 +169,22 @@ public class ItemService {
 		return deletion(itemId, listId);
 	}
 	@Transactional
-	public CheckResult check(Conta account, UUID listId, UUID itemId, Boolean checked, long version) {
+	public CheckResult check(
+			Conta account, UUID listId, UUID itemId, Boolean checked, long version, String key) {
 		active(account, listId);
 		if (checked == null) throw ApiSupport.validation("checked", "Informe o estado do item.");
+		var content = listId + "|" + itemId + "|" + checked + "|" + version;
+		var scope = "ITEM_CHECK_" + itemId;
+		if (idempotency.replay(account.getId(), scope, key, content).isPresent()) {
+			return checkResult(get(account, listId, itemId), listId);
+		}
 		var item = get(account, listId, itemId);
 		if (item.version() != version) throw ApiSupport.conflict(item.version());
 		if (item.checked() == checked) return checkResult(item, listId);
+		idempotency.begin(account.getId(), scope, key, content);
 		repository.check(itemId, checked, account.getId(), clock.instant(), version);
 		var listVersion = repository.touchList(listId, clock.instant());
+		idempotency.finish(account.getId(), scope, key, itemId, checked ? "CHECKED" : "UNCHECKED");
 		var updated = get(account, listId, itemId);
 		events.publish(listId, listVersion, itemId, "list.item.checked", updated);
 		return checkResult(updated, listId);
