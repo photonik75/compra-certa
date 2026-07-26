@@ -111,6 +111,17 @@ Permitir que visitantes criem uma conta, autentiquem-se, encerrem a sessão e re
   - Erros preservam nome e e-mail preenchidos, mas não precisam preservar senhas.
   - Campos, mensagens e controles devem ser perceptíveis e operáveis por teclado e tecnologias assistivas.
 
+## Requisitos não funcionais
+
+- O frontend deve encapsular toda comunicação HTTP em serviços; componentes, diretivas, pipes, guards e
+  interceptadores não acessam o servidor diretamente.
+- O backend deve separar Controllers, Services e Repositories em pacotes da funcionalidade de autenticação.
+- Senhas e tokens devem permanecer fora de logs e respostas indevidas; senhas devem ser armazenadas somente
+  como hash forte e tokens de recuperação de forma não reversível.
+- Operações de criação de conta e redefinição de senha devem ser atômicas; o cadastro deve ser idempotente.
+- Controles, mensagens e mudanças de estado devem ser perceptíveis e operáveis por teclado e tecnologias
+  assistivas.
+
 ## Critérios de aceite
 
 1. Cadastro válido cria uma única conta, autentica o usuário e abre uma página vazia com o título “Minhas Listas”.

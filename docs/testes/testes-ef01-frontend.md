@@ -9,6 +9,8 @@
 
 | Trecho da seção Requisitos | Código(s) | Descrição do(s) teste(s) |
 |---|---|---|
+| **Requisitos não funcionais > comunicação HTTP encapsulada** | `SCA-1` a `SCA-3`, `SLO-1` a `SLO-4`, `MOCK-*` | Verifica o contrato nos serviços e confirma que componentes e infraestrutura simulada não realizam acesso HTTP direto. |
+| **Requisitos não funcionais > acessibilidade** | `FOR-3` | Verifica operação por teclado, nomes acessíveis, associação de erros e anúncios de estado. |
 | **Tela “Crie sua conta” (imagem Cadastro)** | `CAD-1` | Verifica se os componentes título, Nome, E-mail, Senha, Confirmar senha, dois controles de visibilidade, botão “Criar conta” e link “Entrar” estão presentes na tela de cadastro. |
 | Tela Crie sua conta > Campo Nome > Obrigatório | `CAD-2` | Testa o impedimento do cadastro quando o nome está vazio ou contém somente espaços. |
 | Tela Crie sua conta > Campo Nome > Aceita de 2 a 100 caracteres | `CAD-3` | Confirma que nomes com 1 ou 101 caracteres são rejeitados e nomes com 2 ou 100 caracteres são aceitos. |

@@ -114,6 +114,15 @@ pesquisar, criar, editar e excluir categorias sem produtos ativos associados.
   - **Tecla `Esc`**
     - Tem o mesmo comportamento do botão “Cancelar”.
 
+## Requisitos não funcionais
+
+- O frontend deve encapsular a comunicação HTTP em serviços; componentes, diretivas e pipes não acessam o
+  servidor diretamente.
+- O backend deve separar Controllers, Services e Repositories em pacotes da funcionalidade de categorias.
+- Criações devem ser idempotentes e alterações concorrentes devem usar controle otimista por versão.
+- A alteração de categoria e a atualização dos produtos ativos associados devem ocorrer atomicamente.
+- Controles, diálogos, mensagens e foco devem ser operáveis por teclado e tecnologias assistivas.
+
 ## Contrato de API
 
 Todos os endpoints exigem sessão autenticada. As mutações exigem proteção CSRF. A categoria é sempre

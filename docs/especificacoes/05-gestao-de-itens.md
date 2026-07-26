@@ -123,6 +123,16 @@ adicionem, editem e removam itens de uma lista ativa, com preservação dos dado
   - **Botão “Cancelar”**
     - Fecha o diálogo sem remover o item.
 
+## Requisitos não funcionais
+
+- O frontend deve encapsular a comunicação HTTP em serviços; componentes, diretivas e pipes não acessam o
+  servidor diretamente.
+- O backend deve separar Controllers, Services e Repositories em pacotes da funcionalidade de itens.
+- Criações, mesclagens e remoções devem ser idempotentes e alterações concorrentes devem usar controle
+  otimista por versão.
+- Inclusão, mesclagem, edição ou remoção e a atualização do resumo da lista devem ocorrer atomicamente.
+- Controles, diálogos, mensagens e foco devem ser operáveis por teclado e tecnologias assistivas.
+
 ## Contrato de API
 
 Todos os endpoints exigem sessão e acesso como proprietário ou participante. Mutações exigem CSRF e lista

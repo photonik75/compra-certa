@@ -64,6 +64,17 @@ acompanhar o progresso sincronizado entre proprietários e participantes.
     “Seu acesso a esta lista não está mais disponível.”.
   - O servidor permanece como fonte dos dados após reconexões.
 
+## Requisitos não funcionais
+
+- O frontend deve encapsular comunicação HTTP e sincronização em serviços; componentes, diretivas e pipes não
+  acessam o servidor diretamente.
+- O backend deve separar Controllers, Services e Repositories em pacotes da funcionalidade de compra.
+- Marcações devem usar controle otimista, ser idempotentes e atualizar item e resumo atomicamente.
+- Alterações confirmadas devem alcançar clientes conectados em até cinco segundos; a reconexão deve
+  ressincronizar o estado antes de aceitar nova escrita.
+- Estado de conexão, processamento, conflitos e erros devem ser perceptíveis e operáveis por teclado e
+  tecnologias assistivas.
+
 ## Contrato de API
 
 A carga inicial consulta o detalhe da lista e todas as páginas de itens. A marcação exige sessão, CSRF,

@@ -78,6 +78,16 @@ ela não for excluída.
   - **Botão “Cancelar”**
     - Fecha o diálogo sem excluir a lista.
 
+## Requisitos não funcionais
+
+- O frontend deve encapsular comunicação HTTP e sincronização em serviços; componentes, diretivas e pipes não
+  acessam o servidor diretamente.
+- O backend deve separar Controllers, Services e Repositories em pacotes da funcionalidade de ciclo de vida.
+- Transições e exclusões devem ser idempotentes, usar controle otimista e atualizar dados e eventos
+  atomicamente.
+- Mudanças de estado ou acesso devem alcançar clientes conectados em até cinco segundos.
+- Controles, diálogos, mensagens e foco devem ser operáveis por teclado e tecnologias assistivas.
+
 ## Contrato de API
 
 Os endpoints exigem sessão, CSRF, papel de proprietário, versão atual e chave idempotente. Datas são

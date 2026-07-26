@@ -216,16 +216,19 @@ aplicação.
 9. Validação ponta a ponta do backend (`BE-E2E`), implementada incrementalmente junto da infraestrutura de cada
    fluxo, e não somente ao final.
 
-## Rastreabilidade com os critérios de aceite
+## Rastreabilidade com a especificação
 
-| Critério da EF-01 | Testes principais |
+| Trecho da EF-01 | Testes principais |
 |---|---|
-| Cadastro cria uma única conta e autentica | `BE-CAD-01`, `BE-CAD-12`, `BE-CAD-15` |
-| Duplicidade por caixa e confirmação divergente não persistem | `BE-CAD-03`, `BE-CAD-08`, `BE-CAD-11` |
-| Login não revela a existência da conta | `BE-LOG-05`, `BE-LOG-06` |
-| Prazos da sessão e bloqueio são respeitados | `BE-LOG-07` a `BE-LOG-13`, `BE-SES-01` a `BE-SES-04` |
-| Logout volta a exigir autenticação | `BE-SAI-01` a `BE-SAI-06` |
-| Recuperação é indistinguível | `BE-REC-03`, `BE-REC-05` |
-| Redefinição protege token e encerra acessos | `BE-RED-04` a `BE-RED-12` |
-| Segredos não são expostos | `BE-CAD-14`, `BE-SES-09`, `BE-REC-07`, `BE-SEG-01` |
+| Requisitos > Cadastro cria uma única conta e autentica | `BE-CAD-01`, `BE-CAD-12`, `BE-CAD-15` |
+| Requisitos > Cadastro > validações e duplicidade | `BE-CAD-02` a `BE-CAD-11` |
+| Requisitos > Login > credenciais e bloqueio | `BE-LOG-01` a `BE-LOG-13` |
+| Requisitos > Sessão e “Manter-me conectado” | `BE-SES-01` a `BE-SES-10` |
+| Requisitos > Sair | `BE-SAI-01` a `BE-SAI-06` |
+| Requisitos > Recuperação indistinguível | `BE-REC-01` a `BE-REC-10` |
+| Requisitos > Redefinição de senha | `BE-RED-01` a `BE-RED-12` |
+| Contrato de API > endpoints, schemas e erros | `BE-CAD`, `BE-LOG`, `BE-SES`, `BE-SAI`, `BE-REC`, `BE-RED` |
+| Requisitos não funcionais > atomicidade e idempotência | `BE-IDC`, `BE-CAD-15`, `BE-RED-12`, `BE-E2E-05`, `BE-E2E-13` |
+| Requisitos não funcionais > hash, tokens e logs | `BE-CAD-14`, `BE-SES-09`, `BE-REC-07`, `BE-SEG-01` |
+| Requisitos não funcionais > arquitetura em camadas | `BE-CTR-01` a `BE-CTR-04` |
 

@@ -109,6 +109,19 @@ com acesso consistente e atualização em até cinco segundos.
   - Reconexão atualiza a lista a partir do servidor.
   - Usuário removido ou que saiu perde acesso imediatamente e novas operações retornam recurso indisponível.
 
+## Requisitos não funcionais
+
+- O frontend deve encapsular comunicação HTTP e sincronização em serviços; componentes, diretivas e pipes não
+  acessam o servidor diretamente.
+- O backend deve separar Controllers, Services e Repositories em pacotes da funcionalidade de compartilhamento.
+- Convites, aceites e revogações devem ser idempotentes; vínculo, token e evento devem ser atualizados
+  atomicamente.
+- Tokens devem ser imprevisíveis, de uso único, armazenados de forma não reversível e nunca expostos em logs,
+  eventos, URLs do servidor ou respostas de acesso.
+- Dados de acesso não devem ser armazenados em cache, e mudanças confirmadas devem alcançar clientes
+  conectados em até cinco segundos.
+- Controles, diálogos, mensagens e foco devem ser operáveis por teclado e tecnologias assistivas.
+
 ## Contrato de API
 
 Mutações autenticadas exigem CSRF e lista ativa. Ações administrativas revalidam o papel de proprietário.

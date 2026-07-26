@@ -107,6 +107,16 @@ os dados básicos das listas ativas das quais é proprietário.
   - **Ação “Cancelar”**
     - Volta ao detalhe da lista sem persistir alterações.
 
+## Requisitos não funcionais
+
+- O frontend deve encapsular a comunicação HTTP em serviços; componentes, diretivas e pipes não acessam o
+  servidor diretamente.
+- O backend deve separar Controllers, Services e Repositories em pacotes da funcionalidade de listas.
+- Criações devem ser idempotentes e alterações concorrentes devem usar controle otimista por versão.
+- Consultas paginadas devem manter ordenação determinística e não repetir nem omitir listas.
+- Controles, mensagens, carregamento e erros devem ser perceptíveis e operáveis por teclado e tecnologias
+  assistivas.
+
 ## Contrato de API
 
 Todos os endpoints exigem sessão autenticada. As mutações exigem proteção CSRF.

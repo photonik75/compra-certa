@@ -144,6 +144,15 @@ inclusão rápida em listas de compras.
   - Limita o resultado a dez produtos.
   - Nunca exibe produtos ou categorias pertencentes a outro usuário.
 
+## Requisitos não funcionais
+
+- O frontend deve encapsular a comunicação HTTP em serviços; componentes, diretivas e pipes não acessam o
+  servidor diretamente.
+- O backend deve separar Controllers, Services e Repositories em pacotes da funcionalidade de produtos.
+- Criações devem ser idempotentes e alterações concorrentes devem usar controle otimista por versão.
+- Criação, edição e desativação devem preservar atomicamente a integridade do catálogo e dos itens históricos.
+- Controles, diálogos, mensagens e foco devem ser operáveis por teclado e tecnologias assistivas.
+
 ## Contrato de API
 
 Todos os endpoints exigem sessão autenticada. As mutações exigem proteção CSRF. O produto é sempre
