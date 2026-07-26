@@ -35,7 +35,9 @@ async function configurarSessao(page: Page, estaValida: () => boolean): Promise<
   });
 }
 
-test('INT-1 - Restaura uma sessão válida após recarga e abre o login quando ela expira.', async ({ page }) => {
+test('INT-1 - Restaura uma sessão válida após recarga e abre o login quando ela expira.', async ({
+  page,
+}) => {
   let sessaoValida = true;
   let consultasDaSessao = 0;
   await page.route(ENDPOINT_SESSAO, async (route) => {
