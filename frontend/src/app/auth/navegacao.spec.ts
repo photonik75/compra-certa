@@ -14,6 +14,7 @@ const ROTA_CADASTRO = '/cadastro';
 const ROTA_ENTRAR = '/entrar';
 const ROTA_ENTRAR_COM_RETORNO = '/entrar?returnUrl=%2Flistas';
 const ROTA_LISTAS = '/listas';
+const ROTA_RAIZ = '/';
 const SESSION_RESPONSE = {
   user: {
     id: '4f32ccf4-e676-4c23-bd66-e0fb2c2f0ef9',
@@ -58,6 +59,22 @@ function preencher(campo: HTMLInputElement, valor: string): void {
 }
 
 describe('Testes de navegação da autenticação', () => {
+  it('NAV-0 - A raiz direciona o visitante para Entrar.', async () => {
+    configurarTeste(false);
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl(ROTA_RAIZ);
+    expect(TestBed.inject(Router).url).toBe(ROTA_ENTRAR_COM_RETORNO);
+    expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toContain('Entre na sua conta');
+  });
+
+  it('NAV-0 - A raiz direciona o usuário autenticado para Minhas Listas.', async () => {
+    configurarTeste(true);
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl(ROTA_RAIZ);
+    expect(TestBed.inject(Router).url).toBe(ROTA_LISTAS);
+    expect(harness.routeNativeElement?.textContent).toContain('Minhas listas');
+  });
+
   it('NAV-1 - Visitante retorna à página interna solicitada após se autenticar.', async () => {
     configurarTeste(false);
     const harness = await RouterTestingHarness.create();

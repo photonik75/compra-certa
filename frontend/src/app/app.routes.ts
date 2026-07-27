@@ -22,6 +22,7 @@ export const routes: Routes = [
   { path: 'entrar', component: Login, canActivate: [visitanteGuard] },
   { path: 'recuperar-senha', component: RecuperacaoSenha },
   { path: 'redefinir-senha', component: RedefinicaoSenha },
+  { path: '', pathMatch: 'full', redirectTo: 'listas' },
   {
     path: '',
     component: LayoutInterno,
@@ -44,5 +45,4 @@ export const routes: Routes = [
     ],
   },
   { path: 'convites/aceitar', component: AceitarConvite },
-  { path: '', pathMatch: 'full', redirectTo: 'entrar' },
 ];
