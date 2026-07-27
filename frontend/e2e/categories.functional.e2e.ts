@@ -2,16 +2,18 @@ import { expect, Page, test } from '@playwright/test';
 
 const SENHA = 'Senha segura 123';
 
-async function cadastrar(page: Page, cenario: string): Promise<void> {
+async function cadastrar(page: Page, cenario: string): Promise<string> {
+  const email = `${cenario}.${Date.now()}@example.com`;
   await page.goto('/cadastro');
   await page.getByLabel('Nome').fill('Pessoa de Teste');
-  await page.getByLabel('E-mail').fill(`${cenario}.${Date.now()}@example.com`);
+  await page.getByLabel('E-mail').fill(email);
   await page.getByLabel('Senha', { exact: true }).fill(SENHA);
   await page.getByLabel('Confirmar senha').fill(SENHA);
   await page.getByRole('button', { name: 'Criar conta' }).click();
   await expect(page.getByRole('heading', { name: 'Minhas listas' })).toBeVisible();
   await page.goto('/categorias');
   await expect(page.getByRole('heading', { name: 'Categorias' })).toBeVisible();
+  return email;
 }
 
 async function abrirNova(page: Page): Promise<void> {
@@ -25,6 +27,21 @@ async function criar(page: Page, nome: string, icone = 4): Promise<void> {
   await page.getByTestId('icon-option').nth(icone).getByRole('radio').check();
   await page.getByRole('dialog').getByRole('button', { name: 'Salvar' }).click();
   await expect(page.getByRole('status')).toContainText('Categoria criada com sucesso.');
+}
+
+async function criarProduto(page: Page, nome: string, categoria: string): Promise<void> {
+  await page.goto('/produtos');
+  await expect(page.getByRole('heading', { name: 'Produtos' })).toBeVisible();
+  await page.getByRole('button', { name: 'Novo produto' }).first().click();
+  const dialogo = page.getByRole('dialog');
+  await dialogo.getByLabel('Nome').fill(nome);
+  const categoriaId = await dialogo.getByLabel('Categoria padrão').locator('option')
+    .filter({ hasText: categoria }).getAttribute('value');
+  if (!categoriaId) throw new Error(`Categoria ${categoria} não disponível para o produto.`);
+  await dialogo.getByLabel('Categoria padrão').selectOption(categoriaId);
+  await dialogo.getByLabel('Unidade padrão').selectOption('UNIT');
+  await dialogo.getByRole('button', { name: 'Salvar' }).click();
+  await expect(page.getByRole('status')).toContainText('Produto criado com sucesso.');
 }
 
 test('CAT-001 - Conta nova recebe exatamente as quatro categorias iniciais.', async ({ page }) => {
@@ -145,4 +162,55 @@ test('CAT-010 - Edição concorrente preserva a primeira mudança e oferece reca
   await segunda.getByRole('button', { name: 'Recarregar dados' }).click();
   await expect(segunda.getByRole('dialog').getByLabel('Nome')).toHaveValue('Primeira mudança');
   await segunda.close();
+});
+
+test('CAT-005 - Alteração da categoria propaga ao produto ativo.', async ({ page }) => {
+  await cadastrar(page, 'cat005');
+  await criar(page, 'Congelados', 5);
+  await criarProduto(page, 'Sorvete ativo', 'Congelados');
+  await page.goto('/categorias');
+  const categoria = page.getByTestId('category').filter({ hasText: 'Congelados' });
+  await expect(categoria).toContainText('1 produtos ativos');
+  await categoria.getByRole('button', { name: 'Editar' }).click();
+  const dialogo = page.getByRole('dialog');
+  await expect(dialogo.getByLabel('Nome')).toHaveValue('Congelados');
+  await dialogo.getByLabel('Nome').fill('Frios');
+  await page.getByTestId('icon-option').nth(5).getByRole('radio').check();
+  await dialogo.getByRole('button', { name: 'Salvar' }).click();
+  await expect(page.getByRole('status')).toContainText('Categoria atualizada com sucesso.');
+  await page.goto('/produtos');
+  const produto = page.getByTestId('product').filter({ hasText: 'Sorvete ativo' });
+  await expect(produto).toContainText('Frios');
+  await expect(produto).toContainText('❄️');
+});
+
+test('CAT-006 - Categoria com dois produtos ativos não pode ser excluída.', async ({ page }) => {
+  await cadastrar(page, 'cat006');
+  await criar(page, 'Padaria', 4);
+  await criarProduto(page, 'Pão francês', 'Padaria');
+  await criarProduto(page, 'Bolo simples', 'Padaria');
+  await page.goto('/categorias');
+  const categoria = page.getByTestId('category').filter({ hasText: 'Padaria' });
+  await expect(categoria).toContainText('2 produtos ativos');
+  await categoria.getByRole('button', { name: 'Excluir' }).click();
+  await expect(page.getByRole('status')).toContainText(
+    'Esta categoria possui 2 produtos ativos. Mova ou desative esses produtos antes de excluí-la.',
+  );
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.reload();
+  await expect(page.getByTestId('category').filter({ hasText: 'Padaria' })).toContainText(
+    '2 produtos ativos',
+  );
+});
+
+test('CAT-009 - Catálogos homônimos permanecem isolados entre usuários.', async ({ page }) => {
+  await cadastrar(page, 'cat009-a');
+  await criar(page, 'Minha categoria');
+  await page.goto('/listas');
+  await page.getByRole('button', { name: 'Sair' }).click();
+  await expect(page.getByRole('heading', { name: 'Entre na sua conta' })).toBeVisible();
+  await cadastrar(page, 'cat009-b');
+  await expect(page.getByText('Minha categoria', { exact: true })).toHaveCount(0);
+  await criar(page, 'Minha categoria');
+  await expect(page.getByTestId('category').filter({ hasText: 'Minha categoria' })).toHaveCount(1);
 });
