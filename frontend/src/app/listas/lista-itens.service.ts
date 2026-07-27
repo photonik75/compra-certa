@@ -58,7 +58,7 @@ export class ListaItensService {
 
   marcar(listId: string, itemId: string, checked: boolean, version: number): Observable<any> {
     return this.http.put(`/api/v1/lists/${listId}/items/${itemId}/checked`, { checked }, {
-      headers: new HttpHeaders().set('If-Match', `"${version}"`),
+      headers: this.mutationHeaders(version),
     });
   }
 

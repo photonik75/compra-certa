@@ -18,26 +18,31 @@
     <span>Progresso da compra {{ summary.percentage }}%</span>
   </section>
   @for (group of groups; track group.category.id) {
-    <section [attr.aria-label]="'Categoria ' + group.category.name">
-      <h2>{{ group.category.icon }} {{ group.category.name }} · {{ group.items.length }} itens</h2>
+    <details open [attr.aria-label]="'Categoria ' + group.category.name">
+      <summary><h2>{{ group.category.icon }} {{ group.category.name }} · {{ group.items.length }} itens</h2></summary>
       @for (item of group.items; track item.id) {
         <article [id]="'item-' + item.id">
-          <input type="checkbox" [checked]="item.checked" [disabled]="!connected || processing.has(item.id)"
+          <input type="checkbox" [checked]="item.checked"
+            [disabled]="!connected || list?.status === 'COMPLETED' || processing.has(item.id)"
             [attr.aria-label]="'Marcar ' + item.product.name" (change)="toggle(item)">
           <div>
             <h3>{{ item.product.name }}</h3>
             <p>{{ quantity(item.quantity) }} {{ unit(item.unit) }} @if (item.notes) { · {{ item.notes }} }</p>
             @if (item.checkedBy) { <small>Marcado por {{ item.checkedBy.name }} {{ item.checkedAt }}</small> }
           </div>
-          <a [routerLink]="['/listas', listId, 'itens', item.id, 'editar']">Editar</a>
-          <button type="button" (click)="requestRemove(item)">Remover</button>
+          @if (list?.status !== 'COMPLETED') {
+            <a [routerLink]="['/listas', listId, 'itens', item.id, 'editar']">Editar</a>
+            <button type="button" (click)="requestRemove(item)">Remover</button>
+          }
         </article>
       }
-    </section>
+    </details>
   } @empty {
-    <p>Nenhum item na lista.</p>
+    <p>Sua lista ainda está vazia. Nenhum item na lista.</p>
   }
-  <a [routerLink]="['/listas', listId, 'itens', 'novo']">Adicionar item</a>
+  @if (list?.status !== 'COMPLETED') {
+    <a [routerLink]="['/listas', listId, 'itens', 'novo']">Adicionar item</a>
+  }
   }
   @if (notice) { <p role="alert" aria-live="polite">{{ notice }}</p> }
 </main>

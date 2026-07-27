@@ -14,6 +14,20 @@ async function cadastrar(page: Page, cenario: string): Promise<string> {
   return email;
 }
 
+async function sair(page: Page): Promise<void> {
+  await page.goto('/listas');
+  await page.getByRole('button', { name: 'Sair' }).click();
+  await expect(page.getByRole('heading', { name: 'Entre na sua conta' })).toBeVisible();
+}
+
+async function entrar(page: Page, email: string): Promise<void> {
+  await page.goto('/entrar');
+  await page.getByLabel('E-mail').fill(email);
+  await page.getByLabel('Senha').fill(SENHA);
+  await page.getByRole('button', { name: 'Entrar' }).click();
+  await expect(page.getByRole('heading', { name: 'Minhas listas' })).toBeVisible();
+}
+
 async function criarProduto(page: Page, nome: string, unidade = 'UNIT'): Promise<void> {
   await page.goto('/produtos');
   await page.getByRole('button', { name: 'Novo produto' }).first().click();
@@ -220,4 +234,70 @@ test('ITEM-007 - Editar item marcado preserva integralmente sua marcação.', as
   await expect(page.getByText('4 unidade · Editado')).toBeVisible();
   await page.reload();
   await expect(page.getByRole('checkbox', { name: 'Marcar Biscoito' })).toBeChecked();
+});
+
+test('ITEM-008 - Trocar produto e somar duplicata mantém somente um item.', async ({ page }) => {
+  await cadastrar(page, 'item008');
+  await criarProduto(page, 'Produto origem');
+  await criarProduto(page, 'Produto destino');
+  await criarLista(page, 'Lista mesclagem');
+  await adicionarItem(page, 'Produto origem', '2');
+  await adicionarItem(page, 'Produto destino', '3');
+  const origem = page.getByRole('heading', { name: 'Produto origem', exact: true }).locator('..').locator('..');
+  await origem.getByRole('link', { name: 'Editar', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Editar item' })).toBeVisible();
+  await page.getByLabel('Produto').fill('Produto destino');
+  await page.getByRole('listbox').getByRole('button', { name: /Produto destino/ }).click();
+  await page.getByRole('button', { name: 'Salvar' }).click();
+  const dialogo = page.getByRole('dialog', { name: 'Produto já está na lista' });
+  await expect(dialogo).toBeVisible();
+  await dialogo.getByRole('button', { name: 'Somar quantidade' }).click();
+  await expect(page.getByRole('heading', { name: 'Produto origem', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'Produto destino', exact: true })).toHaveCount(1);
+  await expect(page.getByText('5 unidade')).toBeVisible();
+});
+
+test('ITEM-010 - Participante altera lista ativa e usuário alheio não acessa.', async ({ page }) => {
+  const participante = await cadastrar(page, 'item010-participante');
+  await criarProduto(page, 'Produto participante');
+  await sair(page);
+  await cadastrar(page, 'item010-proprietario');
+  await criarLista(page, 'Lista compartilhada de itens');
+  await page.getByRole('link', { name: 'Compartilhar lista' }).click();
+  await page.getByLabel('Convidar participante').fill(participante);
+  await page.getByRole('button', { name: 'Convidar' }).click();
+  await expect(page.getByRole('status')).toContainText('Participante adicionado com sucesso.');
+  await sair(page);
+  await entrar(page, participante);
+  await page.getByTestId('list-card').filter({ hasText: 'Lista compartilhada de itens' })
+    .getByRole('button', { name: 'Abrir' }).click();
+  await adicionarItem(page, 'Produto participante');
+  await expect(page.getByRole('heading', { name: 'Produto participante', exact: true })).toBeVisible();
+  await page.goto('/listas/00000000-0000-0000-0000-000000000000');
+  await expect(page.getByRole('alert')).toContainText(
+    'Lista não encontrada ou indisponível para sua conta.',
+  );
+});
+
+test('ITEM-011 - Produtos homônimos de participantes são tratados como duplicata.', async ({ page }) => {
+  const participante = await cadastrar(page, 'item011-participante');
+  await criarProduto(page, 'cafe');
+  await sair(page);
+  await cadastrar(page, 'item011-proprietario');
+  await criarProduto(page, 'Café');
+  await criarLista(page, 'Lista homônima');
+  await adicionarItem(page, 'Café');
+  await page.getByRole('link', { name: 'Compartilhar lista' }).click();
+  await page.getByLabel('Convidar participante').fill(participante);
+  await page.getByRole('button', { name: 'Convidar' }).click();
+  await expect(page.getByRole('status')).toContainText('Participante adicionado com sucesso.');
+  await sair(page);
+  await entrar(page, participante);
+  await page.getByTestId('list-card').filter({ hasText: 'Lista homônima' })
+    .getByRole('button', { name: 'Abrir' }).click();
+  await abrirAdicao(page);
+  await selecionarProduto(page, 'cafe');
+  await page.getByLabel('Quantidade').fill('1');
+  await page.getByRole('button', { name: 'Adicionar item' }).click();
+  await expect(page.getByRole('dialog', { name: 'Produto já está na lista' })).toBeVisible();
 });

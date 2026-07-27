@@ -61,7 +61,7 @@ export class DetalheLista implements OnInit, OnDestroy {
   }
 
   toggle(item: ListItem): void {
-    if (!this.connected || this.processing.has(item.id)) return;
+    if (!this.connected || this.list?.status === 'COMPLETED' || this.processing.has(item.id)) return;
     this.processing.add(item.id);
     this.service.marcar(this.listId, item.id, !item.checked, item.version)
       .pipe(finalize(() => this.processing.delete(item.id))).subscribe({
@@ -70,7 +70,9 @@ export class DetalheLista implements OnInit, OnDestroy {
           if (response?.error?.code === 'CONFLICT') {
             this.notice = 'A lista foi atualizada em outro lugar.';
             this.apply(response.error.meta.item, response.error.meta.listSummary);
-          } else this.notice = 'Não foi possível atualizar o item. Tente novamente em alguns instantes.';
+          } else {
+            this.notice = 'Não foi possível atualizar o item. Verifique sua conexão e tente novamente.';
+          }
           this.changeDetector.markForCheck();
         },
       });
@@ -126,7 +128,9 @@ export class DetalheLista implements OnInit, OnDestroy {
   }
 
   private apply(item: ListItem, summary?: ListSummary): void {
-    this.items = this.items.map((current) => current.id === item.id ? item : current);
+    const current = this.items.find((candidate) => candidate.id === item.id);
+    if (current && item.version < current.version) return;
+    this.items = this.items.map((candidate) => candidate.id === item.id ? item : candidate);
     if (summary) this.summary = summary;
     this.changeDetector.markForCheck();
   }

@@ -118,7 +118,8 @@ public class ItemRepository {
 					var total = rs.getInt("total");
 					var checked = rs.getInt("checked");
 					return new ListSummary(
-							total, checked, total - checked, total == 0 ? 0 : checked * 100 / total);
+							total, checked, total - checked,
+							total == 0 ? 0 : (int) Math.round(checked * 100.0 / total));
 				}, listId);
 	}
 	private ListItem map(ResultSet rs, int row) throws SQLException {

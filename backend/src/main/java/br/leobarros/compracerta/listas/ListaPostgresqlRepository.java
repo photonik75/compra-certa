@@ -187,7 +187,11 @@ class ListaPostgresqlRepository implements ListaRepository {
 	private ListSummary resumo(ResultSet rs) throws SQLException {
 		var total = rs.getInt("total");
 		var marcados = rs.getInt("marcados");
-		return new ListSummary(total, marcados, total - marcados, total == 0 ? 0 : marcados * 100 / total);
+		return new ListSummary(
+				total,
+				marcados,
+				total - marcados,
+				total == 0 ? 0 : (int) Math.round(marcados * 100.0 / total));
 	}
 
 	private UserReference proprietario(ResultSet rs) throws SQLException {
