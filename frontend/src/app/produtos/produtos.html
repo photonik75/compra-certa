@@ -1,13 +1,21 @@
 <main class="feature-page">
   <header class="feature-topbar">
-    <span></span>
+    <button class="icon-button menu-button" type="button" aria-label="Abrir menu"></button>
     <h1>Produtos</h1>
-    <button data-action="create" type="button" (click)="openCreate($event)">Novo produto</button>
+    <button class="floating-button" data-action="create" type="button" (click)="openCreate($event)">
+      <span aria-hidden="true">+</span><span class="sr-only">Novo produto</span>
+    </button>
   </header>
   <div class="feature-content">
+    <section class="feature-intro">
+      <p class="eyebrow">Catálogo pessoal</p>
+      <h2>Produtos e tipos de item</h2>
+      <p>Defina categoria e unidade padrão para adicionar itens mais rapidamente.</p>
+    </section>
     <label class="search-field">
-      <span>Pesquisar produtos</span>
-      <input type="search" aria-label="Pesquisar produtos" [value]="query" (input)="onSearch($event)">
+      <span class="sr-only">Pesquisar produtos</span>
+      <input type="search" placeholder="Pesquisar produtos" aria-label="Pesquisar produtos"
+        [value]="query" (input)="onSearch($event)">
     </label>
     <label class="field category-filter">
       <span>Categoria</span>
@@ -21,15 +29,17 @@
     <section class="product-list surface" aria-label="Produtos cadastrados">
       @for (product of products; track product.id) {
         <article data-testid="product">
-          <span aria-hidden="true">{{ product.category.icon }}</span>
           <div>
             <h2>{{ product.name }}</h2>
             <p>{{ product.category.name }} · unidade padrão: {{ unitLabel(product.defaultUnit) }}</p>
           </div>
           @if (product.active) {
-            <button data-action="edit" type="button" (click)="openEdit(product, $event)">Editar</button>
-            <button data-action="deactivate" type="button"
-              (click)="openDeactivate(product, $event)">Desativar</button>
+            <div class="product-actions">
+              <button data-action="edit" type="button" aria-label="Editar {{ product.name }}"
+                (click)="openEdit(product, $event)">✎</button>
+              <button data-action="deactivate" type="button" aria-label="Desativar {{ product.name }}"
+                (click)="openDeactivate(product, $event)">×</button>
+            </div>
           }
         </article>
       } @empty {
@@ -52,11 +62,18 @@
 </main>
 
 @if (dialog === 'create' || dialog === 'edit') {
+  <div class="dialog-backdrop">
   <section role="dialog" aria-modal="true" aria-labelledby="product-dialog-title">
     <h2 id="product-dialog-title">{{ dialog === 'create' ? 'Novo produto' : 'Editar produto' }}</h2>
+    <p class="dialog-description">
+      {{ dialog === 'create'
+        ? 'O ícone será herdado automaticamente da categoria escolhida.'
+        : 'Altere os dados usados nas próximas inclusões. Itens existentes não serão modificados.' }}
+    </p>
     <form [formGroup]="form" (ngSubmit)="save()">
-      <label for="product-name">Nome</label>
-      <input id="product-name" formControlName="name" aria-describedby="product-name-error">
+      <label for="product-name">Nome *</label>
+      <input id="product-name" formControlName="name" placeholder="Ex.: Pão francês"
+        aria-describedby="product-name-error">
       <div id="product-name-error" role="alert">
         @if (submitted && form.controls.name.hasError('required')) { {{ messages.nameRequired }} }
         @if (submitted && form.controls.name.hasError('maxlength')) { {{ messages.nameMaxLength }} }
@@ -83,17 +100,27 @@
         @if (submitted && form.controls.defaultUnit.invalid) { {{ messages.unitRequired }} }
       </div>
       @if (conflict) { <button type="button" (click)="reload()">Recarregar dados</button> }
-      <button type="submit" [disabled]="sending || (dialog === 'edit' && form.pristine)">Salvar</button>
-      <button type="button" (click)="close()">Cancelar</button>
+      <div class="dialog-actions">
+        <button class="secondary-button" type="button" (click)="close()">Cancelar</button>
+        <button class="primary-button" type="submit"
+          [disabled]="sending || (dialog === 'edit' && form.pristine)">Salvar</button>
+      </div>
     </form>
   </section>
+  </div>
 }
 
 @if (dialog === 'deactivate' && selected) {
+  <div class="dialog-backdrop">
   <section role="dialog" aria-modal="true" aria-labelledby="deactivate-title">
-    <h2 id="deactivate-title">Desativar o produto ‘{{ selected.name }}’?</h2>
+    <h2 id="deactivate-title">Desativar produto</h2>
+    <p>Desativar o produto ‘{{ selected.name }}’?</p>
     <p>O produto não estará disponível para novas inclusões, mas listas existentes não serão alteradas.</p>
-    <button type="button" [disabled]="sending" (click)="confirmDeactivate()">Desativar</button>
-    <button type="button" (click)="close()">Cancelar</button>
+    <div class="dialog-actions">
+      <button class="secondary-button" type="button" (click)="close()">Cancelar</button>
+      <button class="danger-button" type="button" [disabled]="sending"
+        (click)="confirmDeactivate()">Desativar</button>
+    </div>
   </section>
+  </div>
 }

@@ -1,3 +1,12 @@
 :host { display: block; }
+.item-topbar { grid-template-columns: 44px 1fr 44px; }
+.feature-intro { margin-bottom: 34px; }
+.feature-intro h2 { font-size: clamp(2rem, 8vw, 2.75rem); }
+.form-card > label { font-weight: 750; }
+.suggestions { margin: -12px 0 0; padding: 0; overflow: hidden; border: 1px solid var(--cc-line); border-radius: 16px; list-style: none; }
+.suggestions button { width: 100%; border: 0; border-radius: 0; text-align: left; }
 .new-product { justify-self: start; margin-top: -12px; border: 0; background: transparent; color: var(--cc-coral); font-weight: 800; }
 .cancel-item { min-height: 54px; padding: 0 24px; border: 1px solid var(--cc-coral); border-radius: 16px; background: white; color: var(--cc-coral); font-weight: 800; }
+.dialog-backdrop { position: fixed; z-index: 40; inset: 0; background: rgb(23 55 45 / 48%); backdrop-filter: blur(3px); }
+.duplicate-actions { display: grid; gap: 10px; margin-top: 18px; }
+.outline-button { min-height: 52px; border: 1px solid var(--cc-green); border-radius: 12px; background: white; color: var(--cc-green-dark); font-weight: 800; }

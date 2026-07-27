@@ -1,9 +1,15 @@
 :host { display: block; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
+.share-topbar { grid-template-columns: 44px 44px 1fr 44px; }
+.share-topbar a { color: var(--cc-muted); text-decoration: none; }
+.feature-intro { margin-bottom: 34px; }
+.feature-intro h2 { font-size: clamp(2rem, 8vw, 2.75rem); }
 .invite-card, .people-card { padding: clamp(24px, 5vw, 34px); }
 .invite-card > h2, .people-card > h2 { margin: 0 0 18px; font-size: 1.65rem; }
 .invite-card > p { color: var(--cc-muted); font-size: 1.1rem; line-height: 1.55; }
 .invite-card .field { margin: 24px 0 14px; }
 .invite-card .primary-button { width: 100%; }
+.invite-card form { display: grid; gap: 12px; }
 .invite-card .notice { margin-top: 24px; }
 .people-card { margin-top: 26px; }
 .people-card article { display: grid; grid-template-columns: 56px 1fr auto; align-items: center; gap: 16px; padding: 20px 0; border-bottom: 1px solid var(--cc-line); }
@@ -13,6 +19,13 @@
 .people-card h3, .people-card p { margin: 0; }
 .people-card p { margin-top: 4px; color: var(--cc-muted); }
 .people-card strong { color: var(--cc-green-dark); font-size: .88rem; }
+.people-card .pending { padding: 7px 10px; border-radius: 999px; background: var(--cc-warn-soft); color: #8b610c; }
+.people-card button { border: 0; background: transparent; color: var(--cc-muted); cursor: pointer; }
+.invitation-actions { display: flex; flex-wrap: wrap; gap: 6px; grid-column: 2 / -1; }
+.leave-button { margin-top: 22px; border: 0; background: transparent; color: #c23c34; font-weight: 800; }
+.dialog-backdrop { position: fixed; z-index: 40; inset: 0; background: rgb(23 55 45 / 48%); backdrop-filter: blur(3px); }
+.dialog-actions { display: grid; grid-template-columns: 1fr 1fr; margin-top: 22px; }
+.danger-text { border: 0; border-left: 1px solid var(--cc-line); background: transparent; color: #d83e36; font-weight: 800; }
 @media (max-width: 560px) {
   .people-card article { grid-template-columns: 48px 1fr; }
   .people-card article > strong { grid-column: 2; }

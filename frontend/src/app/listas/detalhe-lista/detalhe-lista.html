@@ -1,59 +1,103 @@
-<main>
-  <h1>Detalhe da lista</h1>
-  @if (list) {
-    <h2>{{ list.name }}</h2>
-    @if (list.description) { <p>{{ list.description }}</p> }
-    @if (list.completedAt) { <p>Concluída em {{ list.completedAt }}</p> }
-    <p>{{ list.role === 'OWNER' ? 'Proprietário' : 'Participante' }}</p>
-    <app-concluir-lista [lista]="$any(list)" (listaChange)="onLifecycle($event)" />
-    @if (list.role === 'OWNER' && list.status === 'ACTIVE') {
-      <a [routerLink]="['/listas', listId, 'editar']">Editar lista</a>
-    }
-    @if (list.status === 'ACTIVE') {
-      <a [routerLink]="['/listas', listId, 'compartilhar']">Compartilhar lista</a>
-    }
-  }
-  @if (!unavailable) {
-  <p role="status" aria-live="polite">{{ connected ? 'Sincronizada' : 'Sem conexão' }}</p>
-  <section aria-label="Resumo da compra">
-    <span>Total {{ summary.total }}</span>
-    <span>Comprados {{ summary.checked }}</span>
-    <span>Pendentes {{ summary.pending }}</span>
-    <span>Progresso da compra {{ summary.percentage }}%</span>
-  </section>
-  @for (group of groups; track group.category.id) {
-    <details open [attr.aria-label]="'Categoria ' + group.category.name">
-      <summary><h2>{{ group.category.icon }} {{ group.category.name }} · {{ group.items.length }} itens</h2></summary>
-      @for (item of group.items; track item.id) {
-        <article [id]="'item-' + item.id">
-          <input type="checkbox" [checked]="item.checked"
-            [disabled]="!connected || list?.status === 'COMPLETED' || processing.has(item.id)"
-            [attr.aria-label]="'Marcar ' + item.product.name" (change)="toggle(item)">
-          <div>
-            <h3>{{ item.product.name }}</h3>
-            <p>{{ quantity(item.quantity) }} {{ unit(item.unit) }} @if (item.notes) { · {{ item.notes }} }</p>
-            @if (item.checkedBy) { <small>Marcado por {{ item.checkedBy.name }} {{ item.checkedAt }}</small> }
-          </div>
-          @if (list?.status !== 'COMPLETED') {
-            <a [routerLink]="['/listas', listId, 'itens', item.id, 'editar']">Editar</a>
-            <button type="button" (click)="requestRemove(item)">Remover</button>
+<main class="feature-page">
+  <header class="feature-topbar detail-topbar">
+    <button class="icon-button menu-button" type="button" aria-label="Abrir menu">☰</button>
+    <a class="icon-button" routerLink="/listas" aria-label="Voltar">←</a>
+    <h1>Detalhe da lista</h1>
+    <span aria-hidden="true"></span>
+  </header>
+  <div class="feature-content">
+    @if (list) {
+      <section class="feature-intro">
+        <p class="eyebrow">
+          {{ list.status === 'COMPLETED' ? 'Lista concluída' : list.role === 'OWNER' ? 'Sua lista' : 'Lista compartilhada' }}
+        </p>
+        <h2>{{ list.status === 'COMPLETED' ? 'Compra finalizada' : list.name }}</h2>
+        <p>{{ list.description || 'Marque os produtos conforme eles forem para o carrinho.' }}</p>
+        @if (list.completedAt) { <p>Concluída em {{ list.completedAt }}</p> }
+        <div class="list-actions">
+          <app-concluir-lista [lista]="$any(list)" (listaChange)="onLifecycle($event)" />
+          @if (list.role === 'OWNER' && list.status === 'ACTIVE') {
+            <a [routerLink]="['/listas', listId, 'editar']">Editar lista</a>
           }
-        </article>
+          @if (list.status === 'ACTIVE') {
+            <a [routerLink]="['/listas', listId, 'compartilhar']">Compartilhar lista</a>
+          }
+        </div>
+      </section>
+    }
+    @if (!unavailable) {
+      <p class="sync-status" role="status" aria-live="polite">
+        {{ connected ? 'Sincronizada agora' : 'Sem conexão' }}
+      </p>
+      @if (!connected) {
+        <p class="state-notice" role="alert">
+          As marcações estão temporariamente indisponíveis. Reconecte-se para continuar.
+        </p>
       }
-    </details>
-  } @empty {
-    <p>Sua lista ainda está vazia. Nenhum item na lista.</p>
-  }
-  @if (list?.status !== 'COMPLETED') {
-    <a [routerLink]="['/listas', listId, 'itens', 'novo']">Adicionar item</a>
-  }
-  }
-  @if (notice) { <p role="alert" aria-live="polite">{{ notice }}</p> }
+      @if (notice) { <p class="state-notice" role="alert" aria-live="polite">{{ notice }}</p> }
+      <section class="summary surface" aria-label="Resumo da compra">
+        <div><strong>{{ summary.total }}</strong><span>Total {{ summary.total }} itens</span></div>
+        <div><strong>{{ summary.checked }}</strong><span>Comprados {{ summary.checked }}</span></div>
+        <div><strong>{{ summary.pending }}</strong><span>Pendentes {{ summary.pending }}</span></div>
+        <span class="sr-only">Progresso da compra {{ summary.percentage }}%</span>
+      </section>
+      <div class="progress" role="progressbar" [attr.aria-valuenow]="summary.percentage"
+        aria-valuemin="0" aria-valuemax="100">
+        <span [style.width.%]="summary.percentage"></span>
+      </div>
+      @for (group of groups; track group.category.id) {
+        <details class="item-group surface" open [attr.aria-label]="'Categoria ' + group.category.name">
+          <summary>
+            <h2>{{ group.category.icon }} {{ group.category.name }}
+              <small>· {{ group.items.length }} itens</small>
+            </h2>
+          </summary>
+          @for (item of group.items; track item.id) {
+            <article [id]="'item-' + item.id" [class.checked]="item.checked">
+              <input type="checkbox" [checked]="item.checked"
+                [disabled]="!connected || list?.status === 'COMPLETED' || processing.has(item.id)"
+                [attr.aria-label]="'Marcar ' + item.product.name" (change)="toggle(item)">
+              <div>
+                <h3>{{ item.product.name }}</h3>
+                <p>{{ quantity(item.quantity) }} {{ unit(item.unit) }}
+                  @if (item.notes) { · {{ item.notes }} }
+                </p>
+                @if (item.checkedBy) {
+                  <small>Marcado por {{ item.checkedBy.name }} {{ item.checkedAt }}</small>
+                }
+              </div>
+              @if (list?.status !== 'COMPLETED') {
+                <div class="item-actions">
+                  <a [routerLink]="['/listas', listId, 'itens', item.id, 'editar']"
+                    [attr.aria-label]="'Editar ' + item.product.name">✎</a>
+                  <button type="button" [attr.aria-label]="'Remover ' + item.product.name"
+                    (click)="requestRemove(item)">×</button>
+                </div>
+              }
+            </article>
+          }
+        </details>
+      } @empty {
+        <div class="empty-state surface">Sua lista ainda está vazia. Nenhum item na lista.</div>
+      }
+      @if (list?.status !== 'COMPLETED') {
+        <a class="floating-button add-item" [routerLink]="['/listas', listId, 'itens', 'novo']"
+          aria-label="Adicionar item">+</a>
+      }
+    }
+  </div>
 </main>
 @if (selected) {
-  <section role="dialog" aria-modal="true">
-    <h2>Remover ‘{{ selected.product.name }}’?</h2>
-    <button type="button" (click)="confirmRemove()">Remover</button>
-    <button type="button" (click)="cancelRemove()">Cancelar</button>
-  </section>
+  <div class="dialog-backdrop">
+    <section role="dialog" aria-modal="true">
+      <h2>Remover item</h2>
+      <span class="sr-only">Remover ‘{{ selected.product.name }}’?</span>
+      <p>Remover ‘{{ selected.product.name }}’ da lista?</p>
+      <p>Esta ação não poderá ser desfeita.</p>
+      <div class="dialog-actions">
+        <button class="secondary-button" type="button" (click)="cancelRemove()">Cancelar</button>
+        <button class="danger-text" type="button" (click)="confirmRemove()">Remover</button>
+      </div>
+    </section>
+  </div>
 }

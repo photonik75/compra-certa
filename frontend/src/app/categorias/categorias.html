@@ -1,13 +1,21 @@
 <main class="feature-page">
   <header class="feature-topbar">
-    <span></span>
+    <button class="icon-button menu-button" type="button" aria-label="Abrir menu"></button>
     <h1>Categorias</h1>
-    <button data-action="create" type="button" (click)="openCreate($event)">Nova categoria</button>
+    <button class="floating-button" data-action="create" type="button" (click)="openCreate($event)">
+      <span aria-hidden="true">+</span><span class="sr-only">Nova categoria</span>
+    </button>
   </header>
   <div class="feature-content">
+    <section class="feature-intro">
+      <p class="eyebrow">Organização</p>
+      <h2>Suas categorias</h2>
+      <p>Organize os produtos em grupos fáceis de localizar durante a compra.</p>
+    </section>
     <label class="search-field">
-      <span>Pesquisar categorias</span>
-      <input type="search" aria-label="Pesquisar categorias" [value]="search" (input)="onSearch($event)">
+      <span class="sr-only">Pesquisar categorias</span>
+      <input type="search" placeholder="Pesquisar categorias" aria-label="Pesquisar categorias"
+        [value]="search" (input)="onSearch($event)">
     </label>
     <section class="category-list surface" aria-label="Categorias cadastradas">
       <span class="sr-only">Nome</span>
@@ -18,8 +26,12 @@
             <h2>{{ category.name }}</h2>
             <p>{{ category.activeProductCount }} produtos ativos</p>
           </div>
-          <button type="button" (click)="openEdit(category, $event)">Editar</button>
-          <button type="button" (click)="requestDelete(category, $event)">Excluir</button>
+          <div class="category-actions">
+            <button type="button" aria-label="Editar {{ category.name }}"
+              (click)="openEdit(category, $event)">✎</button>
+            <button type="button" aria-label="Excluir {{ category.name }}"
+              (click)="requestDelete(category, $event)">×</button>
+          </div>
         </article>
       } @empty {
         @if (search) {
@@ -38,17 +50,24 @@
 </main>
 
 @if (dialog === 'create' || dialog === 'edit') {
+  <div class="dialog-backdrop">
   <section role="dialog" aria-modal="true" aria-labelledby="category-dialog-title">
     <h2 id="category-dialog-title">{{ dialog === 'create' ? 'Nova categoria' : 'Editar categoria' }}</h2>
+    <p class="dialog-description">
+      {{ dialog === 'create'
+        ? 'Escolha um nome e um ícone simples. Os produtos herdarão esse ícone.'
+        : 'Altere o nome ou o ícone da categoria. Os produtos ativos acompanharão as mudanças.' }}
+    </p>
     <form [formGroup]="form" (ngSubmit)="save()">
-      <label for="category-name">Nome</label>
-      <input id="category-name" formControlName="name" aria-describedby="category-name-error">
+      <label for="category-name">Nome *</label>
+      <input id="category-name" formControlName="name" placeholder="Ex.: Padaria"
+        aria-describedby="category-name-error">
       <div id="category-name-error" role="alert">
         @if (submitted && form.controls.name.hasError('required')) { {{ messages.nameRequired }} }
         @if (submitted && form.controls.name.hasError('maxlength')) { {{ messages.nameMaxLength }} }
         @if (duplicate) { {{ messages.nameDuplicate }} }
       </div>
-      <fieldset>
+      <fieldset class="icon-options">
         <legend>Ícone</legend>
         @for (icon of icons; track icon) {
           <label data-testid="icon-option">
@@ -61,18 +80,23 @@
         @if (submitted && form.controls.icon.invalid) { {{ messages.iconInvalid }} }
       </div>
       @if (conflict) { <button type="button" (click)="reload()">Recarregar dados</button> }
-      <button type="submit"
-        [disabled]="sending || (dialog === 'edit' && form.pristine)">Salvar</button>
-      <button type="button" (click)="close()">Cancelar</button>
+      <div class="dialog-actions">
+        <button class="secondary-button" type="button" (click)="close()">Cancelar</button>
+        <button class="primary-button" type="submit"
+          [disabled]="sending || (dialog === 'edit' && form.pristine)">Salvar</button>
+      </div>
     </form>
   </section>
+  </div>
 }
 
 @if (dialog === 'delete' && selected) {
+  <div class="dialog-backdrop">
   <section role="dialog" aria-modal="true" aria-labelledby="delete-dialog-title">
     <h2 id="delete-dialog-title">Excluir a categoria ‘{{ selected.name }}’?</h2>
     <p>Ela deixará de aparecer no catálogo e nas seleções.</p>
     <button type="button" [disabled]="sending" (click)="confirmDelete()">Excluir</button>
     <button type="button" (click)="close()">Cancelar</button>
   </section>
+  </div>
 }

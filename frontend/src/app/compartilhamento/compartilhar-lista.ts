@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, HostListener, OnInit, inject } from '@angular/core';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize, forkJoin } from 'rxjs';
 import { CompartilhamentoService } from './compartilhamento.service';
 import { ListasService } from '../listas/listas.service';
@@ -8,7 +8,7 @@ import { SessaoService } from '../auth/sessao.service';
 
 @Component({
   selector: 'app-compartilhar-lista',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './compartilhar-lista.html',
   styleUrl: './compartilhar-lista.css',
 })

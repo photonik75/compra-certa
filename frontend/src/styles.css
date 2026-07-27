@@ -224,6 +224,10 @@ main:not(.pagina-login):not(.pagina-cadastro):not(.pagina-recuperacao) form text
   outline: none;
 }
 
+.feature-content .search-field input {
+  padding-left: 58px;
+}
+
 .feature-content textarea,
 main:not(.pagina-login):not(.pagina-cadastro):not(.pagina-recuperacao) form textarea {
   min-height: 112px;
@@ -339,6 +343,16 @@ main:not(.pagina-login):not(.pagina-cadastro):not(.pagina-recuperacao) article p
 }
 
 @media (max-width: 640px) {
+  .authenticated-layout .feature-topbar .menu-button,
+  .authenticated-layout .feature-topbar > button[aria-label="Abrir menu"] {
+    visibility: hidden;
+  }
+
+  .authenticated-layout .feature-topbar > a[aria-label="Voltar"],
+  .authenticated-layout .feature-topbar > button[aria-label="Voltar"] {
+    margin-left: 44px;
+  }
+
   .feature-content article,
   main:not(.pagina-login):not(.pagina-cadastro):not(.pagina-recuperacao) article {
     grid-template-columns: auto 1fr;

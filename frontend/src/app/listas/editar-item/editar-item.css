@@ -1,2 +1,9 @@
 :host { display: block; }
+.item-topbar { grid-template-columns: 44px 1fr 44px; }
+.feature-intro { margin-bottom: 34px; }
+.feature-intro h2 { font-size: clamp(2rem, 8vw, 2.75rem); }
+.form-card > label { display: grid; gap: 9px; font-weight: 750; }
+.suggestions { margin: -12px 0 0; padding: 0; overflow: hidden; border: 1px solid var(--cc-line); border-radius: 16px; list-style: none; }
+.suggestions button { width: 100%; border: 0; border-radius: 0; text-align: left; }
 .cancel-item { min-height: 54px; padding: 0 24px; border: 1px solid var(--cc-coral); border-radius: 16px; background: white; color: var(--cc-coral); font-weight: 800; }
+.dialog-backdrop { position: fixed; z-index: 40; inset: 0; background: rgb(23 55 45 / 48%); backdrop-filter: blur(3px); }

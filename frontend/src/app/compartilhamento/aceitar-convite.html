@@ -1,12 +1,29 @@
-<main>
-  <h1>Convite para lista</h1>
-  @if (preview) {
-    <p><strong>{{ preview.ownerName }}</strong> convidou você para participar de
-      <strong>{{ preview.listName }}</strong>.</p>
-    <p>Convite enviado para {{ preview.invitedEmail }}</p>
-    <button type="button" [disabled]="sending" (click)="accept()">Aceitar convite</button>
-    <a routerLink="/entrar">Entrar</a>
-    <a routerLink="/cadastro">Criar conta</a>
-  }
-  @if (notice) { <p role="alert" aria-live="polite">{{ notice }}</p> }
+<main class="feature-page">
+  <header class="feature-topbar invite-topbar">
+    <a class="icon-button" routerLink="/listas" aria-label="Voltar">←</a>
+    <h1>Convite para lista</h1>
+    <span aria-hidden="true"></span>
+  </header>
+  <div class="feature-content">
+    @if (preview) {
+      <section class="feature-intro">
+        <p class="eyebrow">Compra Certa</p>
+        <h2>Você foi convidado!</h2>
+        <p><strong>{{ preview.ownerName }}</strong> convidou você para colaborar em uma lista.</p>
+      </section>
+      <section class="invitation-card surface">
+        <div><strong>Lista</strong><h3>{{ preview.listName }}</h3></div>
+        <div><strong>E-mail convidado</strong><p>{{ preview.invitedEmail }}</p></div>
+        <span class="expiry">◷ Convite válido</span>
+      </section>
+      <aside class="permission-info">ⓘ <span>Ao aceitar, você poderá adicionar, editar e marcar itens.</span></aside>
+      <div class="invite-actions">
+        <a class="secondary-button" routerLink="/entrar">Entrar</a>
+        <button class="primary-button" type="button" [disabled]="sending"
+          (click)="accept()">Aceitar convite</button>
+        <a class="create-account" routerLink="/cadastro">Criar conta</a>
+      </div>
+    }
+    @if (notice) { <p role="alert" aria-live="polite">{{ notice }}</p> }
+  </div>
 </main>

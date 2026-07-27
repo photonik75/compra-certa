@@ -1,28 +1,37 @@
-<section aria-label="Ciclo de vida da lista">
+<section class="lifecycle" aria-label="Ciclo de vida da lista">
   @if (lista.role === 'OWNER' && lista.status === 'ACTIVE') {
-    <button data-action="complete" type="button" (click)="open('complete', $event)">Concluir lista</button>
+    <button class="lifecycle-button" data-action="complete" type="button"
+      (click)="open('complete', $event)">Concluir lista</button>
   }
   @if (lista.role === 'OWNER' && lista.status === 'COMPLETED') {
-    <p role="status">Lista concluída: somente para consulta.</p>
-    <button type="button" (click)="open('reopen', $event)">Reabrir</button>
-    <button type="button" (click)="open('delete', $event)">Excluir</button>
+    <p class="completed-badge" role="status">Lista concluída: somente para consulta.</p>
+    <button class="lifecycle-button" type="button" (click)="open('reopen', $event)">Reabrir</button>
+    <button class="delete-button" type="button" (click)="open('delete', $event)">Excluir</button>
   }
   @if (notice) { <p role="alert" aria-live="polite">{{ notice }}</p> }
 </section>
 @if (action) {
+  <div class="dialog-backdrop">
   <section role="dialog" aria-modal="true">
     @if (action === 'complete') {
       <h2>Concluir lista</h2>
-      <p>A lista possui {{ lista.summary.pending }} itens pendentes e ficará somente para consulta.</p>
+      <p>A lista ficará somente para consulta e poderá ser reaberta depois.</p>
+      <strong>{{ lista.summary.pending }} itens pendentes.</strong>
     } @else if (action === 'reopen') {
-      <h2>Reabrir lista</h2><p>As ações de edição e compra voltarão a ficar disponíveis.</p>
+      <h2>Reabrir lista</h2>
+      <p>A lista voltará a aceitar alterações. Todos os itens e marcações serão preservados.</p>
     } @else {
-      <h2>Excluir a lista ‘{{ lista.name }}’?</h2><p>Todos perderão o acesso à lista.</p>
+      <h2>Excluir esta lista?</h2>
+      <p>Essa ação remove a lista de todos os participantes e não pode ser desfeita.</p>
     }
     @if (conflict) { <button type="button" (click)="reload()">Recarregar dados</button> }
-    <button type="button" [disabled]="sending" (click)="confirm()">
-      {{ action === 'delete' ? 'Excluir' : action === 'reopen' ? 'Reabrir' : 'Concluir' }}
-    </button>
-    <button type="button" (click)="close()">Cancelar</button>
+    <div class="dialog-actions">
+      <button class="secondary-button" type="button" (click)="close()">Cancelar</button>
+      <button [class.danger-button]="action === 'delete'" class="primary-button"
+        type="button" [disabled]="sending" (click)="confirm()">
+        {{ action === 'delete' ? 'Excluir' : action === 'reopen' ? 'Reabrir' : 'Concluir' }}
+      </button>
+    </div>
   </section>
+  </div>
 }

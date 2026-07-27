@@ -1,26 +1,41 @@
 <main class="feature-page">
-  <h1>Editar item</h1>
-  <form class="form-card surface" [formGroup]="form" (ngSubmit)="save()">
-    <label for="edit-product-search">Produto</label>
-    <input id="edit-product-search" type="search" (input)="onProductSearch($event)">
-    <ul role="listbox">
+  <header class="feature-topbar item-topbar">
+    <button class="icon-button" type="button" aria-label="Voltar" (click)="cancel()">←</button>
+    <h1>Editar item</h1>
+    <span aria-hidden="true"></span>
+  </header>
+  <div class="feature-content">
+    <section class="feature-intro">
+      <p class="eyebrow">Lista de compras</p>
+      <h2>Ajuste os dados do item</h2>
+      <p>As alterações não afetam o produto do catálogo.</p>
+    </section>
+    <form class="form-card surface" [formGroup]="form" (ngSubmit)="save()">
+    <label for="edit-product-search">Produto *</label>
+    <input id="edit-product-search" type="search" placeholder="Pesquisar produto"
+      (input)="onProductSearch($event)">
+    <ul class="suggestions" role="listbox">
       @for (product of suggestions; track product.id) {
         <li><button type="button" (click)="selectProduct(product)">
           {{ product.category.icon }} {{ product.name }} · {{ product.category.name }}
         </button></li>
       }
     </ul>
-    <label>Quantidade <input formControlName="quantity" inputmode="decimal"></label>
-    <label>Unidade <input formControlName="unit"></label>
-    <label>Categoria <input formControlName="categoryId"></label>
+    <label>Quantidade * <input formControlName="quantity" inputmode="decimal"></label>
+    <label>Unidade * <input formControlName="unit"></label>
+    <label>Categoria * <input formControlName="categoryId"></label>
     <label>Observação <textarea formControlName="notes"></textarea></label>
     @if (notice) { <p role="alert">{{ notice }}</p> }
     @if (conflict) { <button type="button" (click)="reload()">Recarregar dados</button> }
-    <button type="button" (click)="cancel()">Cancelar</button>
-    <button type="submit" [disabled]="form.pristine">Salvar</button>
+    <div class="form-actions">
+      <button class="cancel-item" type="button" (click)="cancel()">Cancelar</button>
+      <button class="primary-button" type="submit" [disabled]="form.pristine">Salvar</button>
+    </div>
   </form>
+  </div>
 </main>
 @if (duplicate) {
+  <div class="dialog-backdrop">
   <section role="dialog" aria-modal="true" aria-labelledby="edit-duplicate-title">
     <h2 id="edit-duplicate-title">Produto já está na lista</h2>
     <p>{{ duplicate.product.name }} · {{ duplicate.quantity }} {{ duplicate.unit }}</p>
@@ -32,4 +47,5 @@
       <p>Para somar, selecione a mesma unidade do item existente.</p>
     }
   </section>
+  </div>
 }
