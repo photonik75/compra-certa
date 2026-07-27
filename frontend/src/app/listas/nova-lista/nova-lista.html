@@ -1,24 +1,54 @@
 <main class="feature-page">
-  <h1>Nova lista</h1>
-  <form class="form-card surface" [formGroup]="form" (ngSubmit)="salvar()">
-    <label for="name">Nome da lista</label>
-    <input id="name" formControlName="name" aria-describedby="name-error">
-    <div id="name-error" role="alert">
-      @if (submitted && form.controls.name.hasError('required')) { {{ messages.nameRequired }} }
-      @if (submitted && form.controls.name.hasError('maxlength')) {
-        {{ messages.nameMaxLength }}
-      }
-      @if (duplicate) { {{ messages.nameDuplicate }} }
-    </div>
-    <label for="description">Descrição ou observação</label>
-    <textarea id="description" formControlName="description" aria-describedby="description-error"></textarea>
-    <div id="description-error" role="alert">
-      @if (submitted && form.controls.description.hasError('maxlength')) {
-        {{ messages.descriptionMaxLength }}
-      }
-    </div>
-    @if (error) { <p role="alert">{{ error }}</p> }
-    <button type="submit" [disabled]="sending">Salvar lista</button>
-    <a routerLink="/listas">Cancelar</a>
-  </form>
+  <header class="feature-topbar">
+    <a class="icon-button back-button" routerLink="/listas" aria-label="Voltar">←</a>
+    <h1>Nova lista</h1>
+    <span aria-hidden="true"></span>
+  </header>
+  <div class="feature-content">
+    <section class="feature-intro">
+      <p class="eyebrow">Planejamento</p>
+      <h2>O que vamos comprar?</h2>
+      <p>Crie uma lista vazia e adicione os itens em seguida.</p>
+    </section>
+    <form class="form-card surface" [formGroup]="form" (ngSubmit)="salvar()">
+      <div class="field">
+        <label for="name">Nome da lista *</label>
+        <input
+          id="name"
+          formControlName="name"
+          placeholder="Ex.: Compras do mês"
+          maxlength="61"
+          aria-describedby="name-error"
+        >
+        <div id="name-error" role="alert">
+          @if (submitted && form.controls.name.hasError('required')) { {{ messages.nameRequired }} }
+          @if (submitted && form.controls.name.hasError('maxlength')) {
+            {{ messages.nameMaxLength }}
+          }
+          @if (duplicate) { {{ messages.nameDuplicate }} }
+        </div>
+      </div>
+      <div class="field">
+        <label for="description">Descrição ou observação</label>
+        <textarea
+          id="description"
+          formControlName="description"
+          placeholder="Ex.: Priorizar produtos em promoção"
+          maxlength="241"
+          aria-describedby="description-help description-error"
+        ></textarea>
+        <small id="description-help">Opcional · até 240 caracteres</small>
+        <div id="description-error" role="alert">
+          @if (submitted && form.controls.description.hasError('maxlength')) {
+            {{ messages.descriptionMaxLength }}
+          }
+        </div>
+      </div>
+      @if (error) { <p role="alert">{{ error }}</p> }
+      <div class="form-actions">
+        <a class="secondary-button" routerLink="/listas">Cancelar</a>
+        <button class="primary-button" type="submit" [disabled]="sending">Salvar lista</button>
+      </div>
+    </form>
+  </div>
 </main>

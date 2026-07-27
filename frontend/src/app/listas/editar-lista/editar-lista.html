@@ -1,27 +1,66 @@
 <main class="feature-page">
-  <h1>Editar lista</h1>
-  @if (message) { <p role="alert">{{ message }}</p> }
-  @if (conflict) { <button type="button" (click)="recarregar()">Recarregar dados</button> }
-  <form class="form-card surface" [formGroup]="form" (ngSubmit)="salvar()">
-    <label for="edit-name">Nome da lista</label>
-    <input id="edit-name" formControlName="name" aria-describedby="edit-name-error">
-    <span id="edit-name-error" role="alert">
-      @if (form.controls.name.dirty && form.controls.name.hasError('required')) {
-        {{ messages.nameRequired }}
-      }
-      @if (form.controls.name.dirty && form.controls.name.hasError('maxlength')) {
-        {{ messages.nameMaxLength }}
-      }
-    </span>
-    <label for="edit-description">Descrição ou observação</label>
-    <textarea id="edit-description" formControlName="description"
-      aria-describedby="edit-description-error"></textarea>
-    <span id="edit-description-error" role="alert">
-      @if (form.controls.description.dirty && form.controls.description.hasError('maxlength')) {
-        {{ messages.descriptionMaxLength }}
-      }
-    </span>
-    <button type="submit" [disabled]="form.disabled || form.pristine || sending">Salvar alterações</button>
-    <a [routerLink]="['/listas']">Cancelar</a>
-  </form>
+  <header class="feature-topbar">
+    <a class="icon-button back-button" routerLink="/listas" aria-label="Voltar">←</a>
+    <h1>Editar lista</h1>
+    <span aria-hidden="true"></span>
+  </header>
+  <div class="feature-content">
+    <section class="feature-intro">
+      <p class="eyebrow">Planejamento</p>
+      <h2>Atualize sua lista</h2>
+      <p>Altere o nome ou a descrição para manter suas compras organizadas.</p>
+    </section>
+    @if (message) {
+      <div class="notice" role="alert">
+        <p>{{ message }}</p>
+        @if (conflict) {
+          <button class="reload-button" type="button" (click)="recarregar()">Recarregar dados</button>
+        }
+      </div>
+    }
+    <form class="form-card surface" [formGroup]="form" (ngSubmit)="salvar()">
+      <div class="field">
+        <label for="edit-name">Nome da lista *</label>
+        <input
+          id="edit-name"
+          formControlName="name"
+          placeholder="Ex.: Compras do mês"
+          maxlength="61"
+          aria-describedby="edit-name-error"
+        >
+        <div id="edit-name-error" role="alert">
+          @if (form.controls.name.dirty && form.controls.name.hasError('required')) {
+            {{ messages.nameRequired }}
+          }
+          @if (form.controls.name.dirty && form.controls.name.hasError('maxlength')) {
+            {{ messages.nameMaxLength }}
+          }
+        </div>
+      </div>
+      <div class="field">
+        <label for="edit-description">Descrição ou observação</label>
+        <textarea
+          id="edit-description"
+          formControlName="description"
+          placeholder="Ex.: Priorizar produtos em promoção"
+          maxlength="241"
+          aria-describedby="edit-description-help edit-description-error"
+        ></textarea>
+        <small id="edit-description-help">Opcional · até 240 caracteres</small>
+        <div id="edit-description-error" role="alert">
+          @if (form.controls.description.dirty && form.controls.description.hasError('maxlength')) {
+            {{ messages.descriptionMaxLength }}
+          }
+        </div>
+      </div>
+      <div class="form-actions">
+        <a class="secondary-button" routerLink="/listas">Cancelar</a>
+        <button
+          class="primary-button"
+          type="submit"
+          [disabled]="form.disabled || form.pristine || sending"
+        >Salvar alterações</button>
+      </div>
+    </form>
+  </div>
 </main>

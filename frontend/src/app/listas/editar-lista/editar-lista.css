@@ -1,2 +1,33 @@
 :host { display: block; }
-.form-card small { margin-top: -16px; color: var(--cc-muted); }
+.feature-topbar { grid-template-columns: 44px 1fr 44px; }
+.back-button { color: var(--cc-muted); font-size: 1.8rem; text-decoration: none; }
+.feature-content { max-width: 760px; }
+.feature-intro { margin-bottom: 38px; }
+.feature-intro h2 { font-size: clamp(2rem, 8vw, 2.75rem); }
+.notice { margin: 0 0 24px; }
+.notice p { margin: 0; }
+.reload-button {
+  margin-top: 14px;
+  border: 0;
+  background: transparent;
+  color: var(--cc-green-dark);
+  font-weight: 800;
+  cursor: pointer;
+}
+.form-card { gap: 28px; }
+.field { gap: 10px; }
+.field label { font-size: 1.05rem; }
+.field input { height: 62px; font-size: 1.1rem; }
+.field textarea { min-height: 130px; font-size: 1.05rem; }
+.field small { color: var(--cc-muted); font-weight: 500; }
+.form-actions a {
+  display: inline-grid;
+  place-items: center;
+  min-height: 54px;
+  text-decoration: none;
+}
+
+@media (max-width: 520px) {
+  .feature-intro { margin-bottom: 28px; }
+  .form-actions { grid-template-columns: 1fr 1.4fr; }
+}

@@ -30,6 +30,9 @@ export class MinhasListas implements OnInit {
   limparPesquisa(): void { this.search = ''; this.load(); }
   selecionarFiltro(filter: ListStatus): void { this.filter = filter; this.load(); }
   carregarMais(): void { if (this.collection.page.nextCursor) this.load(this.collection.page.nextCursor, true); }
+  formatarData(value: string): string {
+    return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(value));
+  }
   abrir(item: ListCard): void {
     const queryParams = item.status === 'COMPLETED' ? { modo: 'consulta' } : {};
     this.router.navigate(['/listas', item.id], { queryParams });
