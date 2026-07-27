@@ -14,6 +14,7 @@ export interface ListCollection {
 }
 export interface ListDetail {
   id: string; name: string; description?: string | null; status: string; role: string; version: number;
+  completedAt?: string | null; summary?: ListSummary;
 }
 
 @Injectable({ providedIn: 'root' })

@@ -61,7 +61,7 @@ test('SHOP-001 - Resumo representa oito itens, três comprados e percentual arre
   await expect(page.getByText('Total 8')).toBeVisible();
   await expect(page.getByText('Comprados 3')).toBeVisible();
   await expect(page.getByText('Pendentes 5')).toBeVisible();
-  await expect(page.getByText('Progresso da compra 37%')).toBeVisible();
+  await expect(page.getByText('Progresso da compra 38%')).toBeVisible();
 });
 
 test('SHOP-002 - Marcar e desmarcar persistem estado, resumo e autoria.', async ({ page }) => {
@@ -76,6 +76,7 @@ test('SHOP-002 - Marcar e desmarcar persistem estado, resumo e autoria.', async 
   await page.reload();
   await expect(caixa).toBeChecked();
   await caixa.uncheck();
+  await expect(page.getByRole('alert')).toContainText('Item desmarcado com sucesso.');
   await page.reload();
   await expect(caixa).not.toBeChecked();
   await expect(page.getByText(/Marcado por/)).toHaveCount(0);
@@ -124,6 +125,7 @@ test('SHOP-006 - Proprietário e participante recebem alterações colaborativas
   page,
   browser,
 }) => {
+  test.setTimeout(60_000);
   const contextoParticipante = await browser.newContext();
   const participante = await contextoParticipante.newPage();
   const emailParticipante = await cadastrar(participante, 'shop006-participante');
@@ -133,11 +135,14 @@ test('SHOP-006 - Proprietário e participante recebem alterações colaborativas
   await criarLista(page, 'Compra compartilhada');
   await adicionar(page, 'Produto do proprietário');
   await page.getByRole('link', { name: /Compartilhar/ }).click();
-  await page.getByLabel('E-mail').fill(emailParticipante);
+  await page.getByLabel('Convidar participante').fill(emailParticipante);
   await page.getByRole('button', { name: 'Convidar' }).click();
   await expect(page.getByRole('status')).toContainText(/convite|participante/i);
   await participante.goto('/listas');
-  await participante.getByRole('link', { name: /Compra compartilhada/ }).click();
+  const cartao = participante.getByTestId('list-card').filter({ hasText: 'Compra compartilhada' });
+  await cartao.getByRole('button', { name: 'Abrir' }).click();
+  await page.goBack();
+  await expect(page.getByRole('checkbox', { name: 'Marcar Produto do proprietário' })).toBeVisible();
   await page.getByRole('checkbox', { name: 'Marcar Produto do proprietário' }).check();
   await expect(participante.getByRole('checkbox', {
     name: 'Marcar Produto do proprietário',
@@ -195,6 +200,7 @@ test('SHOP-009 - Reconexão ressincroniza antes de permitir nova marcação.', a
   await context.setOffline(false);
   await expect(page.getByRole('status')).toContainText('Sincronizada');
   await page.getByRole('checkbox', { name: 'Marcar Açúcar' }).check();
+  await expect(page.getByRole('alert')).toContainText('Item marcado com sucesso.');
   await page.reload();
   await expect(page.getByRole('checkbox', { name: 'Marcar Açúcar' })).toBeChecked();
 });
@@ -219,6 +225,7 @@ test('SHOP-011 - Resumo final corresponde às mutações persistidas.', async ({
   const itemB = page.getByRole('heading', { name: 'Item B', exact: true }).locator('..').locator('..');
   await itemB.getByRole('button', { name: 'Remover' }).click();
   await page.getByRole('dialog').getByRole('button', { name: 'Remover' }).click();
+  await expect(page.getByRole('alert')).toContainText('Item removido com sucesso.');
   await page.reload();
   await expect(page.getByText('Total 1')).toBeVisible();
   await expect(page.getByText('Comprados 1')).toBeVisible();

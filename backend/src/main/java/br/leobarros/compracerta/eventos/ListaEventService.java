@@ -57,8 +57,7 @@ public class ListaEventService {
 		try {
 			emitter.send(SseEmitter.event().id(id).name(type).data(data));
 			return true;
-		} catch (IOException exception) {
-			emitter.complete();
+		} catch (Exception exception) {
 			return false;
 		}
 	}

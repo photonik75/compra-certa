@@ -4,6 +4,7 @@
     <h2>{{ list.name }}</h2>
     @if (list.description) { <p>{{ list.description }}</p> }
     <p>{{ list.role === 'OWNER' ? 'Proprietário' : 'Participante' }}</p>
+    <app-concluir-lista [lista]="$any(list)" (listaChange)="onLifecycle($event)" />
     @if (list.role === 'OWNER' && list.status === 'ACTIVE') {
       <a [routerLink]="['/listas', listId, 'editar']">Editar lista</a>
       <a [routerLink]="['/listas', listId, 'compartilhar']">Compartilhar lista</a>

@@ -5,10 +5,11 @@ import { formatQuantity, unitLabel } from '../item-form';
 import { ListItem, ListSummary, ListaItensService } from '../lista-itens.service';
 import { SincronizacaoListaService } from '../sincronizacao-lista.service';
 import { ListDetail, ListasService } from '../listas.service';
+import { ConcluirLista } from '../concluir-lista/concluir-lista';
 
 @Component({
   selector: 'app-detalhe-lista',
-  imports: [RouterLink],
+  imports: [RouterLink, ConcluirLista],
   templateUrl: './detalhe-lista.html',
   styleUrl: './detalhe-lista.css',
 })
@@ -42,8 +43,9 @@ export class DetalheLista implements OnInit, OnDestroy {
       this.changeDetector.markForCheck();
     }));
     this.subscriptions.add(this.sync.events$.subscribe((event) => {
-      if (event.listId !== this.listId || !event.payload?.item) return;
-      this.apply(event.payload.item, event.payload.listSummary);
+      if (event.listId !== this.listId) return;
+      this.load();
+      this.loadList();
     }));
   }
 
@@ -64,8 +66,15 @@ export class DetalheLista implements OnInit, OnDestroy {
     if (!this.connected || this.list?.status === 'COMPLETED' || this.processing.has(item.id)) return;
     this.processing.add(item.id);
     this.service.marcar(this.listId, item.id, !item.checked, item.version)
-      .pipe(finalize(() => this.processing.delete(item.id))).subscribe({
-        next: (result) => this.apply(result.item, result.listSummary),
+      .pipe(finalize(() => {
+        this.processing.delete(item.id);
+        this.changeDetector.markForCheck();
+      })).subscribe({
+        next: (result) => {
+          this.apply(result.item, result.listSummary);
+          this.notice = result.item.checked ? 'Item marcado com sucesso.' : 'Item desmarcado com sucesso.';
+          this.changeDetector.markForCheck();
+        },
         error: (response) => {
           if (response?.error?.code === 'CONFLICT') {
             this.notice = 'A lista foi atualizada em outro lugar.';
@@ -101,6 +110,7 @@ export class DetalheLista implements OnInit, OnDestroy {
 
   quantity(value: string): string { return formatQuantity(value); }
   unit(value: string): string { return unitLabel(value); }
+  onLifecycle(list: any): void { this.list = { ...this.list, ...list }; this.load(); }
 
   private load(): void {
     this.service.listar(this.listId).subscribe({

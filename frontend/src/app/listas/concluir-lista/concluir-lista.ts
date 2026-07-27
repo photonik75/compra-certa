@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, HostListener, Input, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, HostListener, Input, Output, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { CicloVidaListaService } from '../ciclo-vida-lista.service';
@@ -19,6 +19,7 @@ export class ConcluirLista {
   private readonly router = inject(Router);
   private readonly changeDetector = inject(ChangeDetectorRef);
   @Input({ required: true }) lista!: LifecycleList;
+  @Output() readonly listaChange = new EventEmitter<LifecycleList>();
   action: Action = null;
   sending = false;
   conflict = false;
@@ -48,6 +49,7 @@ export class ConcluirLista {
       .pipe(finalize(() => this.sending = false)).subscribe({
         next: (list) => {
           this.lista = list;
+          this.listaChange.emit(list);
           this.notice = status === 'COMPLETED' ? 'Lista concluída com sucesso.' : 'Lista reaberta com sucesso.';
           this.close();
         },
