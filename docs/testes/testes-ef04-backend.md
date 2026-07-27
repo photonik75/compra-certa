@@ -5,6 +5,10 @@ Cada linha deve falhar antes da menor implementação necessária. Colaboradores
 Classificação: Unitário isola o elemento testado com stubs/spies; Integração exercita componentes ou
 camadas em conjunto, substituindo banco, APIs e demais sistemas externos; E2E usa Playwright.
 
+Critério de validação: testes de comportamento devem executar a operação e observar resultado e efeitos
+colaterais. Inspeção de código, SQL, anotações ou arquitetura não substitui a simulação de sucesso, falha,
+concorrência e rollback; essas inspeções são aceitas somente no teste arquitetural.
+
 | Código | Nível | Trecho da especificação | Teste automatizado a implementar |
 |---|---|---|---|
 | `BE-PROD-01` | Unitário | Contrato > `GET /products` | Controller valida filtros/status/limite e retorna coleção paginada do usuário. |

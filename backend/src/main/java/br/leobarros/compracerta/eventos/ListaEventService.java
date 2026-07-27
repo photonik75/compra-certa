@@ -8,6 +8,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @Service
@@ -28,6 +30,18 @@ public class ListaEventService {
 		return emitter;
 	}
 	public void publish(UUID listId, long listVersion, UUID resourceId, String type, Object payload) {
+		if (TransactionSynchronizationManager.isSynchronizationActive()) {
+			TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+				@Override
+				public void afterCommit() {
+					dispatch(listId, listVersion, resourceId, type, payload);
+				}
+			});
+			return;
+		}
+		dispatch(listId, listVersion, resourceId, type, payload);
+	}
+	protected void dispatch(UUID listId, long listVersion, UUID resourceId, String type, Object payload) {
 		var id = UUID.randomUUID().toString();
 		var event = Map.of(
 				"listId", listId,

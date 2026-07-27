@@ -157,12 +157,24 @@ public abstract class CompraCertaBackendE2ESupport {
 		mvc.perform(put("/api/v1/lists/{listId}/items/{itemId}/checked", listId, itemId)
 						.cookie(cookie())
 						.header(HEADER_CSRF, CSRF)
+						.header(HEADER_IDEMPOTENCY, "mark-item-once")
 						.header("If-Match", "\"1\"")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("{\"checked\":true}"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.item.checked").value(true))
 				.andExpect(jsonPath("$.item.checkedBy.id").value(accountId.toString()))
+				.andExpect(jsonPath("$.listSummary.checked").value(1))
+				.andExpect(header().string("ETag", "\"2\""));
+		mvc.perform(put("/api/v1/lists/{listId}/items/{itemId}/checked", listId, itemId)
+						.cookie(cookie())
+						.header(HEADER_CSRF, CSRF)
+						.header(HEADER_IDEMPOTENCY, "mark-item-once")
+						.header("If-Match", "\"1\"")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("{\"checked\":true}"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.item.version").value(2))
 				.andExpect(jsonPath("$.listSummary.checked").value(1));
 	}
 

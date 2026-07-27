@@ -11,7 +11,8 @@ import org.junit.platform.suite.api.Suite;
 		"br.leobarros.compracerta.produtos",
 		"br.leobarros.compracerta.itens",
 		"br.leobarros.compracerta.ciclodevida",
-		"br.leobarros.compracerta.compartilhamento"
+		"br.leobarros.compracerta.compartilhamento",
+		"br.leobarros.compracerta.eventos"
 })
 public class SuiteDeTestesUnitarios {
 }

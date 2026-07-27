@@ -16,6 +16,7 @@ import br.leobarros.compracerta.listas.ListaDtos.ListDetail;
 import br.leobarros.compracerta.listas.ListaDtos.ListSummary;
 import br.leobarros.compracerta.listas.ListaDtos.PageInfo;
 import br.leobarros.compracerta.listas.ListaDtos.UserReference;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -39,6 +40,7 @@ class ListaPostgresqlRepository implements ListaRepository {
 	private final JdbcTemplate jdbc;
 	private final NamedParameterJdbcTemplate namedJdbc;
 
+	@Autowired
 	ListaPostgresqlRepository(JdbcTemplate jdbc) {
 		this(jdbc, new NamedParameterJdbcTemplate(jdbc));
 	}

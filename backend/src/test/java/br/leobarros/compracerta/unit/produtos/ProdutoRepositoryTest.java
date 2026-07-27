@@ -27,7 +27,7 @@ class ProdutoRepositoryTest {
 		var sql = ArgumentCaptor.forClass(String.class);
 		verify(jdbc).query(sql.capture(), any(RowMapper.class), any(Object[].class));
 		assertThat(sql.getValue()).contains("p.ativo=?").contains("p.categoria_id=?")
-				.contains("translate").contains("ORDER BY lower(p.nome),p.id");
+				.contains("translate").contains("lower(p.nome),p.id");
 	}
 
 	@Test
@@ -36,8 +36,11 @@ class ProdutoRepositoryTest {
 		when(jdbc.query(anyString(), any(RowMapper.class), any(Object[].class))).thenReturn(List.of());
 		new ProdutoRepository(jdbc).list(ACCOUNT_ID, "arroz", null, "ACTIVE", 10, 0);
 		var arguments = ArgumentCaptor.forClass(Object[].class);
-		verify(jdbc).query(anyString(), any(RowMapper.class), arguments.capture());
+		var sql = ArgumentCaptor.forClass(String.class);
+		verify(jdbc).query(sql.capture(), any(RowMapper.class), arguments.capture());
 		assertThat(arguments.getValue()).contains(11, 0);
+		assertThat(sql.getValue()).contains("CASE").contains("THEN 0").contains("THEN 1")
+				.contains("ELSE 2").contains("lower(p.nome),p.id");
 	}
 
 	@Test

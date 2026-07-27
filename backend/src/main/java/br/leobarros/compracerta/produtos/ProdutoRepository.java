@@ -38,7 +38,17 @@ public class ProdutoRepository {
 					+ "'aaaaaeeeeiiiiooooouuuuc')) LIKE ? ");
 			args.add("%" + search + "%");
 		}
-		sql.append("ORDER BY lower(p.nome),p.id LIMIT ? OFFSET ?");
+		if (search != null) {
+			sql.append("ORDER BY CASE "
+					+ "WHEN lower(translate(p.nome,'áàâãäéèêëíìîïóòôõöúùûüç','aaaaaeeeeiiiiooooouuuuc'))=? THEN 0 "
+					+ "WHEN lower(translate(p.nome,'áàâãäéèêëíìîïóòôõöúùûüç','aaaaaeeeeiiiiooooouuuuc')) LIKE ? "
+					+ "THEN 1 ELSE 2 END,lower(p.nome),p.id ");
+			args.add(search);
+			args.add(search + "%");
+		} else {
+			sql.append("ORDER BY lower(p.nome),p.id ");
+		}
+		sql.append("LIMIT ? OFFSET ?");
 		args.add(limit + 1);
 		args.add(offset);
 		return jdbc.query(sql.toString(), this::map, args.toArray());

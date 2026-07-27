@@ -90,6 +90,16 @@ class ItemServiceTest {
 		assertThatThrownBy(() -> service.create(ACCOUNT, LIST_ID, input("1", "UNIT", "MERGE"), "key"))
 				.isInstanceOf(ApiException.class)
 				.satisfies(error -> assertThat(((ApiException) error).code()).isEqualTo("INCOMPATIBLE_UNITS"));
+		when(repository.duplicate(LIST_ID, "arroz", null))
+				.thenReturn(Optional.of(item(TARGET_ID, "999999.99", "UNIT", 1)));
+		assertThatThrownBy(() -> service.create(ACCOUNT, LIST_ID, input("0.01", "UNIT", "MERGE"), "limit"))
+				.satisfies(error -> assertThat(((ApiException) error).code())
+						.isEqualTo("QUANTITY_LIMIT_EXCEEDED"));
+		when(repository.duplicate(LIST_ID, "arroz", null))
+				.thenReturn(Optional.of(item(TARGET_ID, "2", "UNIT", 1)));
+		when(repository.find(LIST_ID, TARGET_ID)).thenReturn(Optional.of(item(TARGET_ID, "3", "UNIT", 2)));
+		service.create(ACCOUNT, LIST_ID, input("1", "UNIT", "MERGE"), "merge");
+		verify(repository).merge(TARGET_ID, new java.math.BigDecimal("1"), NOW, 1);
 	}
 
 	@Test
