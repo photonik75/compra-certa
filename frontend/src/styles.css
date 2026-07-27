@@ -182,25 +182,25 @@ button, input, select, textarea { font: inherit; }
 }
 
 /* Estrutura visual comum para as telas funcionais. */
-main:not(.pagina-login) {
+main:not(.pagina-login):not(.pagina-cadastro):not(.pagina-recuperacao) {
   min-height: 100vh;
   background: var(--cc-bg);
   color: var(--cc-ink);
 }
 
-main:not(.pagina-login):not(.feature-page) {
+main:not(.pagina-login):not(.pagina-cadastro):not(.pagina-recuperacao):not(.feature-page) {
   width: min(100%, 840px);
   margin: 0 auto;
   padding: 32px clamp(18px, 5vw, 40px) 72px;
 }
 
-main:not(.pagina-login) > h1 {
+main:not(.pagina-login):not(.pagina-cadastro):not(.pagina-recuperacao) > h1 {
   margin: 0 0 28px;
   font-size: clamp(1.8rem, 5vw, 2.5rem);
 }
 
 .feature-content > label,
-main:not(.pagina-login) form > label {
+main:not(.pagina-login):not(.pagina-cadastro):not(.pagina-recuperacao) form > label {
   display: grid;
   gap: 8px;
   margin: 18px 0;
@@ -211,9 +211,9 @@ main:not(.pagina-login) form > label {
 .feature-content input,
 .feature-content select,
 .feature-content textarea,
-main:not(.pagina-login) form input,
-main:not(.pagina-login) form select,
-main:not(.pagina-login) form textarea {
+main:not(.pagina-login):not(.pagina-cadastro):not(.pagina-recuperacao) form input,
+main:not(.pagina-login):not(.pagina-cadastro):not(.pagina-recuperacao) form select,
+main:not(.pagina-login):not(.pagina-cadastro):not(.pagina-recuperacao) form textarea {
   width: 100%;
   min-height: 52px;
   padding: 12px 16px;
@@ -225,7 +225,7 @@ main:not(.pagina-login) form textarea {
 }
 
 .feature-content textarea,
-main:not(.pagina-login) form textarea {
+main:not(.pagina-login):not(.pagina-cadastro):not(.pagina-recuperacao) form textarea {
   min-height: 112px;
   resize: vertical;
 }
@@ -233,9 +233,9 @@ main:not(.pagina-login) form textarea {
 .feature-content input:focus,
 .feature-content select:focus,
 .feature-content textarea:focus,
-main:not(.pagina-login) form input:focus,
-main:not(.pagina-login) form select:focus,
-main:not(.pagina-login) form textarea:focus {
+main:not(.pagina-login):not(.pagina-cadastro):not(.pagina-recuperacao) form input:focus,
+main:not(.pagina-login):not(.pagina-cadastro):not(.pagina-recuperacao) form select:focus,
+main:not(.pagina-login):not(.pagina-cadastro):not(.pagina-recuperacao) form textarea:focus {
   border-color: var(--cc-green);
   box-shadow: 0 0 0 4px rgb(39 131 93 / 12%);
 }
@@ -243,7 +243,7 @@ main:not(.pagina-login) form textarea:focus {
 .feature-topbar > button:not(.icon-button),
 .feature-topbar > a:not(.floating-button),
 .feature-content button,
-main:not(.pagina-login) button {
+main:not(.pagina-login):not(.pagina-cadastro):not(.pagina-recuperacao) button {
   min-height: 44px;
   padding: 10px 18px;
   border: 1px solid var(--cc-line);
@@ -268,8 +268,8 @@ button:disabled {
 }
 
 .feature-content > section:not(.feature-intro):not(.summary),
-main:not(.pagina-login) > section,
-main:not(.pagina-login) form {
+main:not(.pagina-login):not(.pagina-cadastro):not(.pagina-recuperacao) > section,
+main:not(.pagina-login):not(.pagina-cadastro):not(.pagina-recuperacao) form {
   margin: 22px 0;
   padding: clamp(18px, 4vw, 28px);
   border: 1px solid var(--cc-line);
@@ -279,7 +279,7 @@ main:not(.pagina-login) form {
 }
 
 .feature-content article,
-main:not(.pagina-login) article {
+main:not(.pagina-login):not(.pagina-cadastro):not(.pagina-recuperacao) article {
   display: grid;
   grid-template-columns: auto 1fr auto auto;
   align-items: center;
@@ -289,19 +289,19 @@ main:not(.pagina-login) article {
 }
 
 .feature-content article:last-child,
-main:not(.pagina-login) article:last-child {
+main:not(.pagina-login):not(.pagina-cadastro):not(.pagina-recuperacao) article:last-child {
   border-bottom: 0;
 }
 
 .feature-content article h2,
 .feature-content article h3,
-main:not(.pagina-login) article h2,
-main:not(.pagina-login) article h3 {
+main:not(.pagina-login):not(.pagina-cadastro):not(.pagina-recuperacao) article h2,
+main:not(.pagina-login):not(.pagina-cadastro):not(.pagina-recuperacao) article h3 {
   margin: 0;
 }
 
 .feature-content article p,
-main:not(.pagina-login) article p {
+main:not(.pagina-login):not(.pagina-cadastro):not(.pagina-recuperacao) article p {
   margin: 5px 0 0;
   color: var(--cc-muted);
 }
@@ -340,7 +340,7 @@ main:not(.pagina-login) article p {
 
 @media (max-width: 640px) {
   .feature-content article,
-  main:not(.pagina-login) article {
+  main:not(.pagina-login):not(.pagina-cadastro):not(.pagina-recuperacao) article {
     grid-template-columns: auto 1fr;
   }
 }
