@@ -21,7 +21,10 @@ describe('AceitarConvite - EF08', () => {
       providers: [
         { provide: CompartilhamentoService, useValue: service },
         { provide: Router, useValue: router },
-        { provide: ActivatedRoute, useValue: { snapshot: { fragment: 'token-secreto' } } },
+        {
+          provide: ActivatedRoute,
+          useValue: { snapshot: { queryParamMap: new Map(), fragment: 'token-secreto' } },
+        },
       ],
     }).compileComponents();
   });

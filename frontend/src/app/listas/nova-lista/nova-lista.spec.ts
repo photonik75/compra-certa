@@ -37,7 +37,10 @@ describe('NovaLista - EF02', () => {
   });
 
   it('FE-LIS-08 - apresenta conflito de unicidade retornado pelo serviço', () => {
-    service.criar.mockReturnValue(throwError(() => ({ error: { code: 'LIST_NAME_ALREADY_IN_USE' } })));
+    service.criar.mockReturnValue(throwError(() => ({
+      status: 409,
+      error: { code: 'LIST_NAME_ALREADY_IN_USE' },
+    })));
     fixture.componentInstance.form.setValue({ name: 'Feira', description: '' });
     fixture.componentInstance.salvar();
     fixture.detectChanges();

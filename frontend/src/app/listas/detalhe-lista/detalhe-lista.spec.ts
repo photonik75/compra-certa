@@ -106,6 +106,13 @@ describe('DetalheLista - EF05/EF06', () => {
   });
 
   it('FE-SHOP-06/08/09/11 - recebe evento da lista, ignora outra e ressincroniza ao reconectar', () => {
+    itemsService.listar
+      .mockReturnValueOnce(of(COLLECTION))
+      .mockReturnValue(of({
+        ...COLLECTION,
+        items: [{ ...ITEMS[0], checked: true }, ITEMS[1]],
+        listSummary: { total: 2, checked: 2, pending: 0, percentage: 100 },
+      }));
     const fixture = TestBed.createComponent(DetalheLista);
     fixture.detectChanges();
     connection.next(false);
@@ -120,7 +127,7 @@ describe('DetalheLista - EF05/EF06', () => {
     } });
     expect(fixture.componentInstance.items[0].checked).toBe(true);
     connection.next(true);
-    expect(itemsService.listar).toHaveBeenCalledTimes(2);
+    expect(itemsService.listar).toHaveBeenCalledTimes(3);
   });
 
   it('FE-ITEM-11/15 - confirma remoção e anuncia resumo atualizado', () => {

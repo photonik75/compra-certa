@@ -12,7 +12,10 @@ describe('NovoItem - EF05', () => {
   let router: any;
 
   beforeEach(async () => {
-    items = { criar: vi.fn().mockReturnValue(of({ item: { id: 'i1' } })) };
+    items = {
+      criar: vi.fn().mockReturnValue(of({ item: { id: 'i1' } })),
+      listar: vi.fn().mockReturnValue(of({ items: [], page: {}, listSummary: {} })),
+    };
     products = {
       sugerir: vi.fn().mockReturnValue(of([{
         id: 'p1', name: 'Banana', category: { id: 'c1', name: 'Hortifruti', icon: '🥬' },
@@ -37,12 +40,12 @@ describe('NovoItem - EF05', () => {
     fixture.componentInstance.save();
     fixture.detectChanges();
     const text = fixture.nativeElement.textContent;
-    expect(text).toContain('Selecione um produto da lista de sugestões.');
+    expect(text).toContain('Selecione um produto válido na lista de sugestões.');
     expect(text).toContain('Informe uma quantidade maior que zero.');
     fixture.componentInstance.form.patchValue({ quantity: '1000000', notes: 'x'.repeat(241) });
     fixture.componentInstance.save();
     fixture.detectChanges();
-    expect(fixture.nativeElement.textContent).toContain('A quantidade máxima é 999999,99.');
+    expect(fixture.nativeElement.textContent).toContain('A quantidade deve ser menor ou igual a 999999,99.');
     expect(fixture.nativeElement.textContent).toContain('A observação deve ter no máximo 240 caracteres.');
   });
 
@@ -71,6 +74,19 @@ describe('NovoItem - EF05', () => {
 
   it('FE-ITEM-07/08 - preserva formulário e apresenta duplicidade no erro', () => {
     items.criar.mockReturnValue(throwError(() => ({ error: { code: 'DUPLICATE_ITEM', meta: { item: { id: 'old' } } } })));
+    items.listar.mockReturnValue(of({
+      items: [{
+        id: 'old',
+        product: { id: 'p1', name: 'Banana' },
+        category: { id: 'c1', name: 'Hortifruti', icon: '🥬' },
+        quantity: '1',
+        unit: 'UNIT',
+        checked: false,
+        version: 1,
+      }],
+      page: { nextCursor: null, hasMore: false },
+      listSummary: { total: 1, checked: 0, pending: 1, percentage: 0 },
+    }));
     const fixture = TestBed.createComponent(NovoItem);
     fixture.detectChanges();
     fixture.componentInstance.selectProduct({
@@ -80,7 +96,7 @@ describe('NovoItem - EF05', () => {
     fixture.componentInstance.form.patchValue({ quantity: '2' });
     fixture.componentInstance.save();
     fixture.detectChanges();
-    expect(fixture.nativeElement.textContent).toContain('Este produto já está na lista.');
+    expect(fixture.nativeElement.textContent).toContain('Produto já está na lista');
     expect(fixture.componentInstance.form.controls.quantity.value).toBe('2');
   });
 });

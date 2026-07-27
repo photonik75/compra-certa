@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
-import { of, throwError } from 'rxjs';
+import { BehaviorSubject, Subject, of, throwError } from 'rxjs';
 import { Cadastro } from './auth/cadastro/cadastro';
 import { CadastroService } from './auth/cadastro/cadastro.service';
 import { Login } from './auth/login/login';
@@ -19,6 +19,8 @@ import { EditarLista } from './listas/editar-lista/editar-lista';
 import { MinhasListas } from './listas/minhas-listas';
 import { NovaLista } from './listas/nova-lista/nova-lista';
 import { NovoItem } from './listas/novo-item/novo-item';
+import { SincronizacaoListaService } from './listas/sincronizacao-lista.service';
+import { LayoutInterno } from './layout-interno/layout-interno';
 import { Produtos } from './produtos/produtos';
 import { routes } from './app.routes';
 
@@ -30,6 +32,15 @@ describe('Testes das rotas da aplicação', () => {
         { provide: CadastroService, useValue: {} },
         { provide: RecuperacaoSenhaService, useValue: {} },
         { provide: RedefinicaoSenhaService, useValue: {} },
+        {
+          provide: SincronizacaoListaService,
+          useValue: {
+            connection$: new BehaviorSubject(true),
+            events$: new Subject(),
+            connect: () => undefined,
+            disconnect: () => undefined,
+          },
+        },
         {
           provide: SessaoService,
           useValue: { consultar: () => throwError(() => new Error()), sair: () => of(undefined) },
@@ -53,7 +64,7 @@ describe('Testes das rotas da aplicação', () => {
       useValue: { consultar: () => of({}), sair: () => of(undefined) },
     });
     const harness = await RouterTestingHarness.create();
-    expect(await harness.navigateByUrl('/listas', MinhasListas)).toBeInstanceOf(MinhasListas);
+    await esperarTelaInterna(harness, '/listas', 'Minhas listas');
   });
 
   it('ROT-4 - Exibe a tela de recuperação de senha ao acessar /recuperar-senha.', async () => {
@@ -70,25 +81,23 @@ describe('Testes das rotas da aplicação', () => {
 
   it('FE-LIS-17/FE-ITEM-17/FE-SHOP-14/FE-LIFE-14 - Exibe as telas das rotas de listas e itens.', async () => {
     const harness = await criarHarnessAutenticado();
-    expect(await harness.navigateByUrl('/listas/nova', NovaLista)).toBeInstanceOf(NovaLista);
-    expect(await harness.navigateByUrl('/listas/1', DetalheLista)).toBeInstanceOf(DetalheLista);
-    expect(await harness.navigateByUrl('/listas/1/editar', EditarLista)).toBeInstanceOf(EditarLista);
-    expect(await harness.navigateByUrl('/listas/1/itens/novo', NovoItem)).toBeInstanceOf(NovoItem);
-    expect(await harness.navigateByUrl('/listas/1/itens/2/editar', EditarItem)).toBeInstanceOf(EditarItem);
+    await esperarTelaInterna(harness, '/listas/nova', 'Nova lista');
+    await esperarTelaInterna(harness, '/listas/1', 'Detalhe da lista');
+    await esperarTelaInterna(harness, '/listas/1/editar', 'Editar lista');
+    await esperarTelaInterna(harness, '/listas/1/itens/novo', 'Adicionar item');
+    await esperarTelaInterna(harness, '/listas/1/itens/2/editar', 'Editar item');
   });
 
   it('FE-CAT-16/FE-PROD-17 - Exibe as telas das rotas de catálogo.', async () => {
     const harness = await criarHarnessAutenticado();
-    expect(await harness.navigateByUrl('/categorias', Categorias)).toBeInstanceOf(Categorias);
-    expect(await harness.navigateByUrl('/produtos', Produtos)).toBeInstanceOf(Produtos);
+    await esperarTelaInterna(harness, '/categorias', 'Categorias');
+    await esperarTelaInterna(harness, '/produtos', 'Produtos');
   });
 
   it('FE-SHARE-16 - Exibe compartilhamento e aceite de convite.', async () => {
     const harness = await criarHarnessAutenticado();
-    expect(await harness.navigateByUrl('/listas/1/compartilhar', CompartilharLista))
-      .toBeInstanceOf(CompartilharLista);
-    expect(await harness.navigateByUrl('/convites/aceitar#token=convite', AceitarConvite))
-      .toBeInstanceOf(AceitarConvite);
+    await esperarTelaInterna(harness, '/listas/1/compartilhar', 'Compartilhar lista');
+    await esperarTelaInterna(harness, '/convites/aceitar#token=convite', 'Convite para lista');
   });
 
   async function criarHarnessAutenticado(): Promise<RouterTestingHarness> {
@@ -96,5 +105,14 @@ describe('Testes das rotas da aplicação', () => {
       useValue: { consultar: () => of({}), sair: () => of(undefined) },
     });
     return RouterTestingHarness.create();
+  }
+
+  async function esperarTelaInterna(
+    harness: RouterTestingHarness,
+    url: string,
+    titulo: string,
+  ): Promise<void> {
+    expect(await harness.navigateByUrl(url, LayoutInterno)).toBeInstanceOf(LayoutInterno);
+    expect(harness.routeNativeElement?.querySelector('.conteudo-interno h1')?.textContent).toContain(titulo);
   }
 });

@@ -4,11 +4,13 @@ import { Subject, of, throwError } from 'rxjs';
 import { vi } from 'vitest';
 import { CompartilhamentoService } from './compartilhamento.service';
 import { CompartilharLista } from './compartilhar-lista';
+import { ListasService } from '../listas/listas.service';
+import { SessaoService } from '../auth/sessao.service';
 
 const ACCESS = {
   list: { id: 'l1', name: 'Feira', status: 'ACTIVE', role: 'OWNER', version: 2 },
-  owner: { id: 'u1', name: 'Ana', email: 'ana@exemplo.com' },
-  members: [{ id: 'u2', name: 'Bia', email: 'bia@exemplo.com' }],
+  owner: { user: { id: 'u1', name: 'Ana', email: 'ana@exemplo.com' }, version: 1 },
+  members: [{ user: { id: 'u2', name: 'Bia', email: 'bia@exemplo.com' }, version: 2 }],
   invitations: [{ id: 'i1', email: 'cai@exemplo.com', expiresAt: '2026-08-01', deliveryStatus: 'SENT', version: 1 }],
 };
 
@@ -27,6 +29,8 @@ describe('CompartilharLista - EF08', () => {
       imports: [CompartilharLista],
       providers: [
         { provide: CompartilhamentoService, useValue: service },
+        { provide: ListasService, useValue: { obter: () => of(ACCESS.list) } },
+        { provide: SessaoService, useValue: { consultar: () => of({ user: ACCESS.owner.user }) } },
         { provide: Router, useValue: { navigate: vi.fn() } },
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: new Map([['listId', 'l1']]) } } },
       ],
@@ -53,12 +57,12 @@ describe('CompartilharLista - EF08', () => {
     service.convidar.mockReturnValue(response);
     const fixture = TestBed.createComponent(CompartilharLista);
     fixture.detectChanges();
-    fixture.componentInstance.invite();
+    fixture.componentInstance.convidar();
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('Informe um e-mail válido.');
     fixture.componentInstance.email.setValue('  NOVO@EXEMPLO.COM ');
-    fixture.componentInstance.invite();
-    fixture.componentInstance.invite();
+    fixture.componentInstance.convidar();
+    fixture.componentInstance.convidar();
     expect(service.convidar).toHaveBeenCalledOnce();
     expect(service.convidar).toHaveBeenCalledWith('l1', 'novo@exemplo.com');
     response.next({ outcome: 'INVITATION_CREATED', invitation: { id: 'i2', email: 'novo@exemplo.com' } });
@@ -72,7 +76,7 @@ describe('CompartilharLista - EF08', () => {
     const fixture = TestBed.createComponent(CompartilharLista);
     fixture.detectChanges();
     fixture.componentInstance.email.setValue('bia@exemplo.com');
-    fixture.componentInstance.invite();
+    fixture.componentInstance.convidar();
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('Esta pessoa já participa da lista.');
   });
