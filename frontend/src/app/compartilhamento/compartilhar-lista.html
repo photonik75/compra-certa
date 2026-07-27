@@ -32,7 +32,7 @@
       }
     </section>
     @if (access.list.role !== 'OWNER' && access.list.status === 'ACTIVE') {
-      <button type="button" (click)="leave()">Sair da lista</button>
+      <button type="button" (click)="requestLeave()">Sair da lista</button>
     }
   }
   @if (notice) { <p role="status" aria-live="polite">{{ notice }}</p> }
@@ -43,5 +43,13 @@
     <p>A pessoa perderá o acesso à lista.</p>
     <button type="button" (click)="confirmRemove()">Remover</button>
     <button type="button" (click)="cancelRemove()">Cancelar</button>
+  </section>
+}
+@if (leaving) {
+  <section role="dialog" aria-modal="true">
+    <h2>Sair da lista?</h2>
+    <p>Você perderá o acesso à lista.</p>
+    <button type="button" (click)="leave()">Sair da lista</button>
+    <button type="button" (click)="cancelLeave()">Cancelar</button>
   </section>
 }

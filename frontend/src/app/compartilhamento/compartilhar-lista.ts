@@ -21,6 +21,7 @@ export class CompartilharLista implements OnInit {
   readonly email = new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.email] });
   access: any;
   selectedMember: any;
+  leaving = false;
   submitted = false;
   sending = false;
   notice = '';
@@ -44,8 +45,10 @@ export class CompartilharLista implements OnInit {
       error: (response) => {
         const messages: Record<string, string> = {
           OWNER_EMAIL: 'O proprietário já possui acesso à lista.',
+          CANNOT_INVITE_OWNER: 'O proprietário já possui acesso à lista.',
           ALREADY_MEMBER: 'Esta pessoa já participa da lista.',
           INVITATION_PENDING: 'Já existe um convite pendente para este e-mail.',
+          INVITATION_ALREADY_PENDING: 'Já existe um convite pendente para este e-mail.',
         };
         this.notice = messages[response?.error?.code]
           ?? 'Não foi possível compartilhar a lista. Tente novamente em alguns instantes.';
@@ -90,6 +93,8 @@ export class CompartilharLista implements OnInit {
     });
   }
 
+  requestLeave(): void { this.leaving = true; this.changeDetector.markForCheck(); }
+  cancelLeave(): void { this.leaving = false; this.changeDetector.markForCheck(); }
   leave(): void {
     this.service.sair(this.listId, this.access.list.version).subscribe({
       next: () => this.router.navigate(['/listas']),
@@ -97,7 +102,10 @@ export class CompartilharLista implements OnInit {
   }
 
   @HostListener('document:keydown.escape')
-  onEscape(): void { if (this.selectedMember) this.cancelRemove(); }
+  onEscape(): void {
+    if (this.selectedMember) this.cancelRemove();
+    if (this.leaving) this.cancelLeave();
+  }
 
   private load(): void {
     forkJoin({
