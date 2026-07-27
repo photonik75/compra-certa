@@ -10,6 +10,7 @@ import { MinhasListas } from './listas/minhas-listas';
 import { NovaLista } from './listas/nova-lista/nova-lista';
 import { NovoItem } from './listas/novo-item/novo-item';
 import { Login } from './auth/login/login';
+import { LayoutInterno } from './layout-interno/layout-interno';
 import { Produtos } from './produtos/produtos';
 import { sessaoGuard } from './auth/sessao.guard';
 import { RecuperacaoSenha } from './auth/recuperacao-senha/recuperacao-senha';
@@ -22,20 +23,26 @@ export const routes: Routes = [
   { path: 'recuperar-senha', component: RecuperacaoSenha },
   { path: 'redefinir-senha', component: RedefinicaoSenha },
   {
-    path: 'listas',
-    canActivate: [sessaoGuard],
+    path: '',
+    component: LayoutInterno,
     children: [
-      { path: '', component: MinhasListas },
-      { path: 'nova', component: NovaLista },
-      { path: ':listId/editar', component: EditarLista },
-      { path: ':listId/itens/novo', component: NovoItem },
-      { path: ':listId/itens/:itemId/editar', component: EditarItem },
-      { path: ':listId/compartilhar', component: CompartilharLista },
-      { path: ':listId', component: DetalheLista },
+      {
+        path: 'listas',
+        canActivate: [sessaoGuard],
+        children: [
+          { path: '', component: MinhasListas },
+          { path: 'nova', component: NovaLista },
+          { path: ':listId/editar', component: EditarLista },
+          { path: ':listId/itens/novo', component: NovoItem },
+          { path: ':listId/itens/:itemId/editar', component: EditarItem },
+          { path: ':listId/compartilhar', component: CompartilharLista },
+          { path: ':listId', component: DetalheLista },
+        ],
+      },
+      { path: 'categorias', component: Categorias, canActivate: [sessaoGuard] },
+      { path: 'produtos', component: Produtos, canActivate: [sessaoGuard] },
+      { path: 'convites/aceitar', component: AceitarConvite },
     ],
   },
-  { path: 'categorias', component: Categorias, canActivate: [sessaoGuard] },
-  { path: 'produtos', component: Produtos, canActivate: [sessaoGuard] },
-  { path: 'convites/aceitar', component: AceitarConvite },
   { path: '', pathMatch: 'full', redirectTo: 'entrar' },
 ];

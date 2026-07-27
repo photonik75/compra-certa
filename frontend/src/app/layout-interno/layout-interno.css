@@ -1,0 +1,14 @@
+:host { display: block; min-height: 100vh; }
+
+.pagina-interna {
+  display: grid;
+  min-height: 100vh;
+  grid-template-columns: minmax(320px, 1fr) minmax(320px, 1fr);
+  background: var(--creme);
+}
+
+.conteudo-interno { min-width: 0; }
+
+@media (max-width: 900px) and (orientation: portrait) {
+  .pagina-interna { grid-template-columns: 1fr; }
+}
