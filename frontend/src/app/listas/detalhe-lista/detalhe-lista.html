@@ -1,5 +1,15 @@
 <main>
   <h1>Detalhe da lista</h1>
+  @if (list) {
+    <h2>{{ list.name }}</h2>
+    @if (list.description) { <p>{{ list.description }}</p> }
+    <p>{{ list.role === 'OWNER' ? 'Proprietário' : 'Participante' }}</p>
+    @if (list.role === 'OWNER' && list.status === 'ACTIVE') {
+      <a [routerLink]="['/listas', listId, 'editar']">Editar lista</a>
+      <a [routerLink]="['/listas', listId, 'compartilhar']">Compartilhar lista</a>
+    }
+  }
+  @if (!unavailable) {
   <p role="status" aria-live="polite">{{ connected ? 'Sincronizada' : 'Sem conexão' }}</p>
   <section aria-label="Resumo da compra">
     <span>Total {{ summary.total }}</span>
@@ -28,6 +38,7 @@
     <p>Nenhum item na lista.</p>
   }
   <a [routerLink]="['/listas', listId, 'itens', 'novo']">Adicionar item</a>
+  }
   @if (notice) { <p role="alert" aria-live="polite">{{ notice }}</p> }
 </main>
 @if (selected) {

@@ -1,0 +1,1 @@
+npm.cmd start -- --configuration production --proxy-config proxy.conf.json

@@ -1,8 +1,9 @@
 import { ChangeDetectorRef, Component, HostListener, OnInit, inject } from '@angular/core';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { finalize } from 'rxjs';
+import { finalize, forkJoin } from 'rxjs';
 import { CompartilhamentoService } from './compartilhamento.service';
+import { ListasService } from '../listas/listas.service';
 
 @Component({
   selector: 'app-compartilhar-lista',
@@ -12,6 +13,7 @@ import { CompartilhamentoService } from './compartilhamento.service';
 })
 export class CompartilharLista implements OnInit {
   private readonly service = inject(CompartilhamentoService);
+  private readonly listsService = inject(ListasService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly changeDetector = inject(ChangeDetectorRef);
@@ -25,7 +27,7 @@ export class CompartilharLista implements OnInit {
 
   ngOnInit(): void { this.load(); }
 
-  invite(): void {
+  convidar(): void {
     if (this.sending) return;
     this.submitted = true;
     const email = this.email.value.trim().toLowerCase();
@@ -77,9 +79,9 @@ export class CompartilharLista implements OnInit {
   confirmRemove(): void {
     if (!this.selectedMember) return;
     const member = this.selectedMember;
-    this.service.removerMembro(this.listId, member.id, this.access.list.version).subscribe({
+    this.service.removerMembro(this.listId, member.user.id, this.access.list.version).subscribe({
       next: () => {
-        this.access.members = this.access.members.filter((item: any) => item.id !== member.id);
+        this.access.members = this.access.members.filter((item: any) => item.user.id !== member.user.id);
         this.selectedMember = undefined;
         this.notice = 'Participante removido com sucesso.';
         this.changeDetector.markForCheck();
@@ -98,8 +100,14 @@ export class CompartilharLista implements OnInit {
   onEscape(): void { if (this.selectedMember) this.cancelRemove(); }
 
   private load(): void {
-    this.service.consultarAcesso(this.listId).subscribe({
-      next: (access) => { this.access = access; this.changeDetector.markForCheck(); },
+    forkJoin({
+      access: this.service.consultarAcesso(this.listId),
+      list: this.listsService.obter(this.listId),
+    }).subscribe({
+      next: ({ access, list }) => {
+        this.access = { ...access, list };
+        this.changeDetector.markForCheck();
+      },
       error: () => this.notice = 'Lista não encontrada ou indisponível para sua conta.',
     });
   }

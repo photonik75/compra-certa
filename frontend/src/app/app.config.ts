@@ -8,6 +8,7 @@ import { loginMockInterceptor } from './auth/login/login-mock.interceptor';
 import { recuperacaoSenhaMockInterceptor } from './auth/recuperacao-senha/recuperacao-senha-mock.interceptor';
 import { redefinicaoSenhaMockInterceptor } from './auth/redefinicao-senha/redefinicao-senha-mock.interceptor';
 import { sessaoMockInterceptor } from './auth/mocks/sessao-mock.interceptor';
+import { csrfInterceptor } from './auth/csrf.interceptor';
 
 const mockInterceptors = [
   cadastroMockInterceptor,
@@ -18,7 +19,7 @@ const mockInterceptors = [
 ];
 const httpProvider = isDevMode()
   ? provideHttpClient(withInterceptors(mockInterceptors))
-  : provideHttpClient();
+  : provideHttpClient(withInterceptors([csrfInterceptor]));
 
 export const appConfig: ApplicationConfig = {
   providers: [

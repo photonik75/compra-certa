@@ -28,7 +28,6 @@
           type="email"
           placeholder="voce@email.com"
           required
-          maxlength="254"
           (input)="validarEmail($event)"
           (blur)="validarEmail($event)"
           [attr.aria-invalid]="erroEmail() !== null"

@@ -4,6 +4,7 @@ import { Subscription, finalize } from 'rxjs';
 import { formatQuantity, unitLabel } from '../item-form';
 import { ListItem, ListSummary, ListaItensService } from '../lista-itens.service';
 import { SincronizacaoListaService } from '../sincronizacao-lista.service';
+import { ListDetail, ListasService } from '../listas.service';
 
 @Component({
   selector: 'app-detalhe-lista',
@@ -13,6 +14,7 @@ import { SincronizacaoListaService } from '../sincronizacao-lista.service';
 })
 export class DetalheLista implements OnInit, OnDestroy {
   private readonly service = inject(ListaItensService);
+  private readonly listsService = inject(ListasService);
   private readonly sync = inject(SincronizacaoListaService);
   private readonly route = inject(ActivatedRoute);
   private readonly changeDetector = inject(ChangeDetectorRef);
@@ -24,9 +26,12 @@ export class DetalheLista implements OnInit, OnDestroy {
   processing = new Set<string>();
   selected?: ListItem;
   notice = '';
+  list?: ListDetail;
+  unavailable = false;
   private initializedConnection = false;
 
   ngOnInit(): void {
+    this.loadList();
     this.load();
     this.sync.connect(this.listId);
     this.subscriptions.add(this.sync.connection$.subscribe((connected) => {
@@ -103,6 +108,20 @@ export class DetalheLista implements OnInit, OnDestroy {
         this.changeDetector.markForCheck();
       },
       error: () => undefined,
+    });
+  }
+
+  private loadList(): void {
+    this.listsService.obter(this.listId).subscribe({
+      next: (list) => {
+        this.list = list;
+        this.changeDetector.markForCheck();
+      },
+      error: () => {
+        this.unavailable = true;
+        this.notice = 'Lista não encontrada ou indisponível para sua conta.';
+        this.changeDetector.markForCheck();
+      },
     });
   }
 

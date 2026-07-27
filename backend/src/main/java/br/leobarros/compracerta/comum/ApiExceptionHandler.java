@@ -8,6 +8,8 @@ import br.leobarros.compracerta.autenticacao.sessao.SessaoInvalidaException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -19,6 +21,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 		"br.leobarros.compracerta.ciclodevida",
 		"br.leobarros.compracerta.compartilhamento"
 })
+@Order(Ordered.HIGHEST_PRECEDENCE)
 class ApiExceptionHandler {
 
 	private final ApiErrorResponseService responses;

@@ -2,7 +2,7 @@
   <h1>Compartilhar lista</h1>
   @if (access) {
     @if (access.list.role === 'OWNER' && access.list.status === 'ACTIVE') {
-      <form (ngSubmit)="invite()">
+      <form (submit)="convidar(); $event.preventDefault()">
         <label for="invite-email">Convidar participante</label>
         <input id="invite-email" type="email" [formControl]="email" aria-describedby="email-error">
         <div id="email-error" role="alert">
@@ -13,9 +13,9 @@
     }
     <section aria-label="Pessoas com acesso">
       <h2>Pessoas com acesso</h2>
-      <article><strong>{{ access.owner.name }}</strong> {{ access.owner.email }} · Proprietário</article>
-      @for (member of access.members; track member.id) {
-        <article><strong>{{ member.name }}</strong> {{ member.email }} · Participante
+      <article><strong>{{ access.owner.user.name }}</strong> {{ access.owner.user.email }} · Proprietário</article>
+      @for (member of access.members; track member.user.id) {
+        <article><strong>{{ member.user.name }}</strong> {{ member.user.email }} · Participante
           @if (access.list.role === 'OWNER' && access.list.status === 'ACTIVE') {
             <button type="button" (click)="requestRemove(member)">Remover</button>
           }
@@ -39,7 +39,7 @@
 </main>
 @if (selectedMember) {
   <section role="dialog" aria-modal="true">
-    <h2>Remover {{ selectedMember.name }}?</h2>
+    <h2>Remover {{ selectedMember.user.name }}?</h2>
     <p>A pessoa perderá o acesso à lista.</p>
     <button type="button" (click)="confirmRemove()">Remover</button>
     <button type="button" (click)="cancelRemove()">Cancelar</button>

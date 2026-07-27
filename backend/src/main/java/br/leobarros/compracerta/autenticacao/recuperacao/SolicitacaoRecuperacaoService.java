@@ -6,20 +6,24 @@ import java.time.Duration;
 import br.leobarros.compracerta.autenticacao.comum.Email;
 import br.leobarros.compracerta.autenticacao.comum.Sha256;
 import br.leobarros.compracerta.autenticacao.sessao.GeradorIdentificadorService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class SolicitacaoRecuperacaoService {
 
-	private static final Duration VALIDADE_TOKEN = Duration.ofMinutes(30);
-	private static final String URL_REDEFINICAO = "https://compra-certa.app/redefinir-senha#token=";
+	private static final String CAMINHO_REDEFINICAO = "/redefinir-senha#token=";
 
 	private final ContaRecuperacaoRepository contaRepository;
 	private final TokenRecuperacaoRepository tokenRepository;
 	private final EntregaRecuperacaoSenha entrega;
 	private final GeradorIdentificadorService gerador;
 	private final Clock clock;
+	@Value("${compra-certa.frontend.base-url:https://compra-certa.app}")
+	private String frontendBaseUrl = "https://compra-certa.app";
+	@Value("${compra-certa.auth.password-reset-validity:PT30M}")
+	private Duration validadeToken = Duration.ofMinutes(30);
 
 	public SolicitacaoRecuperacaoService(
 			ContaRecuperacaoRepository contaRepository,
@@ -43,9 +47,9 @@ public class SolicitacaoRecuperacaoService {
 			tokenRepository.salvar(new TokenRecuperacao(
 					Sha256.hex(token),
 					conta,
-					clock.instant().plus(VALIDADE_TOKEN)));
+					clock.instant().plus(validadeToken)));
 			try {
-				entrega.enviar(email, URL_REDEFINICAO + token);
+				entrega.enviar(email, frontendBaseUrl + CAMINHO_REDEFINICAO + token);
 			} catch (RuntimeException exception) {
 				tokenRepository.invalidarDaConta(conta.getId());
 				throw new RecuperacaoSenhaException(

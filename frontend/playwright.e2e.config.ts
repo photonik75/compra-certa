@@ -6,7 +6,7 @@ export default defineConfig({
   fullyParallel: false,
   timeout: 30_000,
   use: {
-    baseURL: process.env.E2E_BASE_URL ?? 'http://127.0.0.1:8080',
+    baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:4200',
     trace: 'retain-on-failure',
   },
   projects: [

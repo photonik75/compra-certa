@@ -48,7 +48,9 @@ export class NovaLista {
     this.service.criar({ name, description }).pipe(finalize(() => this.sending = false)).subscribe({
       next: (list) => this.router.navigate(['/listas', list.id]),
       error: (response) => {
-        if (response?.error?.code === 'LIST_NAME_ALREADY_IN_USE') this.duplicate = true;
+        if (response?.status === 409 && response?.error?.code === 'LIST_NAME_ALREADY_IN_USE') {
+          this.duplicate = true;
+        }
         else this.error = 'Não foi possível criar a lista. Tente novamente em alguns instantes.';
         this.changeDetector.markForCheck();
       },

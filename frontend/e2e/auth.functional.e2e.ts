@@ -1,4 +1,4 @@
-import { expect, Page, test } from '@playwright/test';
+import { Browser, expect, Page, test } from '@playwright/test';
 
 const EMAIL = 'E-mail';
 const SENHA = 'Senha';
@@ -7,15 +7,7 @@ const MINHAS_LISTAS = 'Minhas Listas';
 const LOGIN = '/entrar';
 const CADASTRO = '/cadastro';
 const LISTAS = '/listas';
-const EMAIL_EXISTENTE = process.env.E2E_AUTH_EMAIL ?? 'pessoa@exemplo.com';
-const SENHA_EXISTENTE = process.env.E2E_AUTH_PASSWORD ?? SENHA_PADRAO;
-const EMAIL_BLOQUEIO = process.env.E2E_AUTH_LOCK_EMAIL ?? 'bloqueio@exemplo.com';
-const SENHA_BLOQUEIO = process.env.E2E_AUTH_LOCK_PASSWORD ?? SENHA_PADRAO;
-const EMAIL_REDEFINICAO = process.env.E2E_AUTH_RESET_EMAIL ?? 'redefinicao@exemplo.com';
-const SENHA_REDEFINICAO = process.env.E2E_AUTH_RESET_PASSWORD ?? SENHA_PADRAO;
-const LINK_VALIDO = process.env.E2E_AUTH_VALID_RESET_URL ?? '/redefinir-senha#token=valido';
-const LINK_EXPIRADO = process.env.E2E_AUTH_EXPIRED_RESET_URL ?? '/redefinir-senha#token=expirado';
-const LINK_INVALIDO = process.env.E2E_AUTH_INVALID_RESET_URL ?? '/redefinir-senha#token=invalido';
+const MAILPIT = process.env.E2E_MAILPIT_URL ?? 'http://localhost:8025';
 
 function emailUnico(prefixo: string): string {
   return `${prefixo}.${Date.now()}@example.com`;
@@ -45,6 +37,29 @@ async function entrar(page: Page, email: string, senha: string): Promise<void> {
 async function sair(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'Sair' }).click();
   await expect(page.getByRole('heading', { name: 'Entre na sua conta' })).toBeVisible();
+}
+
+async function solicitarRecuperacao(page: Page, email: string): Promise<void> {
+  await page.goto('/recuperar-senha');
+  await page.getByLabel(EMAIL).fill(email);
+  await page.getByRole('button', { name: 'Enviar instruções' }).click();
+}
+
+async function localizarLinkRecebido(browser: Browser, email: string): Promise<string> {
+  const caixa = await browser.newPage();
+  await caixa.goto(MAILPIT);
+  const pesquisa = caixa.getByRole('textbox', { name: 'Search' });
+  await pesquisa.fill(email);
+  await pesquisa.press('Enter');
+  const mensagem = caixa.locator('a.message').filter({ hasText: email });
+  await expect(mensagem).toHaveCount(1);
+  await mensagem.click();
+  const link = caixa.locator('a[href^="http://localhost:4200/redefinir-senha#token="]');
+  await expect(link).toHaveCount(1);
+  const href = await link.getAttribute('href');
+  await caixa.close();
+  if (!href) throw new Error('A mensagem não apresentou o link de redefinição.');
+  return href;
 }
 
 async function redefinir(page: Page, link: string, senha: string): Promise<void> {
@@ -95,10 +110,13 @@ test('AUTH-003 - E-mail duplicado ignora caixa e não cria outra conta.', async 
 test('AUTH-004 - Login retorna à rota solicitada e logout protege histórico e rota interna.', async ({
   page,
 }) => {
+  const email = emailUnico('auth004');
+  await cadastrar(page, email);
+  await sair(page);
   await page.goto(LISTAS);
   await expect(page).toHaveURL(/\/entrar\?returnUrl=/);
-  await page.getByRole('textbox', { name: EMAIL }).fill(EMAIL_EXISTENTE);
-  await page.getByLabel(SENHA).fill(SENHA_EXISTENTE);
+  await page.getByRole('textbox', { name: EMAIL }).fill(email);
+  await page.getByLabel(SENHA).fill(SENHA_PADRAO);
   await page.getByRole('button', { name: 'Entrar' }).click();
   await expect(page).toHaveURL(new RegExp(`${LISTAS}$`));
   await sair(page);
@@ -109,9 +127,12 @@ test('AUTH-004 - Login retorna à rota solicitada e logout protege histórico e 
 });
 
 test('AUTH-005 - Login inválido não revela se o e-mail existe.', async ({ page }) => {
+  const emailExistente = emailUnico('auth005');
+  await cadastrar(page, emailExistente);
+  await sair(page);
   for (const [email, senha] of [
-    [EMAIL_EXISTENTE, 'Senha incorreta 123'],
-    [emailUnico('inexistente'), SENHA_EXISTENTE],
+    [emailExistente, 'Senha incorreta 123'],
+    [emailUnico('inexistente'), SENHA_PADRAO],
   ]) {
     await entrar(page, email, senha);
     await expect(page.getByRole('alert')).toHaveText('E-mail ou senha inválidos');
@@ -119,58 +140,96 @@ test('AUTH-005 - Login inválido não revela se o e-mail existe.', async ({ page
 });
 
 test('AUTH-006 - Cinco falhas bloqueiam novas tentativas temporariamente.', async ({ page }) => {
+  const email = emailUnico('auth006');
+  await cadastrar(page, email);
+  await sair(page);
   for (let tentativa = 0; tentativa < 5; tentativa++) {
-    await entrar(page, EMAIL_BLOQUEIO, 'Senha incorreta 123');
+    await entrar(page, email, 'Senha incorreta 123');
     await expect(page.getByRole('alert')).toHaveText('E-mail ou senha inválidos');
   }
-  await entrar(page, EMAIL_BLOQUEIO, SENHA_BLOQUEIO);
+  await entrar(page, email, SENHA_PADRAO);
   await expect(page.getByRole('alert')).toHaveText(
     'Muitas tentativas de acesso. Tente novamente em 15 minutos',
   );
 });
 
 test('AUTH-007 - Manter-me conectado conserva o acesso no mesmo navegador.', async ({ page }) => {
+  const email = emailUnico('auth007');
+  await cadastrar(page, email);
+  await sair(page);
   await page.goto(LOGIN);
-  await page.getByRole('textbox', { name: EMAIL }).fill(EMAIL_EXISTENTE);
-  await page.getByLabel(SENHA).fill(SENHA_EXISTENTE);
+  await page.getByRole('textbox', { name: EMAIL }).fill(email);
+  await page.getByLabel(SENHA).fill(SENHA_PADRAO);
   await page.getByRole('checkbox', { name: 'Manter-me conectado' }).check();
   await page.getByRole('button', { name: 'Entrar' }).click();
+  await expect(page.getByRole('heading', { name: MINHAS_LISTAS })).toBeVisible();
   await page.reload();
   await expect(page.getByRole('heading', { name: MINHAS_LISTAS })).toBeVisible();
 });
 
-test('AUTH-008 - Recuperação não revela se a conta existe.', async ({ page }) => {
+test('AUTH-008 - Recuperação não revela se a conta existe.', async ({ page, browser }) => {
   const confirmacao = 'Se houver uma conta para este e-mail, enviaremos as instruções';
-  for (const email of [EMAIL_EXISTENTE, emailUnico('inexistente')]) {
-    await page.goto('/recuperar-senha');
-    await page.getByLabel(EMAIL).fill(email);
-    await page.getByRole('button', { name: 'Enviar instruções' }).click();
+  const emailExistente = emailUnico('auth008');
+  const emailInexistente = emailUnico('inexistente');
+  await cadastrar(page, emailExistente);
+  await sair(page);
+  for (const email of [emailExistente, emailInexistente]) {
+    await solicitarRecuperacao(page, email);
     await expect(page.getByText('Solicitação de recuperação enviada com sucesso.')).toBeVisible();
     await expect(page.getByRole('status')).toHaveText(confirmacao);
   }
+  await localizarLinkRecebido(browser, emailExistente);
+  const caixa = await browser.newPage();
+  await caixa.goto(MAILPIT);
+  const pesquisa = caixa.getByRole('textbox', { name: 'Search' });
+  await pesquisa.fill(emailInexistente);
+  await pesquisa.press('Enter');
+  await expect(caixa.getByText('No results for')).toBeVisible();
+  await caixa.close();
 });
 
-test('AUTH-009 - Redefinição válida invalida o link e a senha anterior.', async ({ page }) => {
+test('AUTH-009 - Redefinição válida invalida o link e a senha anterior.', async ({
+  page,
+  browser,
+}) => {
+  const email = emailUnico('auth009');
   const novaSenha = `Nova senha ${Date.now()}`;
-  await redefinir(page, LINK_VALIDO, novaSenha);
+  await cadastrar(page, email);
+  const outroAcesso = await browser.newPage();
+  await solicitarRecuperacao(outroAcesso, email);
+  const link = await localizarLinkRecebido(browser, email);
+  await redefinir(outroAcesso, link, novaSenha);
+  await expect(outroAcesso.getByRole('heading', { name: 'Entre na sua conta' })).toBeVisible();
+  await page.reload();
   await expect(page.getByRole('heading', { name: 'Entre na sua conta' })).toBeVisible();
-  await entrar(page, EMAIL_REDEFINICAO, SENHA_REDEFINICAO);
-  await expect(page.getByRole('alert')).toHaveText('E-mail ou senha inválidos');
-  await entrar(page, EMAIL_REDEFINICAO, novaSenha);
-  await expect(page.getByRole('heading', { name: MINHAS_LISTAS })).toBeVisible();
-  await sair(page);
-  await redefinir(page, LINK_VALIDO, 'Outra senha 123');
-  await expect(page.getByRole('link', { name: 'Solicitar nova recuperação' })).toBeVisible();
+  await entrar(outroAcesso, email, SENHA_PADRAO);
+  await expect(outroAcesso.getByRole('alert')).toHaveText('E-mail ou senha inválidos');
+  await entrar(outroAcesso, email, novaSenha);
+  await expect(outroAcesso.getByRole('heading', { name: MINHAS_LISTAS })).toBeVisible();
+  await sair(outroAcesso);
+  await redefinir(outroAcesso, link, 'Outra senha 123');
+  await expect(outroAcesso.getByRole('link', { name: 'Solicitar nova recuperação' })).toBeVisible();
+  await outroAcesso.close();
 });
 
-test('AUTH-010 - Links expirado e inválido não alteram a senha.', async ({ page }) => {
-  for (const link of [LINK_EXPIRADO, LINK_INVALIDO]) {
-    await redefinir(page, link, 'Senha que não será aceita 123');
-    await expect(page.getByRole('alert')).toContainText('O link de recuperação é inválido');
-    await expect(page.getByRole('link', { name: 'Solicitar nova recuperação' })).toBeVisible();
-  }
-  await entrar(page, EMAIL_EXISTENTE, SENHA_EXISTENTE);
-  await expect(page.getByRole('heading', { name: MINHAS_LISTAS })).toBeVisible();
+test('AUTH-010 - Links expirado e inválido não alteram a senha.', async ({ page, browser }) => {
+  const email = emailUnico('auth010');
+  await cadastrar(page, email);
+  await sair(page);
+  await solicitarRecuperacao(page, email);
+  const link = await localizarLinkRecebido(browser, email);
+  const linkInvalido = `${link.slice(0, -1)}x`;
+  await redefinir(page, linkInvalido, 'Senha que não será aceita 123');
+  await expect(page.getByRole('alert')).toContainText('O link de recuperação é inválido');
+  await expect(page.getByRole('link', { name: 'Solicitar nova recuperação' })).toBeVisible();
+  await page.waitForTimeout(10_100);
+  const novaPagina = await browser.newPage();
+  await redefinir(novaPagina, link, 'Senha que também não será aceita 123');
+  await expect(novaPagina.getByRole('alert')).toContainText('O link de recuperação é inválido');
+  await expect(novaPagina.getByRole('link', { name: 'Solicitar nova recuperação' })).toBeVisible();
+  await entrar(novaPagina, email, SENHA_PADRAO);
+  await expect(novaPagina.getByRole('heading', { name: MINHAS_LISTAS })).toBeVisible();
+  await novaPagina.close();
 });
 
 test('AUTH-011 - Controles são operáveis por teclado e erros são anunciados.', async ({ page }) => {
@@ -189,4 +248,21 @@ test('AUTH-011 - Controles são operáveis por teclado e erros são anunciados.'
   await expect(page.getByText('Por favor, informe seu nome')).toHaveAttribute('role', 'alert');
   await expect(page.getByLabel('Nome')).toHaveAttribute('aria-invalid', 'true');
   await expect(page.getByLabel('Nome')).toHaveAttribute('aria-describedby', 'erro-nome');
+});
+
+test('AUTH-012 - Login inválido exibe mensagens de campo e não solicita autenticação.', async ({
+  page,
+}) => {
+  await page.goto(LOGIN);
+  const entrarButton = page.getByRole('button', { name: 'Entrar' });
+  await expect(entrarButton).toBeDisabled();
+  await page.getByRole('textbox', { name: EMAIL }).fill('email inválido');
+  await page.getByLabel(SENHA).fill('1234567');
+  await expect(page.getByText('Por favor, informe um e-mail válido')).toBeVisible();
+  await expect(page.getByText('A senha deve ter pelo menos 8 caracteres')).toBeVisible();
+  await page.getByRole('textbox', { name: EMAIL }).fill(`${'a'.repeat(243)}@example.com`);
+  await expect(page.getByText('Por favor, informe um e-mail válido')).toBeVisible();
+  await expect(entrarButton).toBeDisabled();
+  await page.goto(LISTAS);
+  await expect(page.getByRole('heading', { name: 'Entre na sua conta' })).toBeVisible();
 });

@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { mutationHeaders } from '../../shared/mutation-headers';
 
 export const ENDPOINT_RECUPERACAO = '/api/v1/auth/password-reset-requests';
 
@@ -9,6 +10,6 @@ export class RecuperacaoSenhaService {
   private readonly http = inject(HttpClient);
 
   solicitar(email: string): Observable<void> {
-    return this.http.post<void>(ENDPOINT_RECUPERACAO, { email });
+    return this.http.post<void>(ENDPOINT_RECUPERACAO, { email }, { headers: mutationHeaders() });
   }
 }
