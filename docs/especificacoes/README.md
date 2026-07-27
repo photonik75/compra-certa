@@ -11,13 +11,14 @@ Em caso de divergência entre o protótipo e estes documentos, prevalecem estas 
 | Sprint | Especificação | Dependências |
 |---|---|---|
 | 1 | [EF-01 — Autenticação e conta](01-autenticacao-e-conta.md) | Nenhuma |
-| 1 | [EF-02 — Gestão básica de listas](02-gestao-basica-de-listas.md) | EF-01 |
-| 2 | [EF-03 — Gestão de categorias](03-gestao-de-categorias.md) | EF-01 |
-| 2 | [EF-04 — Catálogo de produtos](04-catalogo-de-produtos.md) | EF-01 e EF-03 |
-| 3 | [EF-05 — Gestão de itens da lista](05-gestao-de-itens.md) | EF-02, EF-03 e EF-04 |
-| 3 | [EF-06 — Execução da compra](06-execucao-da-compra.md) | EF-05 |
-| 4 | [EF-07 — Ciclo de vida da lista](07-ciclo-de-vida-da-lista.md) | EF-02, EF-05 e EF-06 |
-| 5 | [EF-08 — Compartilhamento e colaboração](08-compartilhamento-e-colaboracao.md) | EF-01, EF-05, EF-06 e EF-07 |
+| 1 | [EF-09 — Navegação da área autenticada](09-navegacao-da-area-autenticada.md) | EF-01 |
+| 1 | [EF-02 — Gestão básica de listas](02-gestao-basica-de-listas.md) | EF-01 e EF-09 |
+| 2 | [EF-03 — Gestão de categorias](03-gestao-de-categorias.md) | EF-01 e EF-09 |
+| 2 | [EF-04 — Catálogo de produtos](04-catalogo-de-produtos.md) | EF-01, EF-03 e EF-09 |
+| 3 | [EF-05 — Gestão de itens da lista](05-gestao-de-itens.md) | EF-02, EF-03, EF-04 e EF-09 |
+| 3 | [EF-06 — Execução da compra](06-execucao-da-compra.md) | EF-05 e EF-09 |
+| 4 | [EF-07 — Ciclo de vida da lista](07-ciclo-de-vida-da-lista.md) | EF-02, EF-05, EF-06 e EF-09 |
+| 5 | [EF-08 — Compartilhamento e colaboração](08-compartilhamento-e-colaboracao.md) | EF-01, EF-05, EF-06, EF-07 e EF-09 |
 
 ## Convenções globais
 
@@ -230,4 +231,5 @@ As seções “Definições de testes funcionais” de cada EF descrevem cenári
 | EF-06 | `SHOP` | 8 | 3 | 0 | 11 |
 | EF-07 | `LIFE` | 6 | 4 | 0 | 10 |
 | EF-08 | `SHARE` | 12 | 2 | 0 | 14 |
-| **Total** | — | **64** | **23** | **1** | **88** |
+| EF-09 | `NAV` | 5 | 4 | 1 | 10 |
+| **Total** | — | **69** | **27** | **2** | **98** |
