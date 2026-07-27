@@ -111,7 +111,7 @@ class SessaoControllerIntegrationTest {
 		mockMvc.perform(requisicao)
 				.andExpect(status().isUnauthorized())
 				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
-				.andExpect(jsonPath("$.code").value("SESSION_INVALID"))
+				.andExpect(jsonPath("$.code").value("UNAUTHENTICATED"))
 				.andExpect(jsonPath("$.detail").isNotEmpty());
 	}
 

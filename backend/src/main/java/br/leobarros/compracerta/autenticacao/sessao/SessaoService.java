@@ -59,7 +59,10 @@ public class SessaoService {
 	}
 
 	public void validarCsrf(String token, String csrfToken) {
-		var sessao = buscarValida(token);
+		validarCsrf(buscarValida(token), csrfToken);
+	}
+
+	private void validarCsrf(SessaoRegistro sessao, String csrfToken) {
 		if (csrfToken == null || !MessageDigest.isEqual(
 				sessao.csrfTokenHash().getBytes(StandardCharsets.UTF_8),
 				hash(csrfToken).getBytes(StandardCharsets.UTF_8))) {
@@ -68,8 +71,11 @@ public class SessaoService {
 	}
 
 	public void encerrar(String token, String csrfToken) {
-		validarCsrf(token, csrfToken);
-		revogar(token);
+		var sessao = buscar(token);
+		if (sessao.revogada()) return;
+		validarCsrf(sessao, csrfToken);
+		sessao.revogar();
+		sessaoRepository.atualizar(sessao);
 	}
 
 	public void revogar(String token) {

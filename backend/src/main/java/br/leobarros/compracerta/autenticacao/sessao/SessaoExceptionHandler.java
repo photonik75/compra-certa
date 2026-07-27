@@ -13,7 +13,7 @@ import org.springframework.core.annotation.Order;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class SessaoExceptionHandler {
 
-	private static final String CODIGO_SESSAO_INVALIDA = "SESSION_INVALID";
+	private static final String CODIGO_SESSAO_INVALIDA = "UNAUTHENTICATED";
 	private static final String DETALHE_SESSAO_INVALIDA = "Sua sessão expirou. Entre novamente para continuar.";
 	private static final String CODIGO_CSRF_INVALIDO = "CSRF_INVALID";
 	private static final String DETALHE_CSRF_INVALIDO =

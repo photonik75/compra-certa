@@ -67,6 +67,15 @@ class LogoutCsrfControllerIntegrationTest {
 
 	@Test
 	void beSai01LogoutInvalidaSessaoAtualERetorna204() throws Exception {
+		logout(primeira, primeira.response().csrfToken())
+				.andExpect(status().isNoContent())
+				.andExpect(header().string("Cache-Control", containsString("no-store")));
+		mockMvc.perform(get(ENDPOINT_CONSULTA).cookie(cookie(primeira))).andExpect(status().isUnauthorized());
+	}
+
+	@Test
+	void beNav04RepetirLogoutNaoProduzErroNemRestauraSessao() throws Exception {
+		logout(primeira, primeira.response().csrfToken()).andExpect(status().isNoContent());
 		logout(primeira, primeira.response().csrfToken()).andExpect(status().isNoContent());
 		mockMvc.perform(get(ENDPOINT_CONSULTA).cookie(cookie(primeira))).andExpect(status().isUnauthorized());
 	}
@@ -102,9 +111,15 @@ class LogoutCsrfControllerIntegrationTest {
 
 	@Test
 	void beSai05LogoutRejeitaCsrfAusenteIncorretoOuDeOutraSessao() throws Exception {
-		logout(primeira, null).andExpect(status().isForbidden());
-		logout(primeira, "incorreto").andExpect(status().isForbidden());
-		logout(primeira, segunda.response().csrfToken()).andExpect(status().isForbidden());
+		logout(primeira, null)
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.code").value("CSRF_INVALID"));
+		logout(primeira, "incorreto")
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.code").value("CSRF_INVALID"));
+		logout(primeira, segunda.response().csrfToken())
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.code").value("CSRF_INVALID"));
 	}
 
 	@Test

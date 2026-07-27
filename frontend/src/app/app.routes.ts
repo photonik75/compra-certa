@@ -41,8 +41,8 @@ export const routes: Routes = [
       },
       { path: 'categorias', component: Categorias, canActivate: [sessaoGuard] },
       { path: 'produtos', component: Produtos, canActivate: [sessaoGuard] },
-      { path: 'convites/aceitar', component: AceitarConvite },
     ],
   },
+  { path: 'convites/aceitar', component: AceitarConvite },
   { path: '', pathMatch: 'full', redirectTo: 'entrar' },
 ];

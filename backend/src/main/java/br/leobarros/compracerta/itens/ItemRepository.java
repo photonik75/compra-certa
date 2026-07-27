@@ -119,7 +119,7 @@ public class ItemRepository {
 					var checked = rs.getInt("checked");
 					return new ListSummary(
 							total, checked, total - checked,
-							total == 0 ? 0 : (int) Math.round(checked * 100.0 / total));
+							total == 0 ? 0 : checked * 100 / total);
 				}, listId);
 	}
 	private ListItem map(ResultSet rs, int row) throws SQLException {

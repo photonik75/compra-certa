@@ -88,7 +88,8 @@ describe('Testes de navegação da autenticação', () => {
     const harness = await RouterTestingHarness.create();
     const router = TestBed.inject(Router);
     await harness.navigateByUrl(ROTA_LISTAS);
-    (harness.routeNativeElement as HTMLElement).querySelector<HTMLButtonElement>('button')!.click();
+    (harness.routeNativeElement as HTMLElement)
+      .querySelector<HTMLButtonElement>('button[data-action="logout"]')!.click();
     await harness.fixture.whenStable();
     expect(sessaoService.sair).toHaveBeenCalledOnce();
     expect(router.url).toBe(ROTA_ENTRAR);

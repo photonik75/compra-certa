@@ -97,7 +97,8 @@ describe('Testes das rotas da aplicação', () => {
   it('FE-SHARE-16 - Exibe compartilhamento e aceite de convite.', async () => {
     const harness = await criarHarnessAutenticado();
     await esperarTelaInterna(harness, '/listas/1/compartilhar', 'Compartilhar lista');
-    await esperarTelaInterna(harness, '/convites/aceitar#token=convite', 'Convite para lista');
+    expect(await harness.navigateByUrl('/convites/aceitar#token=convite', AceitarConvite))
+      .toBeInstanceOf(AceitarConvite);
   });
 
   async function criarHarnessAutenticado(): Promise<RouterTestingHarness> {

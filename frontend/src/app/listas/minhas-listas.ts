@@ -1,7 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { finalize } from 'rxjs';
-import { SessaoService } from '../auth/sessao.service';
 import { ListCard, ListCollection, ListStatus, ListasService } from './listas.service';
 
 const EMPTY: ListCollection = {
@@ -17,12 +15,10 @@ const EMPTY: ListCollection = {
 export class MinhasListas implements OnInit {
   private readonly service = inject(ListasService);
   private readonly router = inject(Router);
-  private readonly session = inject(SessaoService);
   private readonly changeDetector = inject(ChangeDetectorRef);
   collection = EMPTY;
   filter: ListStatus = 'ACTIVE';
   search = '';
-  signingOut = false;
 
   ngOnInit(): void { this.load(); }
 
@@ -37,14 +33,6 @@ export class MinhasListas implements OnInit {
   abrir(item: ListCard): void {
     const queryParams = item.status === 'COMPLETED' ? { modo: 'consulta' } : {};
     this.router.navigate(['/listas', item.id], { queryParams });
-  }
-
-  sair(): void {
-    if (this.signingOut) return;
-    this.signingOut = true;
-    this.session.sair().pipe(finalize(() => this.signingOut = false)).subscribe({
-      next: () => this.router.navigateByUrl('/entrar'),
-    });
   }
 
   private load(cursor?: string, append = false): void {
