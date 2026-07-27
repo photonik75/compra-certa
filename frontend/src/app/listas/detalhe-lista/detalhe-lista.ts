@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subscription, finalize } from 'rxjs';
 import { formatQuantity, unitLabel } from '../item-form';
 import { ListItem, ListSummary, ListaItensService } from '../lista-itens.service';
@@ -18,6 +18,7 @@ export class DetalheLista implements OnInit, OnDestroy {
   private readonly listsService = inject(ListasService);
   private readonly sync = inject(SincronizacaoListaService);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly changeDetector = inject(ChangeDetectorRef);
   private readonly subscriptions = new Subscription();
   readonly listId = this.route.snapshot.paramMap.get('listId')!;
@@ -126,13 +127,16 @@ export class DetalheLista implements OnInit, OnDestroy {
   private loadList(): void {
     this.listsService.obter(this.listId).subscribe({
       next: (list) => {
+        if (this.list && list.version < this.list.version) return;
         this.list = list;
         this.changeDetector.markForCheck();
       },
       error: () => {
+        const previouslyAvailable = !!this.list;
         this.unavailable = true;
         this.notice = 'Lista não encontrada ou indisponível para sua conta.';
         this.changeDetector.markForCheck();
+        if (previouslyAvailable) this.router.navigate(['/listas']);
       },
     });
   }

@@ -1,6 +1,5 @@
 package br.leobarros.compracerta.eventos;
 
-import java.io.IOException;
 import java.time.Clock;
 import java.util.Map;
 import java.util.UUID;

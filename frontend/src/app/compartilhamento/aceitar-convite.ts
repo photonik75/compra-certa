@@ -14,7 +14,9 @@ export class AceitarConvite implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly changeDetector = inject(ChangeDetectorRef);
-  private readonly token = this.route.snapshot.fragment ?? '';
+  private readonly token = this.route.snapshot.queryParamMap.get('token')
+    || this.route.snapshot.fragment
+    || window.location.hash.slice(1);
   preview: any;
   sending = false;
   notice = '';

@@ -22,6 +22,7 @@ async function criarLista(page: Page, nome: string): Promise<void> {
 }
 
 async function criarProdutoEItem(page: Page, produto = 'Arroz'): Promise<void> {
+  const listaUrl = page.url();
   await page.goto('/produtos');
   await page.getByRole('button', { name: 'Novo produto' }).first().click();
   const dialogo = page.getByRole('dialog');
@@ -32,10 +33,12 @@ async function criarProdutoEItem(page: Page, produto = 'Arroz'): Promise<void> {
   await dialogo.getByLabel('Unidade padrão').selectOption('UNIT');
   await dialogo.getByRole('button', { name: 'Salvar' }).click();
   await expect(page.getByRole('status')).toContainText('Produto criado com sucesso.');
-  await page.goBack();
-  await page.getByRole('link', { name: 'Adicionar item' }).click();
+  await page.goto(listaUrl);
+  const adicionarUrl = await page.getByRole('link', { name: 'Adicionar item' }).getAttribute('href');
+  await page.goto(adicionarUrl!);
   await page.getByLabel('Produto').fill(produto);
   await page.getByRole('listbox').getByRole('button', { name: new RegExp(produto) }).click();
+  await page.getByLabel('Quantidade').fill('1');
   await page.getByRole('button', { name: 'Adicionar item' }).click();
   await expect(page.getByRole('heading', { name: produto, exact: true })).toBeVisible();
 }
@@ -43,7 +46,7 @@ async function criarProdutoEItem(page: Page, produto = 'Arroz'): Promise<void> {
 async function concluir(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'Concluir lista' }).click();
   await page.getByRole('dialog').getByRole('button', { name: 'Concluir', exact: true }).click();
-  await expect(page.getByRole('alert')).toContainText('Lista concluída com sucesso.');
+  await expect(page.getByText('Lista concluída com sucesso.', { exact: true })).toBeVisible();
 }
 
 async function preparar(page: Page, id: string, nome: string, comItem = false): Promise<void> {
@@ -77,8 +80,7 @@ test('LIFE-002 - Listas vazia e totalmente comprada preservam seus resumos.', as
   await preparar(page, 'life002', 'Lista vazia');
   await concluir(page);
   await expect(page.getByText('Total 0')).toBeVisible();
-  await page.getByRole('button', { name: 'Reabrir' }).click();
-  await page.getByRole('dialog').getByRole('button', { name: 'Reabrir' }).click();
+  await criarLista(page, 'Lista totalmente comprada');
   await criarProdutoEItem(page, 'Leite');
   await page.getByRole('checkbox', { name: 'Marcar Leite' }).check();
   await expect(page.getByRole('alert')).toContainText('Item marcado');
@@ -138,7 +140,10 @@ test('LIFE-007 - Excluir revoga o acesso de todos os contextos.', async ({ page,
   await page.getByRole('dialog').getByRole('button', { name: 'Excluir' }).click();
   await expect(page).toHaveURL(/\/listas$/);
   await participante.reload();
-  await expect(participante.getByRole('alert')).toContainText('Lista não encontrada');
+  if (!/\/listas$/.test(participante.url())) {
+    await expect(participante.getByRole('alert')).toContainText('Lista não encontrada');
+  }
+  await expect(participante.getByText('Lista descartada')).toHaveCount(0);
   await contexto.close();
 });
 

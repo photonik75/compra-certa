@@ -8,6 +8,8 @@
     <app-concluir-lista [lista]="$any(list)" (listaChange)="onLifecycle($event)" />
     @if (list.role === 'OWNER' && list.status === 'ACTIVE') {
       <a [routerLink]="['/listas', listId, 'editar']">Editar lista</a>
+    }
+    @if (list.status === 'ACTIVE') {
       <a [routerLink]="['/listas', listId, 'compartilhar']">Compartilhar lista</a>
     }
   }

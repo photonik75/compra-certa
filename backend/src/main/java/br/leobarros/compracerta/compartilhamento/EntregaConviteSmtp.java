@@ -30,7 +30,7 @@ class EntregaConviteSmtp implements EntregaConvite {
 				Você recebeu um convite para colaborar em uma lista.
 
 				Abra o link para consultar e aceitar:
-				%s/convites/aceitar#%s
+				%s/convites/aceitar?token=%s
 				""".formatted(frontendBaseUrl, token));
 		mailSender.send(mensagem);
 	}

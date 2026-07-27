@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { finalize, forkJoin } from 'rxjs';
 import { CompartilhamentoService } from './compartilhamento.service';
 import { ListasService } from '../listas/listas.service';
+import { SessaoService } from '../auth/sessao.service';
 
 @Component({
   selector: 'app-compartilhar-lista',
@@ -14,6 +15,7 @@ import { ListasService } from '../listas/listas.service';
 export class CompartilharLista implements OnInit {
   private readonly service = inject(CompartilhamentoService);
   private readonly listsService = inject(ListasService);
+  private readonly sessions = inject(SessaoService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly changeDetector = inject(ChangeDetectorRef);
@@ -22,6 +24,7 @@ export class CompartilharLista implements OnInit {
   access: any;
   selectedMember: any;
   leaving = false;
+  currentUserId = '';
   submitted = false;
   sending = false;
   notice = '';
@@ -37,10 +40,9 @@ export class CompartilharLista implements OnInit {
     this.sending = true;
     this.service.convidar(this.listId, email).pipe(finalize(() => this.sending = false)).subscribe({
       next: (result) => {
-        if (result.invitation) this.access.invitations = [...this.access.invitations, result.invitation];
         this.notice = result.outcome === 'MEMBER_ADDED'
           ? 'Participante adicionado com sucesso.' : 'Convite enviado com sucesso.';
-        this.changeDetector.markForCheck();
+        this.load();
       },
       error: (response) => {
         const messages: Record<string, string> = {
@@ -82,7 +84,7 @@ export class CompartilharLista implements OnInit {
   confirmRemove(): void {
     if (!this.selectedMember) return;
     const member = this.selectedMember;
-    this.service.removerMembro(this.listId, member.user.id, this.access.list.version).subscribe({
+    this.service.removerMembro(this.listId, member.user.id, member.version).subscribe({
       next: () => {
         this.access.members = this.access.members.filter((item: any) => item.user.id !== member.user.id);
         this.selectedMember = undefined;
@@ -96,8 +98,14 @@ export class CompartilharLista implements OnInit {
   requestLeave(): void { this.leaving = true; this.changeDetector.markForCheck(); }
   cancelLeave(): void { this.leaving = false; this.changeDetector.markForCheck(); }
   leave(): void {
-    this.service.sair(this.listId, this.access.list.version).subscribe({
+    const membership = this.access.members.find((member: any) => member.user.id === this.currentUserId);
+    if (!membership) return;
+    this.service.sair(this.listId, membership.version).subscribe({
       next: () => this.router.navigate(['/listas']),
+      error: () => {
+        this.notice = 'Não foi possível sair da lista. Tente novamente.';
+        this.changeDetector.markForCheck();
+      },
     });
   }
 
@@ -111,12 +119,17 @@ export class CompartilharLista implements OnInit {
     forkJoin({
       access: this.service.consultarAcesso(this.listId),
       list: this.listsService.obter(this.listId),
+      session: this.sessions.consultar(),
     }).subscribe({
-      next: ({ access, list }) => {
+      next: ({ access, list, session }) => {
         this.access = { ...access, list };
+        this.currentUserId = session.user.id;
         this.changeDetector.markForCheck();
       },
-      error: () => this.notice = 'Lista não encontrada ou indisponível para sua conta.',
+      error: () => {
+        this.notice = 'Lista não encontrada ou indisponível para sua conta.';
+        this.changeDetector.markForCheck();
+      },
     });
   }
 }
