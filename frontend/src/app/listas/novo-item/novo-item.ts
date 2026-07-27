@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { Produto, ProdutosService } from '../../produtos/produtos.service';
 import { ITEM_MESSAGES, createItemForm, normalizeQuantity, parseQuantity } from '../item-form';
-import { ListaItensService } from '../lista-itens.service';
+import { ListItem, ListaItensService } from '../lista-itens.service';
 
 @Component({
   selector: 'app-novo-item',
@@ -27,6 +27,7 @@ export class NovoItem {
   sending = false;
   quantityLimit = false;
   notice = '';
+  duplicate?: ListItem;
 
   searchProducts(value: string): void {
     if (!value) { this.suggestions = []; return; }
@@ -63,14 +64,61 @@ export class NovoItem {
       notes: this.form.controls.notes.value.trim() || null,
     }).pipe(finalize(() => this.sending = false)).subscribe({
       next: (result) => this.router.navigate(['/listas', this.listId], { fragment: `item-${result.item.id}` }),
-      error: (response) => {
-        this.notice = response?.error?.code === 'DUPLICATE_ITEM'
-          ? 'Este produto já está na lista. Edite o item existente ou some as quantidades.'
-          : 'Não foi possível adicionar o item. Tente novamente em alguns instantes.';
+      error: (response) => this.handleError(response),
+    });
+  }
+
+  cancel(): void { this.router.navigate(['/listas', this.listId]); }
+  quantityInvalid(): boolean {
+    const quantity = parseQuantity(this.form.controls.quantity.value);
+    return this.form.controls.quantity.invalid || !Number.isFinite(quantity) || quantity <= 0;
+  }
+
+  cancelDuplicate(): void {
+    this.duplicate = undefined;
+    this.changeDetector.markForCheck();
+  }
+
+  editExisting(): void {
+    if (this.duplicate) {
+      this.router.navigate(['/listas', this.listId, 'itens', this.duplicate.id, 'editar']);
+    }
+  }
+
+  merge(): void {
+    if (!this.duplicate || !this.selected || this.duplicate.unit !== this.form.controls.unit.value) return;
+    this.sending = true;
+    this.items.criar(this.listId, {
+      productId: this.selected.id,
+      quantity: normalizeQuantity(this.form.controls.quantity.value),
+      unit: this.form.controls.unit.value,
+      categoryId: this.form.controls.categoryId.value,
+      notes: this.form.controls.notes.value.trim() || null,
+      resolution: 'MERGE',
+      targetVersion: this.duplicate.version,
+    }).pipe(finalize(() => this.sending = false)).subscribe({
+      next: (result) => this.router.navigate(['/listas', this.listId], {
+        fragment: `item-${result.item.id}`,
+      }),
+      error: () => {
+        this.notice = 'Não foi possível somar as quantidades. Recarregue a lista e tente novamente.';
         this.changeDetector.markForCheck();
       },
     });
   }
 
-  cancel(): void { this.router.navigate(['/listas', this.listId]); }
+  private handleError(response: any): void {
+    if (response?.error?.code !== 'DUPLICATE_ITEM') {
+      this.notice = 'Não foi possível adicionar o item. Tente novamente em alguns instantes.';
+      this.changeDetector.markForCheck();
+      return;
+    }
+    this.items.listar(this.listId).subscribe((collection) => {
+      const normalized = this.selected?.name.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+      this.duplicate = collection.items.find((item) =>
+        item.product.name.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase() === normalized);
+      this.notice = this.duplicate ? '' : 'Este produto já está na lista.';
+      this.changeDetector.markForCheck();
+    });
+  }
 }

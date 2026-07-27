@@ -1,7 +1,15 @@
 <main class="feature-page">
   <h1>Editar item</h1>
   <form class="form-card surface" [formGroup]="form" (ngSubmit)="save()">
-    <label>Produto <input formControlName="productId"></label>
+    <label for="edit-product-search">Produto</label>
+    <input id="edit-product-search" type="search" (input)="onProductSearch($event)">
+    <ul role="listbox">
+      @for (product of suggestions; track product.id) {
+        <li><button type="button" (click)="selectProduct(product)">
+          {{ product.category.icon }} {{ product.name }} · {{ product.category.name }}
+        </button></li>
+      }
+    </ul>
     <label>Quantidade <input formControlName="quantity" inputmode="decimal"></label>
     <label>Unidade <input formControlName="unit"></label>
     <label>Categoria <input formControlName="categoryId"></label>
@@ -12,3 +20,16 @@
     <button type="submit" [disabled]="form.pristine">Salvar</button>
   </form>
 </main>
+@if (duplicate) {
+  <section role="dialog" aria-modal="true" aria-labelledby="edit-duplicate-title">
+    <h2 id="edit-duplicate-title">Produto já está na lista</h2>
+    <p>{{ duplicate.product.name }} · {{ duplicate.quantity }} {{ duplicate.unit }}</p>
+    <button type="button" (click)="cancelDuplicate()">Cancelar</button>
+    <button type="button" [disabled]="duplicate.unit !== form.controls.unit.value" (click)="merge()">
+      Somar quantidade
+    </button>
+    @if (duplicate.unit !== form.controls.unit.value) {
+      <p>Para somar, selecione a mesma unidade do item existente.</p>
+    }
+  </section>
+}

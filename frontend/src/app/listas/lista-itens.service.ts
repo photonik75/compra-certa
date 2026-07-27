@@ -23,6 +23,7 @@ export interface ItemCollection {
 }
 export interface ItemInput {
   productId: string; quantity: string; unit: string; categoryId: string; notes: string | null;
+  resolution?: 'MERGE'; targetVersion?: number;
 }
 
 @Injectable({ providedIn: 'root' })

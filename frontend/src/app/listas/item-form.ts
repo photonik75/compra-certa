@@ -2,9 +2,9 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { PRODUCT_UNITS } from '../produtos/produto-form';
 
 export const ITEM_MESSAGES = {
-  product: 'Selecione um produto da lista de sugestões.',
+  product: 'Selecione um produto válido na lista de sugestões.',
   quantity: 'Informe uma quantidade maior que zero.',
-  quantityMax: 'A quantidade máxima é 999999,99.',
+  quantityMax: 'A quantidade deve ser menor ou igual a 999999,99.',
   notesMax: 'A observação deve ter no máximo 240 caracteres.',
 };
 

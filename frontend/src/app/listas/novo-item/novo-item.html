@@ -18,7 +18,7 @@
     <label for="quantity">Quantidade</label>
     <input id="quantity" formControlName="quantity" inputmode="decimal" aria-describedby="quantity-error">
     <div id="quantity-error" role="alert">
-      @if (submitted && (form.controls.quantity.invalid || +form.controls.quantity.value.replace(',', '.') <= 0)) {
+      @if (submitted && quantityInvalid()) {
         {{ messages.quantity }}
       }
       @if (quantityLimit) { {{ messages.quantityMax }} }
@@ -37,3 +37,17 @@
     <button type="submit" [disabled]="sending">Adicionar item</button>
   </form>
 </main>
+@if (duplicate) {
+  <section role="dialog" aria-modal="true" aria-labelledby="duplicate-title">
+    <h2 id="duplicate-title">Produto já está na lista</h2>
+    <p>{{ duplicate.product.name }} · {{ duplicate.quantity }} {{ duplicate.unit }}</p>
+    <button type="button" (click)="cancelDuplicate()">Cancelar</button>
+    <button type="button" (click)="editExisting()">Editar existente</button>
+    <button type="button" [disabled]="duplicate.unit !== form.controls.unit.value" (click)="merge()">
+      Somar quantidade
+    </button>
+    @if (duplicate.unit !== form.controls.unit.value) {
+      <p>Para somar, selecione a mesma unidade do item existente.</p>
+    }
+  </section>
+}
