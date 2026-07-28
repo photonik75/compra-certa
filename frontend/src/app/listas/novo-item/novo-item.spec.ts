@@ -1,3 +1,4 @@
+import { Location } from '@angular/common';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, of, throwError } from 'rxjs';
@@ -10,6 +11,7 @@ describe('NovoItem - EF05', () => {
   let items: any;
   let products: any;
   let router: any;
+  let location: any;
 
   beforeEach(async () => {
     items = {
@@ -23,15 +25,52 @@ describe('NovoItem - EF05', () => {
       }])),
     };
     router = { navigate: vi.fn().mockResolvedValue(true) };
+    location = { getState: vi.fn().mockReturnValue({}) };
     await TestBed.configureTestingModule({
       imports: [NovoItem],
       providers: [
         { provide: ListaItensService, useValue: items },
         { provide: ProdutosService, useValue: products },
         { provide: Router, useValue: router },
+        { provide: Location, useValue: location },
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: new Map([['listId', 'l1']]) } } },
       ],
     }).compileComponents();
+  });
+
+  it('FE-ITEM-04 - abre cadastro e restaura o rascunho selecionando o produto criado', () => {
+    const fixture = TestBed.createComponent(NovoItem);
+    fixture.detectChanges();
+    fixture.componentInstance.form.patchValue({
+      quantity: '2,5', unit: 'PACKAGE', categoryId: 'c1', notes: ' madura ',
+    });
+    const button = fixture.nativeElement.querySelector('.new-product') as HTMLButtonElement;
+    button.click();
+    expect(router.navigate).toHaveBeenCalledWith(['/produtos'], {
+      state: {
+        productRegistration: {
+          returnUrl: '/listas/l1/itens/novo',
+          draft: { quantity: '2,5', unit: 'PACKAGE', categoryId: 'c1', notes: ' madura ' },
+        },
+      },
+    });
+
+    const createdProduct = {
+      id: 'p2', name: 'Mamão', category: {
+        id: 'c2', name: 'Hortifruti', icon: '🥬', available: true,
+      },
+      defaultUnit: 'UNIT', active: true, version: 1,
+    };
+    location.getState.mockReturnValue({
+      createdProduct,
+      itemDraft: { quantity: '2,5', unit: 'PACKAGE', categoryId: 'c1', notes: ' madura ' },
+    });
+    const returnedFixture = TestBed.createComponent(NovoItem);
+    returnedFixture.detectChanges();
+    expect(returnedFixture.componentInstance.selected).toEqual(createdProduct);
+    expect(returnedFixture.componentInstance.form.getRawValue()).toEqual({
+      productId: 'p2', quantity: '2,5', unit: 'UNIT', categoryId: 'c2', notes: ' madura ',
+    });
   });
 
   it('FE-ITEM-03/05/06 - exige produto selecionado, quantidade válida e limita observação', () => {

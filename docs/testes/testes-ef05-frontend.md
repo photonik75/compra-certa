@@ -11,7 +11,7 @@ camadas em conjunto, substituindo banco, APIs e demais sistemas externos; E2E us
 | `FE-ITEM-01` | Unitário | Requisitos > Detalhe da lista | Agrupa por categoria normalizada, ordena grupos/itens e exibe contagem e snapshots. |
 | `FE-ITEM-02` | Unitário | Requisitos > permissões/estado | Habilita gestão para proprietário/participante de ativa e mantém concluída somente para consulta. |
 | `FE-ITEM-03` | Unitário | Requisitos > Produto | Sugere até dez ativos desde o primeiro caractere e exige seleção válida. |
-| `FE-ITEM-04` | Unitário | Requisitos > Cadastrar produto | Abre cadastro e, no retorno bem-sucedido, preserva campos e seleciona o produto criado. |
+| `FE-ITEM-04` | Unitário | Requisitos > Cadastrar produto | Ao clicar em “Cadastrar novo produto”, abre o cadastro transportando o rascunho do item; no retorno bem-sucedido, restaura quantidade e observação, seleciona o produto criado e aplica sua unidade e categoria padrão. |
 | `FE-ITEM-05` | Unitário | Requisitos > Quantidade | Valida vazio, zero, negativo e máximo; formata vírgula e remove zeros desnecessários. |
 | `FE-ITEM-06` | Unitário | Requisitos > Unidade/Categoria/Observação | Aplica opções, disponibilidade e limite de 240 com mensagens normativas. |
 | `FE-ITEM-07` | Unitário | Requisitos > Adicionar item | Bloqueia reenvio, envia snapshots, volta/destaca no sucesso e preserva formulário no erro. |

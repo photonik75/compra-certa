@@ -1,8 +1,10 @@
+import { Location } from '@angular/common';
 import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { Produto, ProdutosService } from '../../produtos/produtos.service';
+import { ProductRegistrationState } from '../../produtos/product-registration-flow';
 import { ITEM_MESSAGES, createItemForm, normalizeQuantity, parseQuantity } from '../item-form';
 import { ListItem, ListaItensService } from '../lista-itens.service';
 
@@ -18,6 +20,7 @@ export class NovoItem {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly changeDetector = inject(ChangeDetectorRef);
+  private readonly location = inject(Location);
   readonly form = createItemForm();
   readonly messages = ITEM_MESSAGES;
   readonly listId = this.route.snapshot.paramMap.get('listId')!;
@@ -28,6 +31,13 @@ export class NovoItem {
   quantityLimit = false;
   notice = '';
   duplicate?: ListItem;
+
+  constructor() {
+    const state = this.location.getState() as ProductRegistrationState;
+    if (!state.createdProduct || !state.itemDraft) return;
+    this.form.patchValue(state.itemDraft);
+    this.selectProduct(state.createdProduct);
+  }
 
   searchProducts(value: string): void {
     if (!value) { this.suggestions = []; return; }
@@ -43,6 +53,18 @@ export class NovoItem {
     this.selected = product;
     this.form.patchValue({
       productId: product.id, unit: product.defaultUnit, categoryId: product.category.id,
+    });
+  }
+
+  registerProduct(): void {
+    const { quantity, unit, categoryId, notes } = this.form.getRawValue();
+    this.router.navigate(['/produtos'], {
+      state: {
+        productRegistration: {
+          returnUrl: `/listas/${this.listId}/itens/novo`,
+          draft: { quantity, unit, categoryId, notes },
+        },
+      },
     });
   }
 

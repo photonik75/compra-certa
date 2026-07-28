@@ -1,4 +1,6 @@
+import { Location } from '@angular/common';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Router } from '@angular/router';
 import { Subject, of, throwError } from 'rxjs';
 import { vi } from 'vitest';
 import { Produto, ProdutosService } from './produtos.service';
@@ -16,6 +18,8 @@ const PRODUCTS: Produto[] = [
 describe('Produtos - EF04', () => {
   let fixture: ComponentFixture<Produtos>;
   let service: any;
+  let location: any;
+  let router: any;
 
   beforeEach(async () => {
     service = {
@@ -26,12 +30,35 @@ describe('Produtos - EF04', () => {
       desativar: vi.fn().mockReturnValue(of(undefined)),
       obter: vi.fn().mockReturnValue(of(PRODUCTS[0])),
     };
+    location = { getState: vi.fn().mockReturnValue({}) };
+    router = { navigateByUrl: vi.fn().mockResolvedValue(true) };
     await TestBed.configureTestingModule({
       imports: [Produtos],
-      providers: [{ provide: ProdutosService, useValue: service }],
+      providers: [
+        { provide: ProdutosService, useValue: service },
+        { provide: Location, useValue: location },
+        { provide: Router, useValue: router },
+      ],
     }).compileComponents();
     fixture = TestBed.createComponent(Produtos);
     fixture.detectChanges();
+  });
+
+  it('FE-ITEM-04 - abre o cadastro solicitado pelo item e retorna o produto criado', () => {
+    const draft = { quantity: '2', unit: 'PACKAGE', categoryId: 'c1', notes: 'madura' };
+    location.getState.mockReturnValue({
+      productRegistration: { returnUrl: '/listas/l1/itens/novo', draft },
+    });
+    fixture = TestBed.createComponent(Produtos);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Novo produto');
+    fixture.componentInstance.form.setValue({
+      name: 'Banana', categoryId: 'c2', defaultUnit: 'UNIT',
+    });
+    fixture.componentInstance.save();
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/listas/l1/itens/novo', {
+      state: { createdProduct: PRODUCTS[0], itemDraft: draft },
+    });
   });
 
   it('FE-PROD-01 - renderiza ativos ordenados, controles, dados e aviso histórico', () => {

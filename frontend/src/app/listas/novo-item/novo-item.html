@@ -24,7 +24,7 @@
         </button></li>
       }
     </ul>
-    <button class="new-product" type="button">＋ Cadastrar novo produto</button>
+    <button class="new-product" type="button" (click)="registerProduct()">＋ Cadastrar novo produto</button>
     <label for="quantity">Quantidade *</label>
     <input id="quantity" formControlName="quantity" inputmode="decimal" aria-describedby="quantity-error">
     <div id="quantity-error" role="alert">

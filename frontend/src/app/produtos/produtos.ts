@@ -1,10 +1,13 @@
+import { Location } from '@angular/common';
 import { ChangeDetectorRef, Component, HostListener, OnInit, inject } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { finalize, forkJoin } from 'rxjs';
 import {
   PRODUCT_MESSAGES, PRODUCT_UNITS, createProductForm, normalizeProductName,
 } from './produto-form';
 import { CategoryReference, Produto, ProductInput, ProdutosService } from './produtos.service';
+import { ProductRegistration, ProductRegistrationState } from './product-registration-flow';
 
 type Dialog = 'create' | 'edit' | 'deactivate' | null;
 
@@ -17,6 +20,8 @@ type Dialog = 'create' | 'edit' | 'deactivate' | null;
 export class Produtos implements OnInit {
   private readonly service = inject(ProdutosService);
   private readonly changeDetector = inject(ChangeDetectorRef);
+  private readonly location = inject(Location);
+  private readonly router = inject(Router);
   readonly form = createProductForm();
   readonly units = PRODUCT_UNITS;
   readonly messages = PRODUCT_MESSAGES;
@@ -32,12 +37,16 @@ export class Produtos implements OnInit {
   conflict = false;
   notice = '';
   private trigger?: HTMLElement;
+  private productRegistration?: ProductRegistration;
 
   ngOnInit(): void {
+    this.productRegistration =
+      (this.location.getState() as ProductRegistrationState).productRegistration;
     forkJoin({ categories: this.service.listarCategorias(), products: this.fetch() }).subscribe({
       next: ({ categories, products }) => {
         this.categories = categories.filter((category) => category.available);
         this.products = this.sort(products.items);
+        if (this.productRegistration) this.openCreate();
         this.changeDetector.markForCheck();
       },
       error: () => undefined,
@@ -137,6 +146,13 @@ export class Produtos implements OnInit {
   private create(input: ProductInput): void {
     this.service.criar(input).pipe(finalize(() => this.sending = false)).subscribe({
       next: (product) => {
+        if (this.productRegistration) {
+          const { returnUrl, draft } = this.productRegistration;
+          this.router.navigateByUrl(returnUrl, {
+            state: { createdProduct: product, itemDraft: draft },
+          });
+          return;
+        }
         this.products = this.sort([...this.products, product]);
         this.close();
         this.notice = 'Produto criado com sucesso.';
