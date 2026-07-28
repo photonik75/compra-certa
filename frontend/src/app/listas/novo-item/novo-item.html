@@ -34,9 +34,19 @@
       @if (quantityLimit) { {{ messages.quantityMax }} }
     </div>
     <label for="unit">Unidade *</label>
-    <input id="unit" formControlName="unit">
+    <select id="unit" formControlName="unit">
+      <option value="">Escolha uma unidade</option>
+      @for (unit of units; track unit[0]) {
+        <option [value]="unit[0]">{{ unit[1] }}</option>
+      }
+    </select>
     <label for="category">Categoria *</label>
-    <input id="category" formControlName="categoryId">
+    <select id="category" formControlName="categoryId">
+      <option value="">Escolha uma categoria</option>
+      @for (category of categories; track category.id) {
+        <option [value]="category.id">{{ category.icon }} {{ category.name }}</option>
+      }
+    </select>
     <label for="notes">Observação</label>
     <textarea id="notes" formControlName="notes" aria-describedby="notes-error"></textarea>
     <div id="notes-error" role="alert">

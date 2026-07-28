@@ -23,6 +23,10 @@ describe('NovoItem - EF05', () => {
         id: 'p1', name: 'Banana', category: { id: 'c1', name: 'Hortifruti', icon: '🥬' },
         defaultUnit: 'UNIT', active: true, version: 1,
       }])),
+      listarCategorias: vi.fn().mockReturnValue(of([
+        { id: 'c1', name: 'Hortifruti', icon: '🥬', available: true },
+        { id: 'c2', name: 'Excluída', icon: '×', available: false },
+      ])),
     };
     router = { navigate: vi.fn().mockResolvedValue(true) };
     location = { getState: vi.fn().mockReturnValue({}) };
@@ -86,6 +90,18 @@ describe('NovoItem - EF05', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('A quantidade deve ser menor ou igual a 999999,99.');
     expect(fixture.nativeElement.textContent).toContain('A observação deve ter no máximo 240 caracteres.');
+  });
+
+  it('FE-ITEM-06 - exibe rótulos legíveis para unidades e categorias disponíveis', () => {
+    const fixture = TestBed.createComponent(NovoItem);
+    fixture.detectChanges();
+    const unit = fixture.nativeElement.querySelector('#unit') as HTMLSelectElement;
+    const category = fixture.nativeElement.querySelector('#category') as HTMLSelectElement;
+    expect([...unit.options].map((option) => [option.value, option.text.trim()]))
+      .toContainEqual(['DOZEN', 'dúzia']);
+    expect([...category.options].map((option) => [option.value, option.text.trim()]))
+      .toContainEqual(['c1', '🥬 Hortifruti']);
+    expect(category.textContent).not.toContain('Excluída');
   });
 
   it('FE-ITEM-03/07 - sugere desde o primeiro caractere, envia snapshots derivados e bloqueia reenvio', () => {

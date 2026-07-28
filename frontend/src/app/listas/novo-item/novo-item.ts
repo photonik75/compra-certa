@@ -1,10 +1,11 @@
 import { Location } from '@angular/common';
-import { ChangeDetectorRef, Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { Produto, ProdutosService } from '../../produtos/produtos.service';
 import { ProductRegistrationState } from '../../produtos/product-registration-flow';
+import { PRODUCT_UNITS } from '../../produtos/produto-form';
 import { ITEM_MESSAGES, createItemForm, normalizeQuantity, parseQuantity } from '../item-form';
 import { ListItem, ListaItensService } from '../lista-itens.service';
 
@@ -14,7 +15,7 @@ import { ListItem, ListaItensService } from '../lista-itens.service';
   templateUrl: './novo-item.html',
   styleUrl: './novo-item.css',
 })
-export class NovoItem {
+export class NovoItem implements OnInit {
   private readonly items = inject(ListaItensService);
   private readonly products = inject(ProdutosService);
   private readonly router = inject(Router);
@@ -23,8 +24,10 @@ export class NovoItem {
   private readonly location = inject(Location);
   readonly form = createItemForm();
   readonly messages = ITEM_MESSAGES;
+  readonly units = PRODUCT_UNITS;
   readonly listId = this.route.snapshot.paramMap.get('listId')!;
   suggestions: Produto[] = [];
+  categories: Produto['category'][] = [];
   selected?: Produto;
   submitted = false;
   sending = false;
@@ -37,6 +40,16 @@ export class NovoItem {
     if (!state.createdProduct || !state.itemDraft) return;
     this.form.patchValue(state.itemDraft);
     this.selectProduct(state.createdProduct);
+  }
+
+  ngOnInit(): void {
+    this.products.listarCategorias().subscribe((categories) => {
+      this.categories = categories.filter((category) => category.available);
+      this.changeDetector.markForCheck();
+    }, () => {
+      this.categories = [];
+      this.changeDetector.markForCheck();
+    });
   }
 
   searchProducts(value: string): void {
