@@ -29,6 +29,8 @@ public class AutenticacaoSecurityConfiguration {
 						.requestMatchers("/api/v1/lists/**", ListaController.ENDPOINT_LISTAS).permitAll()
 						.requestMatchers("/api/v1/categories/**", "/api/v1/products/**").permitAll()
 						.requestMatchers("/api/v1/invitations/**").permitAll()
+						.requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
+						.requestMatchers(requisicao -> !requisicao.getRequestURI().startsWith("/api/")).permitAll()
 						.anyRequest().authenticated())
 				.csrf(csrf -> csrf.ignoringRequestMatchers(
 						CadastroController.ENDPOINT_CADASTRO,

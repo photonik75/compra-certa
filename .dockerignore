@@ -1,0 +1,9 @@
+.git
+.idea
+.vscode
+**/.angular
+**/node_modules
+**/target
+**/coverage
+**/playwright-report
+**/test-results
