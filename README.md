@@ -10,31 +10,29 @@ ambiente local em um único histórico.
 - `docs/`: especificações funcionais, contrato OpenAPI e definições de testes.
 - `prototipo/`: protótipo navegável da interface.
 
-## Frontend
+## Execução dos testes
 
-Pré-requisitos: Node.js e npm.
+Pré-requisitos: Node.js, npm, Java 25 e Docker.
 
-```bash
-cd frontend
-npm install
-npm start
+| Suíte | Frontend (em `frontend/`) | Backend (em `backend/`) |
+|---|---|---|
+| Unitários | `npm test` | `.\mvnw.cmd -Dtest=SuiteDeTestesUnitarios test` |
+| Integração | `npm run test:integration` | `.\mvnw.cmd -Dtest=SuiteDeTestesDeIntegracao test` |
+| E2E | `npm run test:e2e` | `.\mvnw.cmd -Dtest=SuiteDeTestesDeE2E test` |
+
+Antes da primeira execução do frontend, rode `npm install`. Para os testes E2E do frontend, inicie o backend e
+o frontend conforme indicado abaixo.
+
+## Execução para testes manuais
+
+Em terminais separados:
+
+```powershell
+cd backend
+.\run.ps1
 ```
 
-Testes unitários:
-
-```bash
+```powershell
 cd frontend
-npm test
+.\run.ps1
 ```
-
-Testes de integração:
-
-```bash
-cd frontend
-npm run test:integration
-```
-
-## Backend
-
-O projeto Spring Boot será criado em `backend/`. Consulte `docs/api/openapi.yaml` para o contrato HTTP e
-`docs/testes/testes-ef01-backend.md` para a ordem sugerida dos ciclos TDD.
